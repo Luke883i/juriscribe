@@ -29,15 +29,17 @@ class SessionState:
     epistemic_units: list[dict[str, Any]] = field(default_factory=list)
     relations: list[dict[str, Any]] = field(default_factory=list)
     contradictions: list[dict[str, Any]] = field(default_factory=list)
+    mining: dict[str, Any] = field(default_factory=dict)
+    style_profile: dict[str, Any] = field(default_factory=dict)
+    setup: dict[str, Any] = field(default_factory=dict)
+    source_intelligence: dict[str, Any] = field(default_factory=lambda: {"research_plan": [], "dominance_assessments": [], "coverage_status": "NOT_STARTED"})
+    claim_ledger: list[dict[str, Any]] = field(default_factory=list)
     strategy: dict[str, Any] = field(default_factory=dict)
     dod: list[dict[str, Any]] = field(default_factory=list)
     editorial_actions: list[dict[str, Any]] = field(default_factory=list)
-    metrics: dict[str, Any] = field(default_factory=lambda: {
-        "semantic_no_novelty_streak": 0,
-        "strategy_no_improvement_streak": 0,
-        "simulations_run": 0,
-        "simulation_failures": 0,
-    })
+    reflection: dict[str, Any] = field(default_factory=lambda: {"iterations": 0, "no_novelty_streak": 0, "target": 100, "saturated": False})
+    metrics: dict[str, Any] = field(default_factory=lambda: {"semantic_no_novelty_streak": 0, "strategy_no_improvement_streak": 0, "dod_no_novelty_streak": 0, "simulations_run": 0, "simulation_failures": 0})
+    completion: dict[str, Any] = field(default_factory=lambda: {"eligible": False, "reason": "DoD and saturation not yet proven"})
     artifacts: list[dict[str, Any]] = field(default_factory=list)
 
     def touch(self) -> None:
@@ -58,16 +60,7 @@ class Workspace:
     def initialize(self, request_text: str, runtime: dict[str, Any] | None = None) -> SessionState:
         self.ledger_dir.mkdir(parents=True, exist_ok=True)
         self.artifact_dir.mkdir(parents=True, exist_ok=True)
-        state = SessionState(
-            session_id=self.base.name,
-            request={
-                "raw": request_text,
-                "request_id": stable_id("REQ", request_text),
-                "summary": request_text.strip()[:500],
-                "atoms": [],
-            },
-            runtime=runtime or {},
-        )
+        state = SessionState(session_id=self.base.name, request={"raw": request_text, "request_id": stable_id("REQ", request_text), "summary": request_text.strip()[:500], "atoms": []}, runtime=runtime or {})
         self.save(state)
         return state
 
