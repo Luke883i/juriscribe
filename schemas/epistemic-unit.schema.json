@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe Epistemic Unit",
+  "type": "object",
+  "required": ["id", "kind", "text", "source_id", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "kind": {"type": "string"},
+    "text": {"type": "string"},
+    "source_id": {"type": "string"},
+    "status": {"enum": ["SUPPORTED", "LIMITED", "UNKNOWN", "CONTRADICTED", "HUMAN_DECISION_REQUIRED"]},
+    "chapter": {"type": ["string", "null"]},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "tags": {"type": "array", "items": {"type": "string"}}
+  }
+}
