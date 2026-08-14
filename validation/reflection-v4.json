@@ -1,0 +1,175 @@
+{
+  "Q": 18432,
+  "iterations": 19432,
+  "no_novelty_streak": 1000,
+  "target": 1000,
+  "saturated": true,
+  "dimensions": {
+    "task": 4,
+    "corpus": 4,
+    "reticulum": 4,
+    "sources": 4,
+    "inference": 4,
+    "style": 3,
+    "host": 3,
+    "user": 2
+  },
+  "sample_discoveries": [
+    {
+      "q": 1,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "full",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 2,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "full",
+        "user": "modified"
+      }
+    },
+    {
+      "q": 3,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "no_web",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 4,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "no_web",
+        "user": "modified"
+      }
+    },
+    {
+      "q": 5,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "no_docx",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 6,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "aligned",
+        "host": "no_docx",
+        "user": "modified"
+      }
+    },
+    {
+      "q": 7,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "full",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 8,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "full",
+        "user": "modified"
+      }
+    },
+    {
+      "q": 9,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "no_web",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 10,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "no_web",
+        "user": "modified"
+      }
+    },
+    {
+      "q": 11,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "no_docx",
+        "user": "accepted"
+      }
+    },
+    {
+      "q": 12,
+      "signature": {
+        "task": "continue",
+        "corpus": "single_chapter",
+        "reticulum": "dense",
+        "sources": "primary_complete",
+        "inference": "direct",
+        "style": "oversectioned",
+        "host": "no_docx",
+        "user": "modified"
+      }
+    }
+  ]
+}
