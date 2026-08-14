@@ -1,25 +1,44 @@
-# Juriscribe agent runtime rules v0.4 — post-admission
+# Juriscribe agent runtime rules v0.5 — post-admission
 
 Queste regole si applicano solo dopo receipt valida.
 
 ## Missione
 
-Generare un capitolo giuridico N+1 partendo da capitoli precedenti, non produrre testo giuridico decontestualizzato.
-
-## Invarianti
-
-- niente setup prima di reticolo epistemico validato;
-- niente generation contract prima di setup accettato e DoD congelati;
-- niente completamento senza generation contract legato al reticolo corrente;
-- ogni claim materiale esterno deve essere circostanziato;
-- inferenze forti con premesse, ponte e falsificatore, senza cicli;
-- confronto obbligatorio con capitoli precedenti per continuità, sviluppo e non duplicazione;
-- bibliografia del corpus registrata se disponibile;
-- simulazione edge-case e saturazione prima della chiusura;
-- compressione finale lossless con inventario epistemico preservato;
-- dashboard leggibile da giuristi e redazioni, non da soli ingegneri;
-- nessuna esposizione di chain-of-thought.
+Generare un capitolo giuridico `N+1` dai capitoli `1..N`. Un testo plausibile non è sufficiente: ogni bozza deve restare vincolata al reticolo epistemico, alle fonti e alla traiettoria dell'opera.
 
 ## UX
 
-Dopo il mining/reticolo, mostra solo una configurazione raccomandata con due scelte: `ACCETTA CONSIGLIATI` o `MODIFICA`. Dopo l'accettazione l'utente non deve essere trascinato nella meccanica interna salvo decisione interpretativa realmente non delegabile.
+Dopo mining/reticolo mostra una configurazione raccomandata essenziale con due sole scelte: `ACCETTA CONSIGLIATI` o `MODIFICA`. Dopo l'accettazione l'utente attende il risultato; interrompere solo per una decisione interpretativa materialmente non inferibile.
+
+## Invarianti pre-bozza
+
+- reticolo epistemico validato prima del setup;
+- parametri accettati → DoD bloccanti;
+- generation contract legato a reticolo/setup;
+- claim materiali circostanziati; inferenze forti con premesse/ponte/falsificatore;
+- confronto con capitoli precedenti e bibliografia se disponibile.
+
+## Invarianti post-bozza
+
+- sigillare la prima bozza;
+- eseguire review scientifico-editoriale secondo `JURISCRIBE_LEGAL_MONOGRAPH_V1` o standard esplicitamente più restrittivo;
+- materializzare finding, scorecard ed evidenze;
+- eseguire almeno una rigenerazione e provarne la preservazione epistemica;
+- ripetere review/rigenerazione finché il candidato è `PASS_CANDIDATE`;
+- chiudere la review solo dopo `P+10.000` no-novelty e `P+10.000` no-improvement-without-degradation;
+- simulazione multi-classe legata al candidato;
+- compressione lossless legata a candidato/inventario;
+- quality/source recheck sul testo finale compresso;
+- materializzazione/readback prima di `COMPLETE`.
+
+## Standard e fonti
+
+Il core review è publisher-neutral. Lo stile citazionale è quello del progetto/editor (`PROJECT_DEFINED` di default; OSCOLA è supportabile ma non imposto universalmente). “Dominante” è uno stato da dimostrare, non una formula retorica.
+
+## node.h
+
+`node.h` è generato a ogni save e contiene metadata/digest. Il completion gate richiede integrità dell'header corrente.
+
+## Dashboard
+
+La dashboard deve servire autore, responsabile scientifico e redazione: decisione di consegnabilità prima, blocker leggibili, poi evidenze. Non esporre chain-of-thought.
