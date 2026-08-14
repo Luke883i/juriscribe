@@ -1,2 +1,2 @@
-"""Juriscribe session kernel for iSeneca."""
-__version__ = "0.3.0"
+"""Juriscribe runtime kernel."""
+__version__ = "0.4.0"
