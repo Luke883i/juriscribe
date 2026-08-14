@@ -1,0 +1,58 @@
+{
+  "schema": "juriscribe-historical-audit/v3",
+  "subject": "session-generated Chapter 2 (corpus retained outside repository)",
+  "status": "REVIEW_REQUIRED",
+  "blocking_failures": [],
+  "review_items": ["structural sectioning materially diverges from the preceding chapter"],
+  "accepted_length_words": [7000, 9000],
+  "body_word_count": 7528,
+  "apparatus_word_count": 313,
+  "length_status": "PASS",
+  "style": {
+    "reference": {
+      "word_count": 8291,
+      "sentence_count": 326,
+      "heading_count": 10,
+      "avg_sentence_words": 25.43,
+      "p90_sentence_words": 44.0,
+      "heading_density_per_1000_words": 1.206
+    },
+    "candidate": {
+      "word_count": 7528,
+      "sentence_count": 364,
+      "heading_count": 24,
+      "avg_sentence_words": 20.68,
+      "p90_sentence_words": 36.0,
+      "heading_density_per_1000_words": 3.188
+    },
+    "deltas": {
+      "avg_sentence_words": 0.1868,
+      "p90_sentence_words": 0.1818,
+      "heading_density": 1.6434,
+      "connector_distance": 0.6364
+    },
+    "checks": {
+      "sentence_mean": "PASS",
+      "sentence_p90": "PASS",
+      "sectioning": "REVIEW",
+      "connectors": "PASS"
+    }
+  },
+  "reference_apparatus": {
+    "declared_source_count": 13,
+    "used_source_count": 13,
+    "callout_count": 19,
+    "coverage": 1.0,
+    "status": "PASS"
+  },
+  "claim_traceability": {
+    "status": "NOT_EVALUATED_FROM_ARTIFACT_ALONE",
+    "reason": "The historical artifact proves a reader-visible apparatus, but the original claim ledger and pinpoint artifact locators were not embedded in the artifact."
+  },
+  "corrections": [
+    "The earlier source-visibility failure was a false positive: all 13 declared sources are called out in the body.",
+    "Bibliography/source apparatus must be excluded from prose-rhythm metrics.",
+    "The material style risk is over-sectioning, not a sentence-length failure."
+  ],
+  "corpus_retention": "No Chapter 1 or Chapter 2 full text is stored in this repository."
+}

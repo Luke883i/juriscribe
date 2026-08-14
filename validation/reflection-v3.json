@@ -1,0 +1,37 @@
+{
+  "Q": 3456,
+  "iterations": 4456,
+  "no_novelty_streak": 1000,
+  "target": 1000,
+  "saturated": true,
+  "dimensions": {
+    "task": 6,
+    "evidence": 4,
+    "style": 4,
+    "benchmark": 4,
+    "host": 3,
+    "setup": 3
+  },
+  "sample_discoveries": [
+    {"q": 1, "signature": "('continue', 'accepted', (), 'primary_complete', 'aligned', 'not_required', 'full')"},
+    {"q": 2, "signature": "('continue', 'modified', (), 'primary_complete', 'aligned', 'not_required', 'full')"},
+    {"q": 3, "signature": "('continue', 'human_decision', ('human',), 'primary_complete', 'aligned', 'not_required', 'full')"},
+    {"q": 4, "signature": "('continue', 'accepted', ('capability',), 'primary_complete', 'aligned', 'not_required', 'no_web')"},
+    {"q": 5, "signature": "('continue', 'modified', ('capability',), 'primary_complete', 'aligned', 'not_required', 'no_web')"},
+    {"q": 6, "signature": "('continue', 'human_decision', ('capability', 'human'), 'primary_complete', 'aligned', 'not_required', 'no_web')"},
+    {"q": 7, "signature": "('continue', 'accepted', ('capability',), 'primary_complete', 'aligned', 'not_required', 'read_only')"},
+    {"q": 8, "signature": "('continue', 'modified', ('capability',), 'primary_complete', 'aligned', 'not_required', 'read_only')"},
+    {"q": 9, "signature": "('continue', 'human_decision', ('capability', 'human'), 'primary_complete', 'aligned', 'not_required', 'read_only')"},
+    {"q": 10, "signature": "('continue', 'accepted', (), 'primary_complete', 'aligned', 'committed_pass', 'full')"},
+    {"q": 11, "signature": "('continue', 'modified', (), 'primary_complete', 'aligned', 'committed_pass', 'full')"},
+    {"q": 12, "signature": "('continue', 'human_decision', ('human',), 'primary_complete', 'aligned', 'committed_pass', 'full')"},
+    {"q": 13, "signature": "('continue', 'accepted', ('capability',), 'primary_complete', 'aligned', 'committed_pass', 'no_web')"},
+    {"q": 14, "signature": "('continue', 'modified', ('capability',), 'primary_complete', 'aligned', 'committed_pass', 'no_web')"},
+    {"q": 15, "signature": "('continue', 'human_decision', ('capability', 'human'), 'primary_complete', 'aligned', 'committed_pass', 'no_web')"},
+    {"q": 16, "signature": "('continue', 'accepted', ('capability',), 'primary_complete', 'aligned', 'committed_pass', 'read_only')"},
+    {"q": 17, "signature": "('continue', 'modified', ('capability',), 'primary_complete', 'aligned', 'committed_pass', 'read_only')"},
+    {"q": 18, "signature": "('continue', 'human_decision', ('capability', 'human'), 'primary_complete', 'aligned', 'committed_pass', 'read_only')"},
+    {"q": 19, "signature": "('continue', 'accepted', ('benchmark',), 'primary_complete', 'aligned', 'integrity_fail', 'full')"},
+    {"q": 20, "signature": "('continue', 'modified', ('benchmark',), 'primary_complete', 'aligned', 'integrity_fail', 'full')"}
+  ]
+}
