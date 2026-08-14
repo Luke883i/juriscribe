@@ -6,9 +6,9 @@
     "reopen_dod": 10000,
     "short_novelty": 10000,
     "open_contradiction": 10000,
-    "quality_fail": 10000,
-    "source_gap": 10000,
-    "readback_fail": 10000,
+    "quality_review": 10000,
+    "source_pending": 10000,
+    "readback_missing": 10000,
     "benchmark_missing": 10000,
     "benchmark_bad_integrity": 10000,
     "multiple_failures": 10000
@@ -18,11 +18,11 @@
     "not all blocking DoD are DONE": 10000,
     "M+10000 no-novelty evidence vs DoD not reached": 10000,
     "blocking contradictions remain open": 10000,
-    "chapter quality gate failed": 10000,
-    "claim/source coverage has open gaps": 10000,
+    "chapter quality review/failure remains unresolved": 10000,
+    "claim/source coverage is not closed": 10000,
     "required artifact readback failed": 10000,
     "blind monograph benchmark integrity/coverage failed": 20000,
-    "not all blocking DoD are DONE; M+10000 no-novelty evidence vs DoD not reached; chapter quality gate failed; claim/source coverage has open gaps": 10000
+    "not all blocking DoD are DONE; M+10000 no-novelty evidence vs DoD not reached; chapter quality review/failure remains unresolved; claim/source coverage is not closed": 10000
   },
   "failures": [],
   "passed": true

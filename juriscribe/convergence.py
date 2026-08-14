@@ -44,12 +44,12 @@ def completion_gate(
     if not all_dods_done(dods): reasons.append('not all blocking DoD are DONE')
     if int(metrics.get('dod_no_novelty_streak',0))<10000: reasons.append('M+10000 no-novelty evidence vs DoD not reached')
     if open_contra: reasons.append('blocking contradictions remain open')
-    if quality and quality.get('status')=='FAIL': reasons.append('chapter quality gate failed')
-    if source_coverage in {'GAPS_OPEN','FAIL'}: reasons.append('claim/source coverage has open gaps')
+    if quality and quality.get('status')!='PASS': reasons.append('chapter quality review/failure remains unresolved')
+    if source_coverage is not None and source_coverage not in {'PASS','NOT_REQUIRED'}: reasons.append('claim/source coverage is not closed')
     bg=benchmark_gate(benchmark,required=benchmark_required)
     if not bg['eligible']: reasons.append('blind monograph benchmark integrity/coverage failed')
     if artifacts:
-        failed=[a for a in artifacts if a.get('required',True) and a.get('readback') not in {None,'PASS'}]
+        failed=[a for a in artifacts if a.get('required',True) and a.get('readback')!='PASS']
         if failed: reasons.append('required artifact readback failed')
     eligible=not reasons
     return {'eligible':eligible,'reason':'PASS' if eligible else '; '.join(reasons),'benchmark_gate':bg}

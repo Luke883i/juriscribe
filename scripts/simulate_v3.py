@@ -9,7 +9,7 @@ from collections import Counter
 from juriscribe.convergence import completion_gate
 
 MUTATIONS=[
-    'control','reopen_dod','short_novelty','open_contradiction','quality_fail','source_gap','readback_fail','benchmark_missing','benchmark_bad_integrity','multiple_failures'
+    'control','reopen_dod','short_novelty','open_contradiction','quality_review','source_pending','readback_missing','benchmark_missing','benchmark_bad_integrity','multiple_failures'
 ]
 
 def good_benchmark():
@@ -26,9 +26,9 @@ def evaluate(mutation:str)->tuple[bool,str,bool]:
     if mutation=='reopen_dod': dod[0]['status']='OPEN'
     elif mutation=='short_novelty': metrics['dod_no_novelty_streak']=9999
     elif mutation=='open_contradiction': contradictions=[{'id':'C1','status':'OPEN','blocking':True}]
-    elif mutation=='quality_fail': quality={'status':'FAIL'}
-    elif mutation=='source_gap': source='GAPS_OPEN'
-    elif mutation=='readback_fail': artifacts[0]['readback']='FAIL'
+    elif mutation=='quality_review': quality={'status':'REVIEW_REQUIRED'}
+    elif mutation=='source_pending': source='PLANNED'
+    elif mutation=='readback_missing': artifacts[0]['readback']=None
     elif mutation=='benchmark_missing': benchmark_required=True; benchmark={}
     elif mutation=='benchmark_bad_integrity': benchmark_required=True; benchmark={'score':{'blind_integrity':'FAIL','heading_recall_soft':0.9}}
     elif mutation=='multiple_failures': dod[0]['status']='OPEN'; quality={'status':'FAIL'}; source='GAPS_OPEN'; metrics['dod_no_novelty_streak']=0

@@ -81,8 +81,11 @@ class RuntimeV3AuditTests(unittest.TestCase):
         metrics = {"dod_no_novelty_streak": 10000}
         base = completion_gate(dod, metrics, [], quality={"status": "PASS"}, source_coverage="PASS", artifacts=[{"readback": "PASS", "required": True}])
         self.assertTrue(base["eligible"])
+        self.assertFalse(completion_gate(dod, metrics, [], quality={"status": "REVIEW_REQUIRED"}, source_coverage="PASS")["eligible"])
         self.assertFalse(completion_gate(dod, metrics, [], quality={"status": "FAIL"}, source_coverage="PASS")["eligible"])
+        self.assertFalse(completion_gate(dod, metrics, [], quality={"status": "PASS"}, source_coverage="PLANNED")["eligible"])
         self.assertFalse(completion_gate(dod, metrics, [], quality={"status": "PASS"}, source_coverage="GAPS_OPEN")["eligible"])
+        self.assertFalse(completion_gate(dod, metrics, [], quality={"status": "PASS"}, source_coverage="PASS", artifacts=[{"readback": None, "required": True}])["eligible"])
         self.assertFalse(completion_gate(dod, metrics, [{"status": "OPEN", "blocking": True}], quality={"status": "PASS"}, source_coverage="PASS")["eligible"])
 
 
