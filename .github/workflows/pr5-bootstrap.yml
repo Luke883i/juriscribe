@@ -1,0 +1,31 @@
+name: PR5 semantic bootstrap
+
+on:
+  push:
+    branches:
+      - agent/pr5-scientific-review-regeneration
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct verified patch series
+        run: |
+          cat .pr5-bootstrap/part* > /tmp/pr5.b64
+          base64 -d /tmp/pr5.b64 | gunzip > /tmp/pr5.patch
+          echo "9d673fd378a215773458b24935c69fa2b56507281b612b577848ce634a9e8b4e  /tmp/pr5.patch" | sha256sum -c -
+      - name: Replace bootstrap commits with semantic series
+        run: |
+          git config user.name "Juriscribe PR5 bootstrap"
+          git config user.email "actions@github.com"
+          git fetch origin main
+          git checkout -B clean origin/main
+          git am /tmp/pr5.patch
+          git push --force origin HEAD:agent/pr5-scientific-review-regeneration
