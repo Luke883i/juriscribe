@@ -1,24 +1,9 @@
 {
-  "schema": "juriscribe-manifest/v1",
+  "schema": "juriscribe-manifest/v2",
   "assistant": "iSeneca",
-  "entrypoints": {
-    "human": "README.md",
-    "admission": "ISENECA_ACCESS_CONTRACT.md",
-    "agent": "AGENTS.md",
-    "runtime": "python -m juriscribe"
-  },
-  "runtime": {
-    "language": "python>=3.10",
-    "dependencies": "stdlib-only",
-    "workspace_root": ".juriscribe",
-    "dashboard_name": "session-dashboard.html"
-  },
-  "schemas": [
-    "schemas/epistemic-unit.schema.json",
-    "schemas/session-state.schema.json"
-  ],
-  "validation": {
-    "tests": "python -m unittest discover -s tests -v",
-    "simulation": "python scripts/simulate.py --cases 1000000"
-  }
+  "runtime_version": "0.2.0",
+  "entrypoints": {"human": "README.md", "admission": "ISENECA_ACCESS_CONTRACT.md", "agent": "AGENTS.md", "runtime": "python -m juriscribe"},
+  "runtime": {"language": "python>=3.10", "dependencies": "stdlib-only", "workspace_root": ".juriscribe", "dashboard_name": "session-dashboard.html", "user_setup_options": ["ACCETTA CONSIGLIATI", "MODIFICA"]},
+  "schemas": ["schemas/epistemic-unit.schema.json", "schemas/session-state.schema.json", "schemas/source-record.schema.json", "schemas/claim-record.schema.json", "schemas/style-profile.schema.json"],
+  "validation": {"tests": "python -m unittest discover -s tests -v", "reflection": "python scripts/reflect_runtime.py --json-out validation/reflection-v2.json", "simulation": "python scripts/simulate_v2.py --cases 1000000 --json-out validation/simulation-v2.json", "completion_no_novelty_target": 10000, "reflection_no_novelty_target": 100}
 }

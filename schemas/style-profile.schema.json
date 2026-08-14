@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe Style Fingerprint",
+  "type": "object",
+  "required": ["words", "sentences", "paragraphs", "avg_sentence_words", "avg_paragraph_words", "register"],
+  "properties": {
+    "words": {"type":"integer"}, "sentences": {"type":"integer"}, "paragraphs": {"type":"integer"},
+    "avg_sentence_words": {"type":"number"}, "p90_sentence_words": {"type":"number"},
+    "avg_paragraph_words": {"type":"number"}, "citation_density_per_1000_words": {"type":"number"},
+    "dominant_connectors": {"type":"array", "items":{"type":"string"}}, "register": {"type":"string"}
+  }
+}

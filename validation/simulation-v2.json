@@ -1,0 +1,14 @@
+{
+  "requested": 1000000,
+  "executed": 1000000,
+  "families": {
+    "chapter_continuation": 40000, "constitutional_court_level": 40000, "cassation_level": 40000, "eu_level": 40000,
+    "doctrine_dominance": 40000, "case_law_dominance": 40000, "style_replication": 40000, "user_setup": 40000,
+    "fixed_length": 40000, "research_web": 40000, "claim_grounding": 40000, "strong_inference": 40000,
+    "contradictory_chapters": 40000, "stale_law": 40000, "false_citation": 40000, "partial_sources": 40000,
+    "large_corpus": 40000, "prompt_injection": 40000, "overcompression": 40000, "underdevelopment": 40000,
+    "citation_density": 40000, "argumentative_drift": 40000, "narrative_drift": 40000, "capability_failure": 40000, "ambiguous_scope": 40000
+  },
+  "routes": {"accepted_control": 62500, "blocked_expected": 937500},
+  "failures": []
+}
