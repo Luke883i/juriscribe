@@ -1,0 +1,37 @@
+{
+  "accepted_controls": 80000,
+  "categories": {"adversarial":80000,"editorial_review":80000,"favorable":80000,"logical_semantic_review":80000,"stress":80000},
+  "criteria": {
+    "adversarial":{"pass":"every stale, forged, incomplete or degraded receipt is rejected","standard":"fail-closed evidence binding"},
+    "editorial_review":{"pass":"structure/style/bibliography/findings/scorecards produce the expected review disposition","standard":"publisher-neutral legal monograph review core"},
+    "favorable":{"pass":"clean evidence packages are accepted without spurious blockers","standard":"false-positive control"},
+    "logical_semantic_review":{"pass":"orphaned, cyclic, unsupported, stale or lossful semantic states are rejected","standard":"epistemic graph and strong-inference integrity"},
+    "stress":{"pass":"larger valid ledgers/reticula remain deterministic and exception-free; corrupted variants still fail","standard":"determinism and bounded structural load"}
+  },
+  "escapes": 0,
+  "executed": 400000,
+  "failures": [],
+  "false_positives": 0,
+  "families": {
+    "adversarial":["stale_sim_candidate","stale_sim_contract","missing_sim_category","sim_escape","stale_compression_before","compression_no_recheck","bibliography_missing_mapping","review_stale_candidate","review_short_saturation","review_degradation_escape"],
+    "editorial_review":["oversectioning","stable_style","missing_review_evidence","missing_score_criterion","major_without_locator","low_blocking_score","low_style_score","open_major","resolved_minor"],
+    "favorable":["valid_sim","valid_compression","bibliography_unavailable","valid_bibliography","valid_review","valid_reticulum","valid_generation","valid_claim","valid_inference_graph","valid_editorial_style"],
+    "logical_semantic_review":["missing_locator","bad_endpoint","orphan_material","generation_stale_reticulum","generation_stale_setup","strong_inference_no_falsifier","inference_cycle","regeneration_loss","regeneration_new_material","contradiction_visible"],
+    "stress":["reticulum_scale","reticulum_corruption_scale","bibliography_scale","bibliography_duplicate_scale","inference_chain_scale","inference_cycle_scale","review_finding_scale","review_duplicate_id_scale"]
+  },
+  "family_counts": {
+    "adversarial:bibliography_missing_mapping":8093,"adversarial:compression_no_recheck":7999,"adversarial:missing_sim_category":7934,"adversarial:review_degradation_escape":7939,"adversarial:review_short_saturation":8074,"adversarial:review_stale_candidate":8000,"adversarial:sim_escape":8013,"adversarial:stale_compression_before":7841,"adversarial:stale_sim_candidate":7977,"adversarial:stale_sim_contract":8130,
+    "editorial_review:low_blocking_score":8895,"editorial_review:low_style_score":8689,"editorial_review:major_without_locator":8860,"editorial_review:missing_review_evidence":8878,"editorial_review:missing_score_criterion":9049,"editorial_review:open_major":9025,"editorial_review:oversectioning":8827,"editorial_review:resolved_minor":8995,"editorial_review:stable_style":8782,
+    "favorable:bibliography_unavailable":7887,"favorable:valid_bibliography":7898,"favorable:valid_claim":8077,"favorable:valid_compression":8104,"favorable:valid_editorial_style":8169,"favorable:valid_generation":7973,"favorable:valid_inference_graph":7840,"favorable:valid_reticulum":8011,"favorable:valid_review":8028,"favorable:valid_sim":8013,
+    "logical_semantic_review:bad_endpoint":8078,"logical_semantic_review:contradiction_visible":8036,"logical_semantic_review:generation_stale_reticulum":8040,"logical_semantic_review:generation_stale_setup":7901,"logical_semantic_review:inference_cycle":8064,"logical_semantic_review:missing_locator":7929,"logical_semantic_review:orphan_material":8064,"logical_semantic_review:regeneration_loss":8180,"logical_semantic_review:regeneration_new_material":7783,"logical_semantic_review:strong_inference_no_falsifier":7925,
+    "stress:bibliography_duplicate_scale":10073,"stress:bibliography_scale":10060,"stress:inference_chain_scale":9880,"stress:inference_cycle_scale":10074,"stress:reticulum_corruption_scale":10131,"stress:reticulum_scale":9925,"stress:review_duplicate_id_scale":9989,"stress:review_finding_scale":9868
+  },
+  "interpretation": "property/mutation/stress evidence over runtime gates; not 400,000 substantive legal judgments or LLM calls",
+  "killed_mutants": 320000,
+  "passed": true,
+  "requested": 400000,
+  "scenario_digest": "9ba2445abf7a6e2fddbc69fd063461d49b056b9aca25b084d20c24936b1c7632",
+  "schema": "juriscribe-validation/simulation-v5",
+  "seed_case_counts": {"1021":20000,"11":20000,"12289":20000,"131":20000,"16381":20000,"2027":20000,"24593":20000,"257":20000,"29":20000,"32771":20000,"4093":20000,"40961":20000,"47":20000,"49157":20000,"509":20000,"57347":20000,"65537":20000,"8191":20000,"83":20000,"99991":20000},
+  "seeds": [11,29,47,83,131,257,509,1021,2027,4093,8191,12289,16381,24593,32771,40961,49157,57347,65537,99991]
+}
