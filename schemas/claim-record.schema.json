@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe Circumstantiated Claim",
+  "type": "object",
+  "required": ["id", "text", "claim_type", "scope", "status", "material"],
+  "properties": {
+    "id": {"type": "string"}, "text": {"type": "string"}, "claim_type": {"type": "string"},
+    "scope": {"type": "string"}, "support_source_ids": {"type": "array", "items": {"type":"string"}},
+    "premise_claim_ids": {"type": "array", "items": {"type":"string"}}, "inference_bridge": {"type":"string"},
+    "falsifier": {"type":"string"}, "status": {"type":"string"}, "material": {"type":"boolean"}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe Source Record",
+  "type": "object",
+  "required": ["id", "title", "url", "source_type", "verified_at", "direct_read"],
+  "properties": {
+    "id": {"type": "string"}, "title": {"type": "string"}, "url": {"type": "string"},
+    "source_type": {"type": "string"}, "verified_at": {"type": "string"}, "direct_read": {"type": "boolean"},
+    "authority_rank": {"type": "integer"}, "jurisdiction": {"type": ["string","null"]},
+    "court_or_author": {"type": ["string","null"]}, "date": {"type": ["string","null"]}
+  }
+}
