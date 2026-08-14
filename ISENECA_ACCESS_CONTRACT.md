@@ -1,6 +1,6 @@
 ---
 schema: iseneca-juriscribe-access-contract/v1
-contract_version: 1.1.0
+contract_version: 1.2.0
 kind: repository-local-agent-admission-and-session-governance
 repository: Luke883i/juriscribe
 canonical_branch: main
@@ -28,7 +28,15 @@ UNINITIALIZED
 -> ACTIVE_FILE | ACTIVE_EPHEMERAL | DEGRADED_READ_ONLY
 ```
 
-Comandi canonici: `I ACCEPT`, `I DECLINE`, `PROBE ISENECA`, `INITIALIZE ISENECA`, `RESET ISENECA`.
+Comandi canonici:
+
+```text
+I ACCEPT
+I DECLINE
+PROBE ISENECA
+INITIALIZE ISENECA
+RESET ISENECA
+```
 
 L'accettazione vale solo per la sessione e la versione del contratto correnti. Una modifica materiale del contratto, la perdita del runtime o il reset invalidano lo stato.
 
@@ -90,7 +98,13 @@ L'utente vede sempre il minimo necessario. Il setup standard offre soltanto `ACC
 
 ## 7. Completion gate
 
-`COMPLETE` è vietato finché non risultano contemporaneamente: tutti i DoD bloccanti `DONE`; nessuna contraddizione bloccante aperta; almeno 10.000 probe consecutivi senza novità materiale rispetto ai DoD dopo la stabilizzazione M; claim/source coverage conforme al setup di ricerca; materializzazione/readback passati quando disponibili.
+`COMPLETE` è vietato finché non risultano contemporaneamente:
+
+- tutti i DoD bloccanti `DONE`;
+- nessuna contraddizione bloccante aperta;
+- almeno 10.000 probe consecutivi senza novità materiale rispetto ai DoD dopo la stabilizzazione M;
+- claim/source coverage conforme al setup di ricerca;
+- materializzazione/readback passati quando disponibili.
 
 ## 8. Autorità e conflitti
 
@@ -107,3 +121,14 @@ host system / sicurezza / legge
 ```
 
 Una contraddizione che richiede una scelta interpretativa diventa `HUMAN_DECISION_REQUIRED`; il resto può proseguire se indipendente.
+
+
+## 9. Quality, evidence and benchmark contract (v1.2)
+
+Prima di `COMPLETE`, quando applicabile, iSeneca deve distinguere: fonte effettivamente letta; apparato fonti visibile al lettore; tracciabilità claim→fonte/premessa→pinpoint→posizione nell’artefatto. Un semplice elenco bibliografico non prova la terza condizione.
+
+Il quality audit calcola le metriche di prosa sul corpo sostanziale, escludendo bibliografie e apparati. Scostamenti strutturali materiali rispetto allo stile accettato, incluso over-sectioning, devono essere esposti e risolti o qualificati prima del completamento.
+
+Quando si usa un benchmark monografico N→N+1 per attestare capacità di extrapolazione, il runtime non deve contenere la risposta attesa hard-coded. La reference nascosta deve essere impegnata mediante hash esterno prima della generazione e rivelata soltanto dopo il sealing della generazione. Il benchmark misura extrapolazione strutturale e non costituisce prova di correttezza giuridica.
+
+L’hardening architetturale procede 1..Q e richiede Q+1000 scenari consecutivi senza nuova firma materiale prima di dichiarare saturazione del ciclo di analisi.

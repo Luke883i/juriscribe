@@ -1,9 +1,41 @@
 {
-  "schema": "juriscribe-manifest/v2",
+  "schema": "juriscribe-manifest/v3",
   "assistant": "iSeneca",
-  "runtime_version": "0.2.0",
-  "entrypoints": {"human": "README.md", "admission": "ISENECA_ACCESS_CONTRACT.md", "agent": "AGENTS.md", "runtime": "python -m juriscribe"},
-  "runtime": {"language": "python>=3.10", "dependencies": "stdlib-only", "workspace_root": ".juriscribe", "dashboard_name": "session-dashboard.html", "user_setup_options": ["ACCETTA CONSIGLIATI", "MODIFICA"]},
-  "schemas": ["schemas/epistemic-unit.schema.json", "schemas/session-state.schema.json", "schemas/source-record.schema.json", "schemas/claim-record.schema.json", "schemas/style-profile.schema.json"],
-  "validation": {"tests": "python -m unittest discover -s tests -v", "reflection": "python scripts/reflect_runtime.py --json-out validation/reflection-v2.json", "simulation": "python scripts/simulate_v2.py --cases 1000000 --json-out validation/simulation-v2.json", "completion_no_novelty_target": 10000, "reflection_no_novelty_target": 100}
+  "runtime_version": "0.3.0",
+  "entrypoints": {
+    "human": "README.md",
+    "admission": "ISENECA_ACCESS_CONTRACT.md",
+    "agent": "AGENTS.md",
+    "runtime": "python -m juriscribe"
+  },
+  "runtime": {
+    "language": "python>=3.10",
+    "dependencies": "stdlib-only",
+    "workspace_root": ".juriscribe",
+    "dashboard_name": "session-dashboard.html",
+    "user_setup_options": [
+      "ACCETTA CONSIGLIATI",
+      "MODIFICA"
+    ],
+    "quality_gate": "juriscribe.quality.audit_chapter",
+    "benchmark_gate": "juriscribe.benchmark.BlindBenchmarkEnvelope"
+  },
+  "schemas": [
+    "schemas/epistemic-unit.schema.json",
+    "schemas/session-state.schema.json",
+    "schemas/source-record.schema.json",
+    "schemas/claim-record.schema.json",
+    "schemas/style-profile.schema.json",
+    "schemas/artifact-evidence.schema.json",
+    "schemas/quality-report.schema.json",
+    "schemas/benchmark-record.schema.json"
+  ],
+  "validation": {
+    "tests": "python -m unittest discover -s tests -v",
+    "simulation_v3": "python scripts/simulate_v3.py --cases 100000 --json-out validation/simulation-v3.json",
+    "reflection_v3": "python scripts/reflect_v3.py --target 1000 --json-out validation/reflection-v3.json",
+    "completion_no_novelty_target": 10000,
+    "hardening_no_novelty_target": 1000,
+    "chapter_audit": "python scripts/audit_chapter2.py --chapter /path/to/candidate.txt --reference /path/to/reference.txt --length-min N --length-max N --json-out /tmp/audit.json"
+  }
 }
