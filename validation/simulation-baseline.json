@@ -1,0 +1,39 @@
+{
+  "requested": 1000000,
+  "executed": 1000000,
+  "families": {
+    "prompt_only": 40000,
+    "monograph_ex_novo": 40000,
+    "chapter_continuation": 40000,
+    "chapter_rewrite": 40000,
+    "compression": 40000,
+    "expansion": 40000,
+    "structural_reorganization": 40000,
+    "cross_chapter_dependency": 40000,
+    "conflicting_sources": 40000,
+    "temporal_law": 40000,
+    "constitutional_court": 40000,
+    "cassation": 40000,
+    "eu_court": 40000,
+    "echr": 40000,
+    "doctrine_conflict": 40000,
+    "citation_integrity": 40000,
+    "large_corpus": 40000,
+    "partial_documents": 40000,
+    "malformed_documents": 40000,
+    "mixed_language": 40000,
+    "ambiguous_scope": 40000,
+    "fixed_length": 40000,
+    "length_advice": 40000,
+    "prompt_injection": 40000,
+    "capability_failure": 40000
+  },
+  "routes": {
+    "standard_pipeline": 96000,
+    "degrade_explicitly": 4000,
+    "lossless_gate_required": 300000,
+    "relational_editor_check": 300000,
+    "verification_or_human_decision": 300000
+  },
+  "failures": []
+}
