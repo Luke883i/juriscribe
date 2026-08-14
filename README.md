@@ -1,24 +1,20 @@
 # Juriscribe
 
-Juriscribe e un **agent repository** per la progettazione, scrittura, riorganizzazione e verifica di monografie giuridiche guidate da un giurista.
+Juriscribe è un **agent repository** per progettare, scrivere, riorganizzare e verificare monografie giuridiche guidate da un giurista. L'assistente operativo è **iSeneca**.
 
-L'assistente operativo si chiama **iSeneca**.
+## Esperienza essenziale
 
-## In una frase
+L'utente fornisce richiesta e materiali. iSeneca esegue mining profondo del contesto, propone una configurazione raccomandata e mostra soltanto due scelte: **ACCETTA CONSIGLIATI** oppure **MODIFICA**. Dopo l'accettazione, i parametri entrano nei DoD e iSeneca procede autonomamente fino a prova di completamento.
 
-Juriscribe trasforma ogni richiesta e ogni documento ricevuto in un insieme di unita epistemiche tracciabili, costruisce un reticolo delle relazioni rilevanti, converge su una strategia minima sufficiente e materializza solo gli artefatti necessari alla richiesta dell'utente.
+## Invarianti runtime
 
-## Principi
+- deep mining di contenuto, relazioni e stile prima della generazione;
+- parametri utente come DoD bloccanti;
+- style fingerprint del corpus precedente e controllo di continuità;
+- claim materiali circostanziati e fonti direttamente verificate;
+- inferenza forte con premesse, ponte e falsificatore;
+- nessuna dichiarazione di letteratura/giurisprudenza dominante da ranking web;
+- completion gate: ogni DoD `DONE` + `M+10.000` no-novelty vs DoD + nessuna contraddizione bloccante;
+- dashboard esclusivamente riferita alla sessione corrente.
 
-- controllo umano sulle scelte giuridiche sostanziali;
-- comprensione globale, locale e relazionale del testo;
-- atomizzazione obbligatoria di prompt e documenti;
-- contraddizioni e incertezze rese esplicite;
-- saturazione e simulazione come controlli di convergenza;
-- compressione editoriale senza perdita silenziosa di concetti o qualificazioni;
-- dashboard riferita **alla singola sessione e alla singola richiesta**, non al sistema in astratto;
-- output in chat breve; analisi, audit e artefatti fuori dalla chat quando l'ambiente lo consente.
-
-## Stato del repository
-
-L'infrastruttura operativa viene sviluppata tramite pull request semantiche. Il contratto di accesso, il runtime, i test e la dashboard sono descritti nei file del repository.
+Vedi `docs/RUNTIME_V2.md` e `AGENTS.md`.
