@@ -1,0 +1,22 @@
+{
+  "schema": "juriscribe-historical-benchmark/v3",
+  "reference": "Lawrence Rosen, Open Source Licensing: Software Freedom and Intellectual Property Law",
+  "benchmark_transition": "chapter 5 -> chapter 6",
+  "generated_before_reveal": false,
+  "integrity_status": "HISTORICAL_EXPLORATORY_NOT_CRYPTOGRAPHICALLY_BLIND",
+  "structural_recall": 0.8667,
+  "structural_precision": 0.8667,
+  "matched_heading_functions": 13,
+  "actual_heading_functions": 15,
+  "generated_heading_functions": 15,
+  "observed_gaps": [
+    "GPL preamble treatment was not predicted",
+    "the no-charge licensing point was not predicted"
+  ],
+  "observed_extras": [
+    "compatibility with academic licenses",
+    "compliance workflow"
+  ],
+  "admissible_as_completion_evidence": false,
+  "use": "Historical calibration only. Runtime v0.3 requires an external SHA-256 commitment before generation for an admissible blind benchmark."
+}
