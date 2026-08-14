@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any
 
 SENTENCE_RE = re.compile(r"(?<=[.!?;:])\s+")
@@ -71,10 +71,7 @@ def mine_style(text: str) -> StyleFingerprint:
     sentence_lengths = [len(_words(s)) for s in sentences]
     paragraph_lengths = [len(_words(p)) for p in paragraphs]
     lower = text.lower()
-    marker_counts = {
-        kind: sum(lower.count(marker) for marker in markers)
-        for kind, markers in ARGUMENT_MARKERS.items()
-    }
+    marker_counts = {kind: sum(lower.count(marker) for marker in markers) for kind, markers in ARGUMENT_MARKERS.items()}
     connector_counter = Counter()
     for markers in ARGUMENT_MARKERS.values():
         for marker in markers:
@@ -86,10 +83,7 @@ def mine_style(text: str) -> StyleFingerprint:
     long_sentence_ratio = _ratio(sum(1 for n in sentence_lengths if n >= 35), len(sentence_lengths))
     register = "giuridico-denso" if citations or long_sentence_ratio >= 0.25 else "saggistico-argomentativo"
     return StyleFingerprint(
-        words=len(words),
-        sentences=len(sentences),
-        paragraphs=len(paragraphs),
-        headings=len(HEADING_RE.findall(text)),
+        words=len(words), sentences=len(sentences), paragraphs=len(paragraphs), headings=len(HEADING_RE.findall(text)),
         avg_sentence_words=round(sum(sentence_lengths) / len(sentence_lengths), 2) if sentence_lengths else 0.0,
         p90_sentence_words=_percentile(sentence_lengths, 0.9),
         avg_paragraph_words=round(sum(paragraph_lengths) / len(paragraph_lengths), 2) if paragraph_lengths else 0.0,
@@ -97,14 +91,20 @@ def mine_style(text: str) -> StyleFingerprint:
         semicolon_density_per_1000_words=round(_ratio(text.count(";") * 1000, len(words)), 2),
         parenthetical_density_per_1000_words=round(_ratio((text.count("(") + text.count("—")) * 1000, len(words)), 2),
         first_person_density_per_1000_words=round(_ratio(first_person * 1000, len(words)), 2),
-        argument_markers=marker_counts,
-        dominant_connectors=[k for k, _ in connector_counter.most_common(8)],
-        register=register,
+        argument_markers=marker_counts, dominant_connectors=[k for k, _ in connector_counter.most_common(8)], register=register,
     )
 
 
+def source_anchors(text: str) -> list[dict[str, Any]]:
+    """Deterministic paragraph anchors used by host semantic atomization."""
+    anchors = []
+    for idx, paragraph in enumerate(_paragraphs(text), start=1):
+        digest = __import__("hashlib").sha256(paragraph.encode("utf-8")).hexdigest()[:12]
+        anchors.append({"locator": f"P{idx}", "sha256_12": digest, "word_count": len(_words(paragraph)), "preview": paragraph[:220]})
+    return anchors
+
+
 def deep_mine(text: str, *, source_id: str, chapter: str | None = None, semantic_annotations: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Produce deterministic mining plus a slot for host-AI semantic annotations."""
     style = mine_style(text)
     words = _words(text)
     lower = text.lower()
@@ -122,10 +122,11 @@ def deep_mine(text: str, *, source_id: str, chapter: str | None = None, semantic
             "recurrent_terms": recurrent,
             "qualification_markers": qualifications,
             "explicit_questions": questions[:20],
+            "anchors": source_anchors(text),
         },
         "style": style.record(),
         "semantic": semantic_annotations or {},
-        "mining_status": "DETERMINISTIC_PLUS_HOST_SEMANTIC" if semantic_annotations else "DETERMINISTIC_BASELINE",
+        "mining_status": "DETERMINISTIC_PLUS_HOST_SEMANTIC" if semantic_annotations else "SEMANTIC_ATOMIZATION_REQUIRED",
     }
 
 

@@ -1,0 +1,47 @@
+name: Juriscribe runtime regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile
+        run: python -m compileall -q juriscribe scripts tests
+      - name: Unit and lifecycle tests
+        run: python -m unittest discover -s tests -v
+      - name: Admission and manifest integrity
+        run: python scripts/check_contract.py
+
+  mutation-and-saturation:
+    runs-on: ubuntu-latest
+    needs: runtime-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 100k multi-seed runtime mutations
+        run: python scripts/simulate_v4.py --cases 100000 --seeds 11,29,47,83,131,257,509,1021,2027,4093 --json-out validation/simulation-v4.json
+      - name: Q plus 1000 hardening saturation
+        run: python scripts/reflect_v4.py --target 1000 --json-out validation/reflection-v4.json
+      - name: Validation receipts are fixed-point
+        run: git diff --exit-code -- validation/simulation-v4.json validation/reflection-v4.json
