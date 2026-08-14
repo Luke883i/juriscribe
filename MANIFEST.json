@@ -1,0 +1,24 @@
+{
+  "schema": "juriscribe-manifest/v1",
+  "assistant": "iSeneca",
+  "entrypoints": {
+    "human": "README.md",
+    "admission": "ISENECA_ACCESS_CONTRACT.md",
+    "agent": "AGENTS.md",
+    "runtime": "python -m juriscribe"
+  },
+  "runtime": {
+    "language": "python>=3.10",
+    "dependencies": "stdlib-only",
+    "workspace_root": ".juriscribe",
+    "dashboard_name": "session-dashboard.html"
+  },
+  "schemas": [
+    "schemas/epistemic-unit.schema.json",
+    "schemas/session-state.schema.json"
+  ],
+  "validation": {
+    "tests": "python -m unittest discover -s tests -v",
+    "simulation": "python scripts/simulate.py --cases 1000000"
+  }
+}

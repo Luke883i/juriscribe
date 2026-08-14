@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe Session State",
+  "type": "object",
+  "required": ["session_id", "request", "phase", "metrics", "artifacts"],
+  "properties": {
+    "session_id": {"type": "string"},
+    "request": {"type": "object"},
+    "phase": {"type": "string"},
+    "metrics": {"type": "object"},
+    "artifacts": {"type": "array"}
+  }
+}
