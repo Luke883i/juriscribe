@@ -25,10 +25,18 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Compile
-        run: python -m compileall -q juriscribe scripts tests
-      - name: Unit, lifecycle, review and continuation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            if ! python -m py_compile "$file"; then
+              echo "::error file=$file::Python compile failed for $file"
+              exit 1
+            fi
+          done < <(find juriscribe scripts tests -type f -name '*.py' -print0 | sort -z)
+      - name: Unit, lifecycle, review, continuation and finalization tests
         run: python -m unittest discover -s tests -v
-      - name: Admission, manifest and onboarding integrity
+      - name: Admission, bootstrap, manifest and onboarding integrity
         run: python scripts/check_contract.py
 
   simulation-and-saturation:
@@ -43,11 +51,15 @@ jobs:
         run: python scripts/simulate_v5_ci.py --cases 400000 --seeds 11,29,47,83,131,257,509,1021,2027,4093,8191,12289,16381,24593,32771,40961,49157,57347,65537,99991 --json-out /tmp/simulation-v5.json
       - name: M plus 1000 architecture saturation
         run: python scripts/reflect_v5.py --target 1000 --json-out /tmp/reflection-v5.json
-      - name: 10k unique continuation coverage scenarios
-        run: python scripts/simulate_continuation_v6.py --json-out /tmp/continuation-v6.json
+      - name: 10k continuation coverage scenarios
+        run: python scripts/simulate_continuation_v6.py --cases 10000 --json-out /tmp/continuation-v6.json
+      - name: 10k bootstrap provenance finalization mutations
+        run: python scripts/simulate_v7.py --cases 10000 --json-out /tmp/mutation-v7.json
       - name: Simulation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/simulation-v5.json /tmp/simulation-v5.json
       - name: Reflection receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/reflection-v5.json /tmp/reflection-v5.json
       - name: Continuation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/continuation-v6.json /tmp/continuation-v6.json
+      - name: V7 mutation receipt is semantic fixed-point
+        run: python scripts/check_validation_receipts.py validation/mutation-v7.json /tmp/mutation-v7.json

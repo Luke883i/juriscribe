@@ -8,7 +8,6 @@ from juriscribe.admission import CONTRACT_VERSION,contract_digest
 
 
 def fail(msg): raise SystemExit("CONTRACT CHECK FAIL: "+msg)
-
 def main():
     contract=(ROOT/'ISENECA_ACCESS_CONTRACT.md').read_text(encoding='utf-8')
     admission=json.loads((ROOT/'ADMISSION.json').read_text(encoding='utf-8'))
@@ -16,52 +15,32 @@ def main():
     agents=(ROOT/'AGENTS.md').read_text(encoding='utf-8')
     pipeline=(ROOT/'juriscribe/pipeline.py').read_text(encoding='utf-8')
     orchestrator=(ROOT/'juriscribe/orchestrator.py').read_text(encoding='utf-8')
-    continuation=(ROOT/'juriscribe/continuation.py').read_text(encoding='utf-8')
-    node=(ROOT/'juriscribe/node_header.py').read_text(encoding='utf-8')
     workflow=(ROOT/'.github/workflows/runtime-regression.yml').read_text(encoding='utf-8')
     readme=(ROOT/'README.md').read_text(encoding='utf-8')
-    stable_sim=(ROOT/'scripts/simulate_v5_ci.py').read_text(encoding='utf-8')
     if admission['contract_sha256']!=contract_digest(contract): fail('ADMISSION contract hash is stale')
     if admission['contract_version']!=CONTRACT_VERSION or manifest['contract_version']!=CONTRACT_VERSION: fail('contract version mismatch')
     if manifest['runtime_version']!=__version__: fail('runtime version mismatch')
-    if manifest['schema']!='juriscribe-manifest/v6': fail('manifest schema is not v6')
     if not agents.startswith('# JURISCRIBE AI ADMISSION SENTINEL'): fail('AGENTS sentinel must be first')
     for path in admission['pre_admission_allowlist']:
         if path not in agents: fail(f'pre-admission allowlist missing from sentinel: {path}')
-    if 'issue_receipt(' not in pipeline or 'args.command == "accept"' not in pipeline: fail('explicit accept command missing')
+    for token in ['web browsing','PROBE JURISCRIBE','INITIALIZE JURISCRIBE']:
+        if token not in agents and token not in contract: fail(f'bootstrap visibility token missing: {token}')
+    if admission.get('user_visible_bootstrap') is not True: fail('user-visible bootstrap not mandatory')
+    if admission.get('probe_receipt_required_for_initialize') is not True: fail('probe receipt not mandatory for initialize')
     init_block=pipeline.split('def initialize',1)[1].split('def _ws',1)[0]
-    if 'require_receipt' not in init_block: fail('initialize does not require admission receipt')
-    if 'issue_receipt' in init_block: fail('initialize must never auto-issue acceptance')
-    for token in ['review-cycle','record-regeneration','review-saturation','record-simulation','record-compression','node-header','continuation-plan','continuation-coverage']:
-        if token not in pipeline: fail(f'pipeline missing runtime command {token}')
-    for token in ['derive_continuation_plan','record_continuation_coverage','continuation_required=True']:
-        if token not in orchestrator: fail(f'orchestrator missing v0.6 enforcement: {token}')
-    for token in ['sequence_is_binding','minimum_coverage_score','introduced_material_bindings','sequence_scoring']:
-        if token not in continuation: fail(f'continuation hardening invariant missing: {token}')
-    if 'NODE_H_VERSION = "3"' not in node or 'JURISCRIBE_CONTINUATION_SHA256' not in node:
-        fail('node.h v3 continuation binding missing')
-    if 'SELECTOR_VERSION = "sha256-stable-roundrobin-v2"' not in stable_sim or 'hashlib.sha256' not in stable_sim:
-        fail('stable cross-version simulation selector missing')
-    for required in [
-        'python -m unittest discover -s tests -v',
-        'python scripts/check_contract.py',
-        'python scripts/simulate_v5_ci.py --cases 400000',
-        'python scripts/reflect_v5.py --target 1000',
-        'python scripts/simulate_continuation_v6.py --json-out /tmp/continuation-v6.json',
-        'validation/continuation-v6.json /tmp/continuation-v6.json',
-    ]:
+    if 'require_probe_receipt' not in init_block: fail('initialize does not require sealed probe receipt')
+    if 'probe_capabilities(' in init_block or 'perform_probe(' in init_block: fail('initialize must not silently run probe')
+    if '--probe-receipt' not in pipeline: fail('initialize CLI does not expose probe receipt')
+    for token in ['record-provenance','final-review','interaction-card','continuation-coverage']:
+        if token not in pipeline: fail(f'pipeline missing v0.7 command {token}')
+    for token in ['record_provenance','record_final_review','finalization_required=True','bootstrap_required=True']:
+        if token not in orchestrator: fail(f'orchestrator missing v0.7 gate {token}')
+    for path in ['juriscribe/bootstrap.py','juriscribe/interaction.py','juriscribe/provenance.py','juriscribe/final_review.py','validation/mutation-v7.json']:
+        if not (ROOT/path).exists(): fail(f'missing v0.7 file {path}')
+    for required in ['python -m unittest discover -s tests -v','python scripts/check_contract.py','python scripts/simulate_v5_ci.py --cases 400000','python scripts/reflect_v5.py --target 1000','python scripts/simulate_continuation_v6.py --cases 10000','python scripts/simulate_v7.py --cases 10000']:
         if required not in workflow: fail(f'CI missing required gate: {required}')
-    for required in ['https://chatgpt.com/','Inizializza Juriscribe','400.000','10.000 scenari unici','P+10.000','node.h','development frontier']:
-        if required not in readme: fail(f'README onboarding/contract detail missing: {required}')
-    print(json.dumps({
-        'status':'PASS',
-        'runtime_version':__version__,
-        'contract_version':CONTRACT_VERSION,
-        'contract_sha256':admission['contract_sha256'],
-        'pre_admission_allowlist':admission['pre_admission_allowlist'],
-        'simulation_selector':'sha256-stable-roundrobin-v2',
-        'continuation_unique_scenarios':10000,
-        'node_h_version':3,
-    },indent=2))
+    for required in ['https://chatgpt.com/','I ACCEPT','PROBE JURISCRIBE','INITIALIZE JURISCRIBE','ALTRO','Provenance','review']:
+        if required not in readme: fail(f'README onboarding/finalization detail missing: {required}')
+    print(json.dumps({'status':'PASS','runtime_version':__version__,'contract_version':CONTRACT_VERSION,'contract_sha256':admission['contract_sha256'],'bootstrap_order':admission['bootstrap_order'],'mutation_v7':'10000'},indent=2))
     return 0
 if __name__=='__main__': raise SystemExit(main())

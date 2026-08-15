@@ -1,54 +1,46 @@
-# Juriscribe agent runtime rules v0.6 — post-admission
+# Juriscribe agent runtime rules v0.7 — post-bootstrap ACTIVE
 
-Queste regole si applicano solo dopo receipt valida.
+Queste regole si applicano solo dopo bootstrap `ACTIVE` con admission receipt e probe receipt valide.
 
 ## Missione
 
-Generare un capitolo giuridico `N+1` dai capitoli `1..N`. Un testo plausibile non è sufficiente: ogni bozza deve restare vincolata al reticolo epistemico, alle fonti e alla traiettoria dell'opera.
+Generare un capitolo giuridico `N+1` dai capitoli `1..N`. Un testo plausibile non basta: ogni bozza deve restare vincolata a reticolo, continuation frontier, fonti, inferenze e traiettoria dell'opera.
 
-## UX
+## UX conversazionale
 
-Dopo mining/reticolo mostra una configurazione raccomandata essenziale con due sole scelte: `ACCETTA CONSIGLIATI` o `MODIFICA`. Dopo l'accettazione l'utente attende il risultato; interrompere solo per una decisione interpretativa materialmente non inferibile.
+Usa interaction card per fase. Mostra scelte standard concise ma conserva sempre `ALTRO` e richieste libere. Setup standard: `ACCETTA CONSIGLIATI`, `MODIFICA`, `ALTRO`. Non esporre chain-of-thought.
 
 ## Invarianti pre-bozza
 
 - reticolo epistemico validato prima del setup;
 - parametri accettati → DoD bloccanti;
 - generation contract legato a reticolo/setup;
-- **development frontier** derivato dai nodi `develop` del generation contract prima della bozza;
-- il frontier espone obblighi di sviluppo, alternative non vincolanti e soglie di profondità/copertura;
-- l'ordine esatto delle sezioni non è un requisito di completion e non va trattato come previsione certa della mente dell'autore;
+- continuation frontier valido;
 - claim materiali circostanziati; inferenze forti con premesse/ponte/falsificatore;
 - confronto con capitoli precedenti e bibliografia se disponibile.
 
 ## Invarianti post-bozza
 
 - sigillare la prima bozza;
-- auditare il candidato contro il development frontier: obblighi core, supporto, famiglie di casi/controargomenti quando il reticolo le rende disponibili, profondità e materiale nuovo;
-- nuovo materiale sostanziale è ammesso solo se legato a un obbligo del frontier e a una fonte/inferenza auditata; altrimenti richiede re-audit;
-- non usare sviluppo profondo di temi `LATER/OPTIONAL` per mascherare obblighi core irrisolti;
-- eseguire review scientifico-editoriale secondo `JURISCRIBE_LEGAL_MONOGRAPH_V1` o standard esplicitamente più restrittivo;
-- materializzare finding, scorecard ed evidenze;
-- eseguire almeno una rigenerazione e provarne la preservazione epistemica;
-- ripetere review/rigenerazione finché il candidato è `PASS_CANDIDATE`;
-- chiudere la review solo dopo `P+10.000` no-novelty e `P+10.000` no-improvement-without-degradation;
-- simulazione multi-classe legata al candidato;
-- compressione lossless legata a candidato/inventario;
-- rieseguire continuation coverage e quality/source recheck sul testo finale compresso;
-- materializzazione/readback prima di `COMPLETE`.
+- review scientifico-editoriale severa;
+- almeno una rigenerazione reale e riesaminata;
+- `P+10.000` no-novelty e no-improvement-without-degradation;
+- simulazione multi-classe;
+- compressione lossless;
+- quality/source/continuation recheck sul candidato compresso;
+- provenance bundle lossless di inferenze, claim, decisioni e trasformazioni;
+- final severe review candidato/corpus/provenance-bound;
+- artefatti finali completi con readback;
+- `M+10.000` e completion gate.
 
-## Benchmark ciechi
+## Provenance
 
-Dopo il reveal di un capitolo reale, il benchmark misura copertura, profondità, omissioni e surplus. **Non assegna punti per la coincidenza dell'ordine delle sezioni**: una continuazione può essere scientificamente valida senza riprodurre l'indice dell'autore.
+Ogni inferenza materiale usata deve essere registrata come oggetto epistemico/claim auditabile. Prima della consegna deve avere una disposizione (`IN_FINAL`, `SUPERSEDED`, `REJECTED`, `DEFERRED`, `NOT_APPLICABLE`). Questo non autorizza a conservare chain-of-thought latente.
 
-## Standard e fonti
+## Final review
 
-Il core review è publisher-neutral. Lo stile citazionale è quello del progetto/editor (`PROJECT_DEFINED` di default; OSCOLA è supportabile ma non imposto universalmente). “Dominante” è uno stato da dimostrare, non una formula retorica.
-
-## node.h
-
-`node.h` è generato a ogni save e contiene metadata/digest, incluso il digest dello stato di continuation coverage. Il completion gate richiede integrità dell'header corrente.
+La final review viene dopo il testo compresso e prima degli artefatti. Stressa quadro normativo globale, seed, autorità/controautorità, conseguenze, tempo/giurisdizione, integrità editoriale, provenance e losslessness.
 
 ## Dashboard
 
-La dashboard deve servire autore, responsabile scientifico e redazione: decisione di consegnabilità prima, blocker leggibili, poi evidenze. Non esporre chain-of-thought.
+Parla prima al lettore umano: stato, prossimo passo, blocker, evidenze. Digest e dettagli macchina restano nella sezione `Integrità tecnica`.

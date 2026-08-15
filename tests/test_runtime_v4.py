@@ -8,7 +8,7 @@ from juriscribe.epistemic import EpistemicUnit,Relation,contradiction_pairs
 from juriscribe.generation import REQUIRED_EDGE_FAMILIES,audit_compression,validate_simulation_receipt
 from juriscribe.mining import deep_mine
 from juriscribe.orchestrator import ingest_and_mine,register_semantic_mining,apply_setup,freeze_dods
-from juriscribe.pipeline import initialize
+from juriscribe.pipeline import initialize,perform_probe
 from juriscribe.quality import compare_editorial_style,analyze_reference_apparatus,audit_chapter
 from juriscribe.reticulum import validate_reticulum,build_generation_contract,generation_contract_valid
 from juriscribe.session import Workspace
@@ -17,9 +17,14 @@ from juriscribe.sources import SourceRecord,ClaimRecord,validate_claim,validate_
 
 ROOT=Path(__file__).resolve().parents[1]
 CONTRACT=(ROOT/'ISENECA_ACCESS_CONTRACT.md').read_text(encoding='utf-8')
-SAMPLE="""CAPITOLO 1\n\nAnzitutto, il problema richiede una ricostruzione ordinata. Tuttavia, la regola deve essere qualificata nel suo contesto.\n\nNe consegue che la conclusione dipende dalla premessa, salvo i limiti esplicitati. Pertanto il capitolo prepara il tema successivo."""
+SAMPLE="""CAPITOLO 1
+
+Anzitutto, il problema richiede una ricostruzione ordinata. Tuttavia, la regola deve essere qualificata nel suo contesto.
+
+Ne consegue che la conclusione dipende dalla premessa, salvo i limiti esplicitati. Pertanto il capitolo prepara il tema successivo."""
 
 def receipt(): return issue_receipt(CONTRACT,phrase='I ACCEPT',actor_type='human',evidence_type='explicit_user_message',user_message='I ACCEPT',accepted_at='2026-01-01T00:00:00+00:00')
+def probe_receipt(r,**caps): return perform_probe(admission_receipt=r,contract_text=CONTRACT,host_capabilities=caps,host='test',probed_at='2026-01-01T00:01:00+00:00')
 def ret_fixture():
     units=[
       {'id':'U1','kind':'DEFINITION','text':'Definizione','source_id':'S1','source_locator':'P1','chapter':'1','material':True,'tags':['preserve']},
@@ -38,13 +43,16 @@ class AdmissionTests(unittest.TestCase):
         with self.assertRaises(PermissionError): issue_receipt(CONTRACT,phrase='accept',actor_type='human',evidence_type='explicit_user_message',user_message='accept')
     def test_stale_receipt_rejected(self):
         r=receipt(); r['contract_sha256']='0'*64; self.assertFalse(validate_receipt(r,CONTRACT)[0])
-    def test_initialize_fails_closed_without_receipt(self):
+    def test_initialize_fails_closed_without_receipt_or_probe(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(PermissionError): initialize('Scrivi capitolo',root=tmp,session_id='SES',contract_text=CONTRACT)
-    def test_initialize_accepts_valid_receipt_and_host_caps(self):
+            r=receipt()
+            with self.assertRaises(PermissionError): initialize('Scrivi capitolo',root=tmp,session_id='SES2',contract_text=CONTRACT,admission_receipt=r)
+    def test_initialize_accepts_valid_receipt_probe_and_host_caps(self):
         with tempfile.TemporaryDirectory() as tmp:
-            base=initialize('Scrivi capitolo',root=tmp,session_id='SES',contract_text=CONTRACT,admission_receipt=receipt(),host_capabilities={'WEB_RESEARCH':'AVAILABLE'})
-            state=json.loads((base/'state.json').read_text(encoding='utf-8')); self.assertEqual(state['admission']['status'],'ACCEPTED'); self.assertEqual(state['runtime']['capabilities']['WEB_RESEARCH'],'AVAILABLE')
+            r=receipt(); p=probe_receipt(r,WEB_RESEARCH='AVAILABLE')
+            base=initialize('Scrivi capitolo',root=tmp,session_id='SES',contract_text=CONTRACT,admission_receipt=r,probe_receipt=p,host_capabilities={'WEB_RESEARCH':'AVAILABLE'})
+            state=json.loads((base/'state.json').read_text(encoding='utf-8')); self.assertEqual(state['admission']['status'],'ACCEPTED'); self.assertEqual(state['admission']['bootstrap']['state'],'ACTIVE'); self.assertEqual(state['runtime']['capabilities']['WEB_RESEARCH'],'AVAILABLE')
 
 class EpistemicReticulumTests(unittest.TestCase):
     def test_epistemic_primitive_and_contradiction_dedup(self):

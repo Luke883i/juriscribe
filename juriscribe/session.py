@@ -27,6 +27,7 @@ class SessionState:
     updated_at: str = field(default_factory=utc_now)
     runtime: dict[str, Any] = field(default_factory=dict)
     admission: dict[str, Any] = field(default_factory=dict)
+    interaction: dict[str, Any] = field(default_factory=lambda: {"card": {}, "history": [], "status": "NOT_STARTED"})
     corpus: list[dict[str, Any]] = field(default_factory=list)
     sources: list[dict[str, Any]] = field(default_factory=list)
     bibliography: dict[str, Any] = field(default_factory=lambda: {"available": False, "entries": [], "status": "NOT_AVAILABLE"})
@@ -37,6 +38,8 @@ class SessionState:
     continuation: dict[str, Any] = field(default_factory=lambda: {"plan": {}, "coverage": {}, "benchmark_gap": {}, "status": "NOT_STARTED"})
     drafts: list[dict[str, Any]] = field(default_factory=list)
     review: dict[str, Any] = field(default_factory=lambda: {"standard_id": "JURISCRIBE_LEGAL_MONOGRAPH_V1", "cycles": [], "regenerations": [], "saturation": {}, "status": "NOT_STARTED"})
+    final_review: dict[str, Any] = field(default_factory=dict)
+    provenance: dict[str, Any] = field(default_factory=dict)
     contradictions: list[dict[str, Any]] = field(default_factory=list)
     mining: dict[str, Any] = field(default_factory=dict)
     style_profile: dict[str, Any] = field(default_factory=dict)
@@ -62,7 +65,7 @@ class SessionState:
         "simulations_run": 0,
         "simulation_failures": 0,
     })
-    completion: dict[str, Any] = field(default_factory=lambda: {"eligible": False, "reason": "DoD, review and saturation not yet proven"})
+    completion: dict[str, Any] = field(default_factory=lambda: {"eligible": False, "reason": "DoD, review, provenance and final review not yet proven"})
     node_integrity: dict[str, Any] = field(default_factory=lambda: {"status": "NOT_CHECKED", "errors": []})
     artifacts: list[dict[str, Any]] = field(default_factory=list)
 
