@@ -17,11 +17,13 @@ from .orchestrator import (
     freeze_dods,
     ingest_and_mine,
     record_compression,
+    record_continuation_coverage,
     record_regeneration,
     record_review_cycle,
     record_review_saturation,
     record_simulation,
     register_bibliography,
+    register_continuation_plan,
     register_semantic_mining,
     seal_draft,
     validate_claim_ledger,
@@ -157,6 +159,14 @@ def main(argv=None):
     freeze.add_argument("session_dir")
     freeze.add_argument("--additional-json")
 
+    continuation_plan = sub.add_parser("continuation-plan")
+    continuation_plan.add_argument("session_dir")
+    continuation_plan.add_argument("--json-file", required=True)
+
+    continuation_coverage = sub.add_parser("continuation-coverage")
+    continuation_coverage.add_argument("session_dir")
+    continuation_coverage.add_argument("--json-file", required=True)
+
     research = sub.add_parser("research-plan")
     research.add_argument("session_dir")
     claims = sub.add_parser("validate-claims")
@@ -256,6 +266,18 @@ def main(argv=None):
         apply_setup(state, json.loads(args.overrides_json) if args.overrides_json else None)
     elif args.command == "freeze-dods":
         freeze_dods(state, json.loads(args.additional_json) if args.additional_json else None)
+    elif args.command == "continuation-plan":
+        report = register_continuation_plan(state, _payload(args.json_file))
+        ws.save(state)
+        update_dashboard(ws.base)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
+    elif args.command == "continuation-coverage":
+        report = record_continuation_coverage(state, _payload(args.json_file))
+        ws.save(state)
+        update_dashboard(ws.base)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0 if report.get("status") == "PASS" else 2
     elif args.command == "research-plan":
         build_research_plan(state)
         ws.save(state)

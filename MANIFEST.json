@@ -1,7 +1,7 @@
 {
-  "schema": "juriscribe-manifest/v5",
+  "schema": "juriscribe-manifest/v6",
   "assistant": "iSeneca",
-  "runtime_version": "0.5.0",
+  "runtime_version": "0.6.0",
   "contract_version": "1.4.0",
   "entrypoints": {
     "admission_sentinel": "AGENTS.md",
@@ -21,6 +21,8 @@
     "admission_gate": "juriscribe.admission.require_receipt",
     "reticulum_gate": "juriscribe.reticulum.validate_reticulum",
     "generation_contract": "juriscribe.reticulum.build_generation_contract",
+    "continuation_plan": "juriscribe.continuation.derive_continuation_plan",
+    "continuation_gate": "juriscribe.continuation.continuation_gate",
     "bibliography_gate": "juriscribe.bibliography.bibliography_gate",
     "review_standard": "JURISCRIBE_LEGAL_MONOGRAPH_V1",
     "review_gate": "juriscribe.review.review_gate",
@@ -35,10 +37,12 @@
     "contract": "python scripts/check_contract.py",
     "simulation_v5": "python scripts/simulate_v5.py --cases 400000 --seeds 11,29,47,83,131,257,509,1021,2027,4093,8191,12289,16381,24593,32771,40961,49157,57347,65537,99991 --json-out validation/simulation-v5.json",
     "reflection_v5": "python scripts/reflect_v5.py --target 1000 --json-out validation/reflection-v5.json",
+    "continuation_v6": "python scripts/simulate_continuation_v6.py --json-out validation/continuation-v6.json",
     "completion_no_novelty_target": 10000,
     "review_no_novelty_target": 10000,
     "review_no_improvement_target": 10000,
-    "hardening_no_novelty_target": 1000
+    "hardening_no_novelty_target": 1000,
+    "continuation_unique_scenarios": 10000
   },
   "schemas": [
     "schemas/epistemic-unit.schema.json",
@@ -52,6 +56,8 @@
     "schemas/admission-receipt.schema.json",
     "schemas/reticulum.schema.json",
     "schemas/generation-contract.schema.json",
+    "schemas/continuation-plan.schema.json",
+    "schemas/continuation-coverage.schema.json",
     "schemas/simulation-receipt.schema.json",
     "schemas/compression-record.schema.json",
     "schemas/review-cycle.schema.json",
