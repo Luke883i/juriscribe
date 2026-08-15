@@ -1,48 +1,21 @@
-# Session `node.h`
+# `node.h` — session integrity header v3
 
-## Perché esiste
+Ogni workspace persistente Juriscribe genera `.juriscribe/<session-id>/node.h` a ogni salvataggio.
 
-Ogni sessione Juriscribe ha più stati che devono restare sincronizzati: corpus, reticolo, setup, DoD, generation contract, candidato, review, bibliografia, simulazione e compressione. `node.h` è una piccola capsula locale di integrità che rende verificabili mismatch e receipt stale.
+L'header contiene **solo metadata e digest**, mai il testo del corpus o chain-of-thought. Serve a rilevare stato stale/tampered fra pipeline e artefatti.
 
-## Posizione
+v3 include i digest di:
 
-```text
-.juriscribe/<session-id>/
-├── state.json
-├── node.h
-├── ledger/
-└── artifacts/
-```
+- corpus, fonti e claim ledger;
+- reticolo epistemico;
+- setup e DoD;
+- generation contract;
+- **continuation plan + coverage**;
+- candidato corrente;
+- review/rigenerazioni;
+- bibliografia;
+- simulazioni e compressione;
+- quality/benchmark/artefatti;
+- readiness finale.
 
-## Micro-struttura ex ante
-
-`node.h` è generato deterministicamente da `juriscribe.node_header` e contiene **solo metadata/digest**, mai il testo della monografia.
-
-Macro principali:
-
-- `JURISCRIBE_NODE_H_VERSION`
-- `JURISCRIBE_SESSION_ID`
-- `JURISCRIBE_PHASE`
-- `JURISCRIBE_CORPUS_SHA256`
-- `JURISCRIBE_SOURCES_SHA256`
-- `JURISCRIBE_CLAIMS_SHA256`
-- `JURISCRIBE_SOURCE_INTELLIGENCE_SHA256`
-- `JURISCRIBE_RETICULUM_SHA256`
-- `JURISCRIBE_SETUP_SHA256`
-- `JURISCRIBE_DOD_SHA256`
-- `JURISCRIBE_GENERATION_CONTRACT_SHA256`
-- `JURISCRIBE_CURRENT_CANDIDATE_SHA256`
-- `JURISCRIBE_REVIEW_SHA256`
-- `JURISCRIBE_BIBLIOGRAPHY_SHA256`
-- `JURISCRIBE_SIMULATION_SHA256`
-- `JURISCRIBE_COMPRESSION_SHA256`
-- `JURISCRIBE_QUALITY_SHA256`
-- `JURISCRIBE_BENCHMARK_SHA256`
-- `JURISCRIBE_ARTIFACTS_SHA256`
-- `JURISCRIBE_READY`
-
-Più i puntatori relativi a `state.json`, `ledger/`, `artifacts/`.
-
-## Regola
-
-Il workspace rigenera `node.h` a ogni save. Prima del completion gate il runtime verifica che l'header corrisponda allo stato corrente. Un mismatch rende la sessione non consegnabile finché lo stato non viene riallineato.
+La macro aggiunta in v3 è `JURISCRIBE_CONTINUATION_SHA256`. Il validator ricalcola i valori dallo `state.json`: un header non coerente non può sostenere `COMPLETE`.
