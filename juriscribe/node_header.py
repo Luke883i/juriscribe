@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-NODE_H_VERSION = "2"
+NODE_H_VERSION = "3"
 _REQUIRED = {
     "JURISCRIBE_NODE_H_VERSION",
     "JURISCRIBE_SESSION_ID",
@@ -16,6 +16,7 @@ _REQUIRED = {
     "JURISCRIBE_SETUP_SHA256",
     "JURISCRIBE_DOD_SHA256",
     "JURISCRIBE_GENERATION_CONTRACT_SHA256",
+    "JURISCRIBE_CONTINUATION_SHA256",
     "JURISCRIBE_CURRENT_CANDIDATE_SHA256",
     "JURISCRIBE_REVIEW_SHA256",
     "JURISCRIBE_BIBLIOGRAPHY_SHA256",
@@ -56,6 +57,7 @@ def node_values(state: dict[str, Any]) -> dict[str, str]:
         "JURISCRIBE_SETUP_SHA256": _digest((state.get("setup") or {}).get("accepted", {})),
         "JURISCRIBE_DOD_SHA256": _digest(state.get("dod", [])),
         "JURISCRIBE_GENERATION_CONTRACT_SHA256": str(generation.get("contract_digest", "")),
+        "JURISCRIBE_CONTINUATION_SHA256": _digest(state.get("continuation", {})),
         "JURISCRIBE_CURRENT_CANDIDATE_SHA256": str(current),
         "JURISCRIBE_REVIEW_SHA256": _digest(review),
         "JURISCRIBE_BIBLIOGRAPHY_SHA256": str(bibliography.get("digest", _digest([]))),

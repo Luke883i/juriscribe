@@ -34,6 +34,7 @@ class SessionState:
     relations: list[dict[str, Any]] = field(default_factory=list)
     reticulum: dict[str, Any] = field(default_factory=dict)
     generation_contract: dict[str, Any] = field(default_factory=dict)
+    continuation: dict[str, Any] = field(default_factory=lambda: {"plan": {}, "coverage": {}, "benchmark_gap": {}, "status": "NOT_STARTED"})
     drafts: list[dict[str, Any]] = field(default_factory=list)
     review: dict[str, Any] = field(default_factory=lambda: {"standard_id": "JURISCRIBE_LEGAL_MONOGRAPH_V1", "cycles": [], "regenerations": [], "saturation": {}, "status": "NOT_STARTED"})
     contradictions: list[dict[str, Any]] = field(default_factory=list)
