@@ -1,0 +1,26 @@
+{
+  "accepted_controls": 1000,
+  "controls": 1000,
+  "failures": [],
+  "false_positives": 0,
+  "families": {
+    "artifact_role_missing": 1000,
+    "bootstrap_not_active": 1000,
+    "final_review_open_consequence": 1000,
+    "final_review_stale_provenance": 1000,
+    "interaction_no_free_path": 1000,
+    "probe_capability_tamper": 1000,
+    "probe_stale_contract": 1000,
+    "provenance_missing_decision": 1000,
+    "provenance_missing_inference": 1000,
+    "provenance_stale_candidate": 1000
+  },
+  "killed_mutants": 10000,
+  "mutation_escapes": 0,
+  "mutations": 10000,
+  "scenario_digest": "5dfebc7fe9088fee6f291f4ddd07b21661c4f9372034932505b7a1649a2b95ea",
+  "schema": "juriscribe-mutation-v7/v1",
+  "selector": "sha256-roundrobin-v7",
+  "status": "PASS",
+  "unique_signatures": 10000
+}
