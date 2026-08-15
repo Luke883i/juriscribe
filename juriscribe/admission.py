@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-CONTRACT_VERSION = "1.3.0"
+CONTRACT_VERSION = "1.4.0"
 ACCEPT_PHRASE = "I ACCEPT"
 REPOSITORY = "Luke883i/juriscribe"
 PRE_ADMISSION_ALLOWLIST = ("AGENTS.md", "ISENECA_ACCESS_CONTRACT.md", "ADMISSION.json")

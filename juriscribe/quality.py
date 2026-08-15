@@ -3,6 +3,7 @@ from __future__ import annotations
 import math,re
 from dataclasses import asdict,dataclass
 from typing import Any
+from .generation import text_digest
 from .mining import ARGUMENT_MARKERS,WORD_RE,SENTENCE_RE
 from .sources import validate_claim,validate_inference_graph
 
@@ -87,7 +88,7 @@ def cross_chapter_duplication(candidate_text:str, prior_texts:list[str]|None)->d
 
 @dataclass(frozen=True)
 class ChapterQualityReport:
-    status:str; blocking_failures:list[str]; review_items:list[str]; body_word_count:int; apparatus_word_count:int; length_status:str; style:dict[str,Any]; reference_apparatus:dict[str,Any]; claim_traceability:dict[str,Any]; cross_chapter_duplication:dict[str,Any]; notes:list[str]
+    status:str; candidate_digest:str; blocking_failures:list[str]; review_items:list[str]; body_word_count:int; apparatus_word_count:int; length_status:str; style:dict[str,Any]; reference_apparatus:dict[str,Any]; claim_traceability:dict[str,Any]; cross_chapter_duplication:dict[str,Any]; notes:list[str]
     def record(self): return asdict(self)
 
 def audit_chapter(text,*,reference_text=None,prior_texts=None,accepted_setup=None,claims=None,sources=None,artifact_evidence=None):
@@ -105,4 +106,4 @@ def audit_chapter(text,*,reference_text=None,prior_texts=None,accepted_setup=Non
     duplication=cross_chapter_duplication(text,prior_texts)
     if duplication.get("status")=="REVIEW_REQUIRED": review.append("cross-chapter near-duplication requires review")
     status="FAIL" if blocking else ("REVIEW_REQUIRED" if review else "PASS")
-    return ChapterQualityReport(status,blocking,review,bw,aw,length_status,style,app,trace,duplication,notes)
+    return ChapterQualityReport(status,text_digest(text),blocking,review,bw,aw,length_status,style,app,trace,duplication,notes)

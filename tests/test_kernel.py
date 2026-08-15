@@ -17,7 +17,7 @@ class KernelTests(unittest.TestCase):
     def test_dashboard_is_session_specific(self):
         state={'session_id':'SES-test','phase':'VALIDATING','request':{'raw':'Scrivi il capitolo 3','summary':'Scrivi il capitolo 3'},'admission':{'status':'ACCEPTED'},'reticulum':{},'generation_contract':{},'epistemic_units':[],'relations':[],'sources':[{'title':'Capitolo 1'}],'setup':{},'dod':[],'claim_ledger':[],'artifact_evidence':[],'quality':{},'metrics':{},'simulations':{},'compression':{},'completion':{},'artifacts':[],'contradictions':[],'source_intelligence':{},'benchmark':{},'limits':[]}
         with tempfile.TemporaryDirectory() as tmp:
-            text=render_session_dashboard(state,Path(tmp)/'dash.html').read_text(encoding='utf-8'); self.assertIn('Scrivi il capitolo 3',text); self.assertIn('Mappa epistemica',text)
+            text=render_session_dashboard(state,Path(tmp)/'dash.html').read_text(encoding='utf-8'); self.assertIn('Scrivi il capitolo 3',text); self.assertIn('Mappa scientifica',text)
     def test_initialize_requires_admission_and_materializes(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(PermissionError): initialize('Riorganizza',root=tmp,session_id='BAD',contract_text=CONTRACT)

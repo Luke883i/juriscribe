@@ -1,0 +1,399 @@
+{
+  "M": 165888,
+  "dimensions": {
+    "bibliography": 3,
+    "corpus": 4,
+    "host": 3,
+    "inference": 3,
+    "regeneration": 3,
+    "reticulum": 4,
+    "review": 4,
+    "sources": 4,
+    "task": 4,
+    "user": 2
+  },
+  "interpretation": "observable architecture-state enumeration followed by a no-novelty witness; not hidden chain-of-thought disclosure",
+  "iterations": 166888,
+  "no_novelty_streak": 1000,
+  "risk_tag_counts": {
+    "bibliography_gate": 55296,
+    "capability_degradation": 110592,
+    "clean_path": 768,
+    "degradation_guard": 55296,
+    "inference_review": 55296,
+    "reticulum_gate": 82944,
+    "scientific_editorial_review": 124416,
+    "source_conflict": 82944,
+    "version_conflict": 41472
+  },
+  "sample_discoveries": [
+    {
+      "m": 1,
+      "risk_tags": [
+        "clean_path"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 2,
+      "risk_tags": [
+        "clean_path"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 3,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 4,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 5,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 6,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 7,
+      "risk_tags": [
+        "clean_path"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 8,
+      "risk_tags": [
+        "clean_path"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 9,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 10,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 11,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 12,
+      "risk_tags": [
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "no_material_gain",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 13,
+      "risk_tags": [
+        "degradation_guard"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 14,
+      "risk_tags": [
+        "degradation_guard"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 15,
+      "risk_tags": [
+        "degradation_guard",
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 16,
+      "risk_tags": [
+        "degradation_guard",
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_web",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 17,
+      "risk_tags": [
+        "degradation_guard",
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+       "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 18,
+      "risk_tags": [
+        "degradation_guard",
+        "capability_degradation"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "no_docx",
+        "inference": "direct",
+        "regeneration": "degrades",
+        "reticulum": "dense",
+        "review": "clean",
+       "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    },
+    {
+      "m": 19,
+      "risk_tags": [
+        "scientific_editorial_review"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "major_findings",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "accepted"
+      }
+    },
+    {
+      "m": 20,
+      "risk_tags": [
+        "scientific_editorial_review"
+      ],
+      "signature": {
+        "bibliography": "unavailable",
+        "corpus": "single_chapter",
+        "host": "full",
+        "inference": "direct",
+        "regeneration": "improves",
+        "reticulum": "dense",
+        "review": "major_findings",
+        "sources": "primary_complete",
+        "task": "continue",
+        "user": "modified"
+      }
+    }
+  ],
+  "saturated": true,
+  "scenario_digest": "b740872a9ceeacce4db27d65c422ea0fbfb3e8d20c5bdb7527aefb6e03989293",
+  "schema": "juriscribe-validation/reflection-v5",
+  "target": 1000
+}
