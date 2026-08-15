@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Juriscribe bootstrap v1","type":"object","required":["schema","state","choices","free_input_allowed","blocking","digest"],"properties":{"schema":{"const":"juriscribe-bootstrap/v1"},"state":{"type":"string"},"choices":{"type":"array"},"free_input_allowed":{"const":true},"digest":{"type":"string"}}}
