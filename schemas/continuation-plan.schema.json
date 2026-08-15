@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe continuation plan",
+  "type": "object",
+  "required": ["schema", "generation_contract_digest", "obligations", "alternatives", "uncertainty_score", "minimum_coverage_score", "sequence_is_binding", "status", "digest"],
+  "properties": {
+    "schema": {"const": "juriscribe-continuation-plan/v1"},
+    "generation_contract_digest": {"type": "string"},
+    "obligations": {"type": "array", "items": {"type": "object", "required": ["id", "unit_ids", "mode", "priority", "horizon", "rationale"]}},
+    "alternatives": {"type": "array"},
+    "uncertainty_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "minimum_coverage_score": {"type": "number", "minimum": 0.5, "maximum": 1},
+    "concrete_validation_required": {"type": "boolean"},
+    "sequence_is_binding": {"const": false},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "digest": {"type": "string"}
+  }
+}
