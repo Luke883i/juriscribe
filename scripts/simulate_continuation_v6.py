@@ -6,6 +6,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from juriscribe.continuation import audit_continuation_coverage, canonical_digest
 
 
+EXPECTED_CASES = 10_000
+
+
 def make_plan():
     obligations=[]
     for i in range(10):
@@ -17,7 +20,9 @@ def make_plan():
     return base
 
 
-def run():
+def run(cases: int = EXPECTED_CASES):
+    if cases != EXPECTED_CASES:
+        raise ValueError(f"continuation-v6 harness is fixed at {EXPECTED_CASES} cases; got {cases}")
     plan=make_plan(); failures=[]; killed=0; controls=0; family_counts={}
     signatures=[]
     for core_bucket,later_bucket,missing_bucket,introduced_bucket in itertools.product(range(10), repeat=4):
@@ -56,7 +61,7 @@ def run():
         "failures":len(failures),
         "families":family_counts,
         "scenario_digest":hashlib.sha256("\n".join(signatures).encode()).hexdigest(),
-        "status":"PASS" if not failures and len(signatures)==10000 and len(set(signatures))==10000 else "FAIL",
+        "status":"PASS" if not failures and len(signatures)==EXPECTED_CASES and len(set(signatures))==EXPECTED_CASES else "FAIL",
         "notes":"10,000 unique structured continuation scenarios; observable property tests, not hidden chain-of-thought or legal judgments",
         "sample_failures":failures[:10],
     }
@@ -64,7 +69,12 @@ def run():
 
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--json-out"); a=p.parse_args(); r=run(); text=json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)
+    p=argparse.ArgumentParser(); p.add_argument("--cases", type=int, default=EXPECTED_CASES); p.add_argument("--json-out"); a=p.parse_args()
+    try:
+        r=run(a.cases)
+    except ValueError as exc:
+        p.error(str(exc))
+    text=json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)
     if a.json_out: Path(a.json_out).write_text(text+"\n",encoding="utf-8")
     print(text); return 0 if r["status"]=="PASS" else 1
 if __name__=="__main__": raise SystemExit(main())
