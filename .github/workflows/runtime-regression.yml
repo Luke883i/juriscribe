@@ -43,5 +43,8 @@ jobs:
         run: python scripts/simulate_v5_ci.py --cases 400000 --seeds 11,29,47,83,131,257,509,1021,2027,4093,8191,12289,16381,24593,32771,40961,49157,57347,65537,99991 --json-out validation/simulation-v5.json
       - name: M plus 1000 architecture saturation
         run: python scripts/reflect_v5.py --target 1000 --json-out validation/reflection-v5.json
-      - name: Validation receipts are fixed-point
-        run: git diff --exit-code -- validation/simulation-v5.json validation/reflection-v5.json
+      - name: Simulation receipt is fixed-point
+        run: git diff --exit-code -- validation/simulation-v5.json
+      - name: Reflection receipt is fixed-point
+        if: always()
+        run: git diff --exit-code -- validation/reflection-v5.json
