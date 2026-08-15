@@ -55,6 +55,8 @@ jobs:
         run: python scripts/simulate_continuation_v6.py --cases 10000 --json-out /tmp/continuation-v6.json
       - name: 10k bootstrap provenance finalization mutations
         run: python scripts/simulate_v7.py --cases 10000 --json-out /tmp/mutation-v7.json
+      - name: Historiography integrity 1..M plus 100 no-novelty
+        run: python scripts/reflect_v8.py --target 100 --json-out /tmp/reflection-v8.json
       - name: Simulation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/simulation-v5.json /tmp/simulation-v5.json
       - name: Reflection receipt is semantic fixed-point
@@ -63,3 +65,5 @@ jobs:
         run: python scripts/check_validation_receipts.py validation/continuation-v6.json /tmp/continuation-v6.json
       - name: V7 mutation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/mutation-v7.json /tmp/mutation-v7.json
+      - name: V8 historiography reflection receipt is semantic fixed-point
+        run: python scripts/check_validation_receipts.py validation/reflection-v8.json /tmp/reflection-v8.json

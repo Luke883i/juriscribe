@@ -1,0 +1,25 @@
+{
+  "M": 1728,
+  "dimensions": {
+    "artifact_presence": ["CANONICAL_ONLY", "CANONICAL_AND_LEGACY", "LEGACY_ONLY", "NEITHER"],
+    "canonical_state": ["VALID", "STALE", "MALFORMED"],
+    "contract_compatibility": ["PRESERVED", "BROKEN"],
+    "documentation_label": ["CANONICAL", "LEGACY_AMBIGUOUS"],
+    "interface": ["SESSION_INTEGRITY", "NODE_HEADER_ALIAS"],
+    "legacy_state": ["VALID", "STALE", "ABSENT"],
+    "ready_binding": ["FALSE", "TRUE"],
+    "session_phase": ["INITIALIZED", "ACTIVE", "COMPLETE"]
+  },
+  "enumeration_probes": 1728,
+  "model": "explicit-finite-risk-space",
+  "no_novelty_streak": 100,
+  "no_novelty_target": 100,
+  "notes": "1..M exhaustive enumeration of the explicitly modeled historiography/session-integrity risk space, followed by M+target no-novelty probes. This is an architectural property test, not a legal judgment and not a claim of exhaustive software correctness.",
+  "saturated": true,
+  "scenario_digest": "93c28c0621c2e5538a24658a65ad099c8f49db1bd8c580d43885aa0bce722a31",
+  "schema": "juriscribe-validation/historiography-reflection-v8",
+  "status": "PASS",
+  "total_probes": 1828,
+  "trailing_probe_digest": "4e689d95152195c7bdb3d9a13f1984969abad0c0ad124cc541d44fc7858d49bb",
+  "unique_signatures": 1728
+}
