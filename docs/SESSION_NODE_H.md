@@ -1,12 +1,11 @@
-# `node.h` — session integrity v4
+# `node.h` — proiezione legacy di compatibilità
 
-`node.h` contiene solo metadati e digest, mai il testo del corpus. La versione v4 lega anche:
+`node.h` **non indica Node.js e non è un refuso per `node.s`**. Il nome fu introdotto nella linea v0.5 come metafora di un “header” di integrità e il file usa effettivamente direttive `#define` in stile C.
 
-- bootstrap;
-- interaction card/history;
-- continuation plan/coverage;
-- provenance bundle;
-- final severe review;
-- set artefatti.
+Da runtime v0.8 il record canonico è [`session.integrity.json`](SESSION_INTEGRITY_MANIFEST.md). `node.h` viene ancora generato perché il contratto di accesso 1.5.0 lo nomina esplicitamente e perché possono esistere workspace/integrations legacy.
 
-Serve a rilevare stato stale o tampering fra passaggi. Non è un sostituto dei ledger né contiene ragionamento interno del modello.
+Status: **DEPRECATED_COMPATIBILITY**.
+
+La proiezione contiene soltanto metadata e digest, mai testo del corpus. Il gate verifica sia il manifest JSON canonico sia `node.h`; la rimozione definitiva del legacy file richiederà una futura revisione del contratto.
+
+Per la ricostruzione storica della decisione vedi [`HISTORIOGRAPHIC_AUDIT_V8.md`](HISTORIOGRAPHIC_AUDIT_V8.md).

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .node_header import validate_node_header, write_node_header
+from .session_integrity import CANONICAL_FILENAME, LEGACY_FILENAME, validate_session_integrity, write_session_integrity
 
 
 def utc_now() -> str:
@@ -81,7 +82,9 @@ class Workspace:
     def __init__(self, root: str | Path, session_id: str):
         self.base = Path(root) / session_id
         self.state_path = self.base / "state.json"
-        self.node_path = self.base / "node.h"
+        self.integrity_path = self.base / CANONICAL_FILENAME
+        # Contract 1.5 still names node.h: keep it as a checked compatibility projection.
+        self.node_path = self.base / LEGACY_FILENAME
         self.ledger_dir = self.base / "ledger"
         self.artifact_dir = self.base / "artifacts"
 
@@ -106,16 +109,40 @@ class Workspace:
         self.base.mkdir(parents=True, exist_ok=True)
         data = state.to_dict()
         self.state_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_session_integrity(data, self.integrity_path)
         write_node_header(data, self.node_path)
 
     def load(self) -> SessionState:
-        return SessionState(**json.loads(self.state_path.read_text(encoding="utf-8")))
+        state = SessionState(**json.loads(self.state_path.read_text(encoding="utf-8")))
+        # One-way migration for pre-v0.8 workspaces: synthesize the canonical
+        # manifest only when the legacy projection still validates against state.
+        if not self.integrity_path.exists() and self.node_path.exists():
+            data = asdict(state)
+            legacy_ok, _ = validate_node_header(data, self.node_path.read_text(encoding="utf-8"))
+            if legacy_ok:
+                write_session_integrity(data, self.integrity_path)
+        return state
+
+    def validate_integrity(self, state: SessionState) -> tuple[bool, list[str]]:
+        data = asdict(state)
+        errors: list[str] = []
+        if not self.integrity_path.exists():
+            errors.append(f"{CANONICAL_FILENAME} missing")
+        else:
+            ok, manifest_errors = validate_session_integrity(data, self.integrity_path.read_text(encoding="utf-8"))
+            if not ok:
+                errors.extend(manifest_errors)
+        if not self.node_path.exists():
+            errors.append(f"legacy {LEGACY_FILENAME} missing")
+        else:
+            ok, legacy_errors = validate_node_header(data, self.node_path.read_text(encoding="utf-8"))
+            if not ok:
+                errors.extend(legacy_errors)
+        return not errors, errors
 
     def validate_node(self, state: SessionState) -> tuple[bool, list[str]]:
-        if not self.node_path.exists():
-            return False, ["node.h missing"]
-        data = asdict(state)
-        return validate_node_header(data, self.node_path.read_text(encoding="utf-8"))
+        """Deprecated compatibility alias; use validate_integrity()."""
+        return self.validate_integrity(state)
 
     def append_ledger(self, name: str, record: dict[str, Any]) -> None:
         self.ledger_dir.mkdir(parents=True, exist_ok=True)

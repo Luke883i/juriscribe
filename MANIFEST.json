@@ -1,7 +1,7 @@
 {
-  "schema": "juriscribe-manifest/v7",
+  "schema": "juriscribe-manifest/v8",
   "assistant": "iSeneca",
-  "runtime_version": "0.7.0",
+  "runtime_version": "0.8.0",
   "contract_version": "1.5.0",
   "entrypoints": {
     "admission_sentinel": "AGENTS.md",
@@ -16,21 +16,11 @@
     "dependencies": "stdlib-only",
     "workspace_root": ".juriscribe",
     "dashboard_name": "session-dashboard.html",
+    "session_integrity_manifest": "session.integrity.json",
+    "legacy_session_integrity_header": "node.h",
     "session_integrity_header": "node.h",
-    "user_setup_options": [
-      "ACCETTA CONSIGLIATI",
-      "MODIFICA",
-      "ALTRO"
-    ],
-    "bootstrap_order": [
-      "TERMS_PRESENTED",
-      "TERMS_ACCEPTED",
-      "PROBE_REQUIRED",
-      "PROBED",
-      "INITIALIZE_REQUIRED",
-      "INITIALIZING",
-      "ACTIVE"
-    ],
+    "user_setup_options": ["ACCETTA CONSIGLIATI", "MODIFICA", "ALTRO"],
+    "bootstrap_order": ["TERMS_PRESENTED", "TERMS_ACCEPTED", "PROBE_REQUIRED", "PROBED", "INITIALIZE_REQUIRED", "INITIALIZING", "ACTIVE"],
     "admission_gate": "juriscribe.admission.require_receipt",
     "probe_gate": "juriscribe.bootstrap.require_probe_receipt",
     "reticulum_gate": "juriscribe.reticulum.validate_reticulum",
@@ -47,14 +37,7 @@
     "interaction_protocol": "juriscribe.interaction.interaction_card",
     "benchmark_gate": "juriscribe.benchmark.BlindBenchmarkEnvelope"
   },
-  "final_artifact_roles": [
-    "final_chapter",
-    "evidence_dossier",
-    "source_register",
-    "inference_register",
-    "transformation_ledger",
-    "session_dashboard"
-  ],
+  "final_artifact_roles": ["final_chapter", "evidence_dossier", "source_register", "inference_register", "transformation_ledger", "session_dashboard"],
   "validation": {
     "tests": "python -m unittest discover -s tests -v",
     "compile": "python -m compileall -q juriscribe scripts tests",
@@ -63,35 +46,14 @@
     "reflection_v5": "python scripts/reflect_v5.py --target 1000 --json-out /tmp/reflection-v5.json",
     "continuation_v6": "python scripts/simulate_continuation_v6.py --cases 10000 --json-out /tmp/continuation-v6.json",
     "mutation_v7": "python scripts/simulate_v7.py --cases 10000 --json-out /tmp/mutation-v7.json",
+    "reflection_v8": "python scripts/reflect_v8.py --target 100 --json-out /tmp/reflection-v8.json",
     "completion_no_novelty_target": 10000,
     "review_no_novelty_target": 10000,
     "review_no_improvement_target": 10000,
-    "hardening_no_novelty_target": 1000
+    "hardening_no_novelty_target": 1000,
+    "historiographic_hardening_no_novelty_target": 100
   },
   "schemas": [
-    "schemas/epistemic-unit.schema.json",
-    "schemas/source-record.schema.json",
-    "schemas/claim-record.schema.json",
-    "schemas/style-profile.schema.json",
-    "schemas/artifact-evidence.schema.json",
-    "schemas/quality-report.schema.json",
-    "schemas/benchmark-record.schema.json",
-    "schemas/session-state.schema.json",
-    "schemas/admission-receipt.schema.json",
-    "schemas/bootstrap.schema.json",
-    "schemas/probe-receipt.schema.json",
-    "schemas/reticulum.schema.json",
-    "schemas/generation-contract.schema.json",
-    "schemas/continuation-plan.schema.json",
-    "schemas/continuation-coverage.schema.json",
-    "schemas/simulation-receipt.schema.json",
-    "schemas/compression-record.schema.json",
-    "schemas/review-cycle.schema.json",
-    "schemas/review-saturation.schema.json",
-    "schemas/regeneration-record.schema.json",
-    "schemas/bibliography.schema.json",
-    "schemas/interaction-card.schema.json",
-    "schemas/provenance-bundle.schema.json",
-    "schemas/final-review.schema.json"
+    "schemas/epistemic-unit.schema.json", "schemas/source-record.schema.json", "schemas/claim-record.schema.json", "schemas/style-profile.schema.json", "schemas/artifact-evidence.schema.json", "schemas/quality-report.schema.json", "schemas/benchmark-record.schema.json", "schemas/session-state.schema.json", "schemas/admission-receipt.schema.json", "schemas/bootstrap.schema.json", "schemas/probe-receipt.schema.json", "schemas/reticulum.schema.json", "schemas/generation-contract.schema.json", "schemas/continuation-plan.schema.json", "schemas/continuation-coverage.schema.json", "schemas/simulation-receipt.schema.json", "schemas/compression-record.schema.json", "schemas/review-cycle.schema.json", "schemas/review-saturation.schema.json", "schemas/regeneration-record.schema.json", "schemas/bibliography.schema.json", "schemas/interaction-card.schema.json", "schemas/provenance-bundle.schema.json", "schemas/final-review.schema.json"
   ]
 }

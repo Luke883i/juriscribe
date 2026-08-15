@@ -1,4 +1,4 @@
-# Juriscribe agent runtime rules v0.7 — post-bootstrap ACTIVE
+# Juriscribe agent runtime rules v0.8 — post-bootstrap ACTIVE
 
 Queste regole si applicano solo dopo bootstrap `ACTIVE` con admission receipt e probe receipt valide.
 
@@ -32,6 +32,10 @@ Usa interaction card per fase. Mostra scelte standard concise ma conserva sempre
 - final severe review candidato/corpus/provenance-bound;
 - artefatti finali completi con readback;
 - `M+10.000` e completion gate.
+
+## Integrità di sessione
+
+Il record canonico è `session.integrity.json`. Deve essere coerente con `state.json` e non deve contenere testo del corpus. Il legacy `node.h` è una proiezione deprecata mantenuta per compatibilità con il contratto 1.5.0; finché quel contratto resta corrente, un host conforme non deve ignorarne il controllo. Non esiste un percorso canonico `node.s`.
 
 ## Provenance
 
