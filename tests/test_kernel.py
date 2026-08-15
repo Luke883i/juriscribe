@@ -4,9 +4,10 @@ from juriscribe.admission import issue_receipt
 from juriscribe.convergence import ConvergenceMonitor
 from juriscribe.dashboard import render_session_dashboard
 from juriscribe.epistemic import EpistemicUnit,Relation,contradiction_pairs
-from juriscribe.pipeline import initialize
+from juriscribe.pipeline import initialize,perform_probe
 ROOT=Path(__file__).resolve().parents[1]; CONTRACT=(ROOT/'ISENECA_ACCESS_CONTRACT.md').read_text(encoding='utf-8')
 def receipt(): return issue_receipt(CONTRACT,phrase='I ACCEPT',actor_type='human',evidence_type='explicit_user_message',user_message='I ACCEPT',accepted_at='2026-01-01T00:00:00+00:00')
+def probe_receipt(r): return perform_probe(admission_receipt=r,contract_text=CONTRACT,host='test',probed_at='2026-01-01T00:01:00+00:00')
 class KernelTests(unittest.TestCase):
     def test_semantic_saturation_requires_1000_clean_probes(self):
         m=ConvergenceMonitor()
@@ -18,8 +19,11 @@ class KernelTests(unittest.TestCase):
         state={'session_id':'SES-test','phase':'VALIDATING','request':{'raw':'Scrivi il capitolo 3','summary':'Scrivi il capitolo 3'},'admission':{'status':'ACCEPTED'},'reticulum':{},'generation_contract':{},'epistemic_units':[],'relations':[],'sources':[{'title':'Capitolo 1'}],'setup':{},'dod':[],'claim_ledger':[],'artifact_evidence':[],'quality':{},'metrics':{},'simulations':{},'compression':{},'completion':{},'artifacts':[],'contradictions':[],'source_intelligence':{},'benchmark':{},'limits':[]}
         with tempfile.TemporaryDirectory() as tmp:
             text=render_session_dashboard(state,Path(tmp)/'dash.html').read_text(encoding='utf-8'); self.assertIn('Scrivi il capitolo 3',text); self.assertIn('Mappa scientifica',text)
-    def test_initialize_requires_admission_and_materializes(self):
+    def test_initialize_requires_admission_probe_and_materializes(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(PermissionError): initialize('Riorganizza',root=tmp,session_id='BAD',contract_text=CONTRACT)
-            base=initialize('Riorganizza',root=tmp,session_id='SES-x',admission_receipt=receipt(),contract_text=CONTRACT); self.assertTrue((base/'state.json').exists()); self.assertTrue((base/'artifacts'/'session-dashboard.html').exists()); self.assertEqual(json.loads((base/'state.json').read_text())['request']['raw'],'Riorganizza')
+            r=receipt()
+            with self.assertRaises(PermissionError): initialize('Riorganizza',root=tmp,session_id='NO-PROBE',admission_receipt=r,contract_text=CONTRACT)
+            base=initialize('Riorganizza',root=tmp,session_id='SES-x',admission_receipt=r,probe_receipt=probe_receipt(r),contract_text=CONTRACT)
+            self.assertTrue((base/'state.json').exists()); self.assertTrue((base/'artifacts'/'session-dashboard.html').exists()); self.assertEqual(json.loads((base/'state.json').read_text())['request']['raw'],'Riorganizza')
 if __name__=='__main__': unittest.main()

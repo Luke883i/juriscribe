@@ -1,21 +1,12 @@
-# `node.h` — session integrity header v3
+# `node.h` — session integrity v4
 
-Ogni workspace persistente Juriscribe genera `.juriscribe/<session-id>/node.h` a ogni salvataggio.
+`node.h` contiene solo metadati e digest, mai il testo del corpus. La versione v4 lega anche:
 
-L'header contiene **solo metadata e digest**, mai il testo del corpus o chain-of-thought. Serve a rilevare stato stale/tampered fra pipeline e artefatti.
+- bootstrap;
+- interaction card/history;
+- continuation plan/coverage;
+- provenance bundle;
+- final severe review;
+- set artefatti.
 
-v3 include i digest di:
-
-- corpus, fonti e claim ledger;
-- reticolo epistemico;
-- setup e DoD;
-- generation contract;
-- **continuation plan + coverage**;
-- candidato corrente;
-- review/rigenerazioni;
-- bibliografia;
-- simulazioni e compressione;
-- quality/benchmark/artefatti;
-- readiness finale.
-
-La macro aggiunta in v3 è `JURISCRIBE_CONTINUATION_SHA256`. Il validator ricalcola i valori dallo `state.json`: un header non coerente non può sostenere `COMPLETE`.
+Serve a rilevare stato stale o tampering fra passaggi. Non è un sostituto dei ledger né contiene ragionamento interno del modello.

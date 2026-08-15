@@ -1,102 +1,115 @@
 # Juriscribe
 
-Juriscribe è un **runtime per continuare una monografia giuridica**: prende i capitoli già scritti, ne ricostruisce struttura scientifica, tesi, regole, eccezioni, fonti, stile e relazioni, quindi genera il capitolo successivo sotto vincoli verificabili.
+Juriscribe è un **runtime per continuare una monografia giuridica**: parte dai capitoli già scritti, li scompone in unità epistemiche, costruisce un reticolo verificabile e genera il capitolo successivo sotto vincoli di fonti, inferenze, continuità, review e provenance.
 
-Non è un prompt che “scrive bene”. Il suo scopo è rendere più difficile che un'AI produca un capitolo plausibile ma scollegato dall'opera, privo di fonti circostanziate, troppo astratto rispetto ai nodi disponibili o editorialmente incoerente.
+Non è un prompt di scrittura. Il suo obiettivo è rendere difficile consegnare un testo semplicemente plausibile ma scollegato dall'opera, non circostanziato o non auditabile.
 
-> **AI admission notice.** Un'AI che apre questo repository per conto di un utente deve prima seguire `AGENTS.md`, `ISENECA_ACCESS_CONTRACT.md` e `ADMISSION.json`. Il runtime sostanziale richiede l'accettazione umana esplicita dei T&C correnti.
+## Avvio rapido in una chat AI
 
-## Uso rapido
+Puoi usarlo senza conoscere Python o Git.
 
-1. Apri una nuova sessione su **https://chatgpt.com/** (o un altro host AI capace di leggere repository/bundle e creare file).
-2. Fornisci il repository `https://github.com/Luke883i/juriscribe` oppure carica un bundle locale del repository.
-3. Chiedi: **“Inizializza Juriscribe da questo repository/bundle e guidami nella generazione del capitolo successivo.”**
-4. Se l'host segue il protocollo Juriscribe, presenta i T&C correnti: accettali solo se vuoi procedere.
-5. Fornisci i capitoli già scritti e, se disponibile, bibliografia/fonti/materiali editoriali.
-6. Juriscribe propone una configurazione essenziale. Normalmente basta scegliere **`ACCETTA CONSIGLIATI`** oppure **`MODIFICA`**.
-7. Il sistema esegue mining, redazione, review, rigenerazione, verifiche e materializzazione; ti coinvolge di nuovo solo se esiste una scelta interpretativa realmente umana o un blocco non inferibile.
+1. Apri una sessione su **https://chatgpt.com/** o un host compatibile.
+2. Fornisci `https://github.com/Luke883i/juriscribe` oppure un bundle locale.
+3. Chiedi: **“Avvia il bootstrap Juriscribe da questo repository/bundle e guidami nella generazione del capitolo successivo.”**
+4. L'AI deve fermarsi e mostrarti i T&C. Se vuoi procedere, scrivi esattamente **`I ACCEPT`**.
+5. L'AI deve poi mostrarti **`PROBE JURISCRIBE`**. Sceglilo per verificare le capacità effettive dell'host e produrre la probe receipt.
+6. Solo dopo il probe l'AI deve mostrarti **`INITIALIZE JURISCRIBE`**. Sceglilo per creare la sessione.
+7. Solo quando la sessione è `ACTIVE` fornisci i capitoli precedenti, bibliografia e materiali editoriali.
+8. Al setup puoi normalmente scegliere **`ACCETTA CONSIGLIATI`**, **`MODIFICA`** oppure **`ALTRO`** per una richiesta libera.
 
-## Prima di scrivere N+1
+Un assistente che trova il repository tramite web browsing non dovrebbe saltare questi passaggi: discovery, accettazione, probe e initialize sono stati distinti.
 
-I capitoli `1..N` vengono trasformati in **unità epistemiche atomiche**: claim, regole, definizioni, eccezioni, qualificazioni, argomenti, controargomenti, conclusioni, questioni aperte, fonti e decisioni editoriali.
+## Cosa succede prima di scrivere N+1
 
-Le unità vengono collegate in un **reticolo semantico tipizzato**. Ogni unità materiale deve essere rintracciabile nel corpus. Dopo il setup Juriscribe congela i DoD e crea un `generation_contract` legato al digest del reticolo, con ciò che deve essere preservato, sviluppato, distinto e non duplicato.
+I capitoli `1..N` diventano un inventario di claim, definizioni, regole, eccezioni, qualificazioni, argomenti, controargomenti, conclusioni, questioni aperte, fonti e inferenze. Ogni unità materiale deve essere rintracciabile nel corpus.
 
-### Development frontier v0.6
+Le unità vengono collegate in un **reticolo semantico tipizzato**. Dal reticolo nasce un `generation_contract` e un **continuation frontier**: cosa va preservato, cosa va sviluppato, con quale profondità, cosa non va duplicato. L'esatta sequenza del futuro capitolo non è un target: Juriscribe valuta robustezza e copertura, non capacità di indovinare l'indice dell'autore.
 
-Prima della bozza Juriscribe trasforma i nodi da sviluppare in un **development frontier**: obblighi core/supporting/optional, modalità argomentative, profondità minima e alternative non vincolanti. Non tenta di indovinare come requisito l'esatta sequenza scientifica del futuro autore: `sequence_is_binding=false`.
-
-Dopo ogni mutazione del candidato il coverage viene invalidato e deve essere rieseguito. `COMPLETE` richiede che il testo finale sviluppi i core alla profondità prevista, raggiunga il budget ponderato di copertura e non usi temi laterali per mascherare omissioni core. Nuovo materiale è ammesso se collegato al frontier e a fonte/inferenza auditata.
-
-## La prima bozza non è il risultato
+## La pipeline completa
 
 ```text
-CAPITOLI PRECEDENTI
+BOOTSTRAP ACTIVE
+→ CAPITOLI PRECEDENTI + BIBLIOGRAFIA
 → MINING ATOMICO
-→ RETICOLO SEMANTICO
+→ RETICOLO
+→ CONTINUATION FRONTIER
 → SETUP + DoD
 → GENERATION CONTRACT
-→ DEVELOPMENT FRONTIER
-→ FONTI / CLAIM / BIBLIOGRAFIA
+→ FONTI / CLAIM / INFERENZE
 → BOZZA SIGILLATA
-→ CONTINUATION COVERAGE
-→ REVIEW SCIENTIFICO-EDITORIALE SEVERA
+→ REVIEW SCIENTIFICO-EDITORIALE
 → RIGENERAZIONE
 → NUOVA REVIEW
-→ SATURAZIONE P + 10.000
-→ SIMULAZIONI EDGE-CASE
+→ P+10.000
+→ SIMULAZIONI
 → COMPRESSIONE LOSSLESS
-→ CONTINUATION + QUALITY + SOURCE RECHECK SUL TESTO FINALE
-→ MATERIALIZZAZIONE + READBACK
+→ QUALITY / SOURCE / CONTINUATION RECHECK
+→ PROVENANCE LOSSLESS
+→ REVIEW FINALE GIURIDICO-EDITORIALE-LOGICO-CONSEQUENZIALE
+→ M+10.000
+→ ARTEFATTI FINALI + READBACK
 → COMPLETE
 ```
 
-La review confronta il capitolo con i capitoli precedenti e con un nucleo publisher-neutral: contributo all'opera, coerenza inter-capitolo, autorità giuridiche, citazioni/pinpoint, controautorità, tempo/giurisdizione, inferenze, terminologia, struttura, stile, bibliografia, preservazione lossless e adeguatezza al lettore. La sintassi citazionale resta quella del progetto/editor.
+La prima bozza non è mai il risultato finale.
 
-## Fonti, inferenze e bibliografia
+## Fonti e inferenze
 
-Un claim materiale esterno non è verificato perché “sembra noto”. Juriscribe richiede una fonte effettivamente letta o premesse registrate. Una **inferenza forte** richiede premesse, ponte inferenziale e falsificatore. “Letteratura dominante” o “giurisprudenza dominante” non possono derivare dal ranking web o dalla ripetizione; se la copertura non basta, il sistema deve dichiarare `DOMINANCE_NOT_ESTABLISHED`.
+Un claim materiale esterno non è verificato perché “sembra noto”. Le fonti effettivamente usate devono essere lette e, quando applicabile, registrate con perimetro, verifica, pinpoint e proposizione supportata.
 
-Se disponibile, la bibliografia dei capitoli precedenti diventa stato di sessione di prima classe, ma non sostituisce la verifica claim-level.
+Una **inferenza forte** richiede premesse, ponte inferenziale e falsificatore. “Dottrina dominante” o “giurisprudenza dominante” richiedono un corpus adeguato di autorità indipendenti: il ranking web non basta.
 
-## Saturazione, simulazioni e benchmark
+## Provenance: niente sparisce silenziosamente
 
-Juriscribe usa due fixed point principali:
+Prima degli artefatti finali Juriscribe crea un provenance bundle legato al testo finale e al corpus. Ogni inferenza materiale registrata, claim materiale, decisione utente e trasformazione richiesta deve avere una sorte esplicita: `IN_FINAL`, `SUPERSEDED`, `REJECTED`, `DEFERRED` o `NOT_APPLICABLE`.
 
-- **DoD saturation:** almeno `M+10.000` challenge consecutivi senza novità materiale rispetto ai DoD;
-- **review/regeneration saturation:** dopo l'ultima rigenerazione, `P+10.000` challenge consecutivi senza nuova criticità e senza miglioramento materiale ancora disponibile che non introduca degradazione.
+Questo non significa salvare chain-of-thought: si conservano solo oggetti auditabili — proposizioni, evidenze, inferenze esplicite, decisioni e trasformazioni.
 
-Le simulazioni sono property/mutation/stress test computazionali, non giudizi giuridici simulati. La baseline v0.5 mantiene **400.000** casi multi-seed; v0.6 aggiunge **10.000 scenari unici** dedicati a omissione, profondità core, anticipazione e nuovo materiale non legato.
+## Ultima review prima della consegna
 
-Nei benchmark ciechi ex post Juriscribe misura copertura, profondità, omissioni e surplus. **Non premia la coincidenza dell'ordine delle sezioni con il capitolo reale.** Vedi `docs/BENCHMARK_ROMANO_V6.md`.
+Dopo la compressione, ma prima di creare gli artefatti finali, Juriscribe esegue un'altra review severa sull'esatto candidato finale. Controlla quadro normativo globale applicabile, coerenza col seed, autorità e controautorità, conseguenze logiche/giuridiche, tempo e giurisdizione, integrità editoriale, provenance e losslessness.
 
-## `node.h` e dashboard
+## Artefatti finali
 
-Ogni workspace genera `.juriscribe/<session-id>/node.h`. v3 include anche il digest del development frontier/coverage per rilevare mismatch o stato stale.
+Una sessione completa produce almeno:
 
-`session-dashboard.html` è un fascicolo per autore, responsabile scientifico e redazione: la prima informazione è `PRONTO PER CONSEGNA` / `NON PRONTO`, con blocker leggibili. La dashboard mostra evidenze e stati; non espone chain-of-thought.
+- capitolo finale;
+- dossier delle evidenze;
+- registro delle fonti;
+- registro delle inferenze;
+- ledger delle trasformazioni;
+- dashboard di sessione.
+
+L'obiettivo è permettere a un responsabile scientifico o redattore di controllare il risultato senza dover ricostruire la chat.
+
+## Dashboard
+
+`session-dashboard.html` è pensata prima per persone e poi per macchine. Mostra:
+
+1. **Dove siamo** — pronto/non pronto e prossimo passo;
+2. **Cosa è stato controllato** — card semplici;
+3. **Evidenze circostanziate** — claim, fonte, perimetro, inferenza e locator finale;
+4. **Storia delle revisioni** — finding, rigenerazioni, consequence probes e final review;
+5. **Integrità tecnica** — digest e `node.h` in secondo piano.
+
+## Scelte in chat
+
+Juriscribe propone scelte standard per ridurre ambiguità, ma non chiude la conversazione. Ogni interaction card include **`ALTRO`** e consente richieste libere. Al termine propone normalmente `APRI ARTEFATTI`, `RICHIEDI MODIFICHE`, `NUOVO CAPITOLO`, `ALTRO`.
 
 ## CI/CD anti-regressione
 
-Su pull request e push a `main`, GitHub Actions esegue:
+Su pull request e push a `main`, GitHub Actions esegue compile/test su Python 3.10 e 3.12, integrità bootstrap/contratto/manifest, la baseline da **400.000** simulazioni v0.5, la saturazione architetturale `M+1000`, i **10.000** continuation scenarios v0.6 e ulteriori **10.000 mutazioni v0.7** su bootstrap, interaction, provenance, final review e artefatti.
 
-- compile e unit/lifecycle test su Python 3.10 e 3.12;
-- integrità admission/contratto/manifest;
-- 400.000 simulazioni multi-seed v0.5;
-- riflessione architetturale `1..M` + `M+1000`;
-- **10.000 scenari unici di continuation coverage v0.6**;
-- fixed-point semantico dei receipt `validation/`.
+I receipt di validazione vengono confrontati semanticamente per garantire fixed-point riproducibili.
 
-Una modifica del comportamento che rende stale le baseline o riapre un gate fallisce la CI.
+## Limiti
 
-## Limiti dichiarati
-
-Juriscribe non prova automaticamente che una conclusione giuridica sia corretta, non garantisce completezza assoluta della ricerca, non elimina la conoscenza pregressa del modello e non sostituisce il giudizio del responsabile scientifico. Non pretende inoltre di ricostruire l'esatta futura sequenza scientifica di un autore. Il runtime rende però più osservabili omissioni, sottosviluppi, drift, fonti non circostanziate, inferenze deboli, duplicazioni e trasformazioni editoriali non lossless.
+Juriscribe non prova automaticamente la correttezza di una conclusione giuridica, non garantisce completezza assoluta della ricerca e non sostituisce il responsabile scientifico. Le metriche e simulazioni sono test computazionali del runtime, non migliaia di giudizi giuridici simulati.
 
 ## Versioni
 
-- runtime: `0.6.0`
-- access contract: `1.4.0`
-- manifest: `juriscribe-manifest/v6`
+- runtime: `0.7.0`
+- access contract: `1.5.0`
+- manifest: `juriscribe-manifest/v7`
 
-Dopo ammissione valida, vedi `docs/AGENT_RUNTIME_RULES.md`, `docs/RUNTIME_V6_CONTINUATION_COVERAGE.md`, `docs/RUNTIME_V5_REVIEW_LOOP.md` e `docs/LEGAL_MONOGRAPH_REVIEW_STANDARD.md`.
+Dopo bootstrap `ACTIVE`, vedi `docs/AGENT_RUNTIME_RULES.md`, `docs/RUNTIME_V7_FINALIZATION.md`, `docs/LEGAL_MONOGRAPH_REVIEW_STANDARD.md` e `docs/BENCHMARK_MAINE_V7.md`.

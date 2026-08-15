@@ -1,18 +1,32 @@
 {
-  "schema": "juriscribe-admission/v2",
+  "schema": "juriscribe-admission/v3",
   "repository": "Luke883i/juriscribe",
-  "contract_version": "1.4.0",
+  "contract_version": "1.5.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
-  "contract_sha256": "870880355cb9c5c26d1fc689eaf76ccd13cb1962e29a528c1d74e776fd6da976",
+  "contract_sha256": "077823fe3c9bb59d3d8615443161f58ad8e7a2514be40cd621d93d89b100f2c7",
   "acceptance_phrase": "I ACCEPT",
   "human_actor_required": true,
   "evidence_type": "explicit_user_message",
+  "user_visible_bootstrap": true,
+  "bootstrap_order": [
+    "TERMS_PRESENTED",
+    "TERMS_ACCEPTED",
+    "PROBE_REQUIRED",
+    "PROBED",
+    "INITIALIZE_REQUIRED",
+    "INITIALIZING",
+    "ACTIVE"
+  ],
+  "canonical_probe_command": "PROBE JURISCRIBE",
+  "canonical_initialize_command": "INITIALIZE JURISCRIBE",
   "pre_admission_allowlist": [
     "AGENTS.md",
     "ISENECA_ACCESS_CONTRACT.md",
     "ADMISSION.json"
   ],
   "post_admission_agent_rules": "docs/AGENT_RUNTIME_RULES.md",
+  "probe_receipt_required_for_initialize": true,
+  "active_required_for_substantive_read": true,
   "runtime_receipt_required_for": [
     "probe",
     "initialize",
@@ -32,9 +46,12 @@
     "audit-chapter",
     "record-simulation",
     "record-compression",
+    "record-provenance",
+    "final-review",
     "record-artifact",
     "gate",
     "dashboard",
+    "interaction-card",
     "node-header"
   ],
   "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access"

@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-NODE_H_VERSION = "3"
+NODE_H_VERSION = "4"
 _REQUIRED = {
     "JURISCRIBE_NODE_H_VERSION",
     "JURISCRIBE_SESSION_ID",
@@ -19,6 +19,10 @@ _REQUIRED = {
     "JURISCRIBE_CONTINUATION_SHA256",
     "JURISCRIBE_CURRENT_CANDIDATE_SHA256",
     "JURISCRIBE_REVIEW_SHA256",
+    "JURISCRIBE_FINAL_REVIEW_SHA256",
+    "JURISCRIBE_PROVENANCE_SHA256",
+    "JURISCRIBE_INTERACTION_SHA256",
+    "JURISCRIBE_BOOTSTRAP_SHA256",
     "JURISCRIBE_BIBLIOGRAPHY_SHA256",
     "JURISCRIBE_SIMULATION_SHA256",
     "JURISCRIBE_COMPRESSION_SHA256",
@@ -41,10 +45,10 @@ def _digest(value: Any) -> str:
 def node_values(state: dict[str, Any]) -> dict[str, str]:
     drafts = state.get("drafts", [])
     current = drafts[-1].get("digest", "") if drafts else ""
-    review = state.get("review", {})
     bibliography = state.get("bibliography", {})
     reticulum = state.get("reticulum", {})
     generation = state.get("generation_contract", {})
+    admission = state.get("admission", {})
     values = {
         "JURISCRIBE_NODE_H_VERSION": NODE_H_VERSION,
         "JURISCRIBE_SESSION_ID": str(state.get("session_id", "")),
@@ -59,7 +63,11 @@ def node_values(state: dict[str, Any]) -> dict[str, str]:
         "JURISCRIBE_GENERATION_CONTRACT_SHA256": str(generation.get("contract_digest", "")),
         "JURISCRIBE_CONTINUATION_SHA256": _digest(state.get("continuation", {})),
         "JURISCRIBE_CURRENT_CANDIDATE_SHA256": str(current),
-        "JURISCRIBE_REVIEW_SHA256": _digest(review),
+        "JURISCRIBE_REVIEW_SHA256": _digest(state.get("review", {})),
+        "JURISCRIBE_FINAL_REVIEW_SHA256": _digest(state.get("final_review", {})),
+        "JURISCRIBE_PROVENANCE_SHA256": _digest(state.get("provenance", {})),
+        "JURISCRIBE_INTERACTION_SHA256": _digest(state.get("interaction", {})),
+        "JURISCRIBE_BOOTSTRAP_SHA256": _digest(admission.get("bootstrap", {})),
         "JURISCRIBE_BIBLIOGRAPHY_SHA256": str(bibliography.get("digest", _digest([]))),
         "JURISCRIBE_SIMULATION_SHA256": _digest(state.get("simulations", {})),
         "JURISCRIBE_COMPRESSION_SHA256": _digest(state.get("compression", {})),
