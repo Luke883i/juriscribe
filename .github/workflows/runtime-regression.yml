@@ -52,7 +52,7 @@ jobs:
       - name: M plus 1000 architecture saturation
         run: python scripts/reflect_v5.py --target 1000 --json-out /tmp/reflection-v5.json
       - name: 10k continuation coverage scenarios
-        run: python scripts/simulate_continuation_v6.py --cases 10000 --json-out /tmp/continuation-v6.json
+        run: python scripts/simulate_continuation_v6.py --json-out /tmp/continuation-v6.json
       - name: 10k bootstrap provenance finalization mutations
         run: python scripts/simulate_v7.py --cases 10000 --json-out /tmp/mutation-v7.json
       - name: Simulation receipt is semantic fixed-point
