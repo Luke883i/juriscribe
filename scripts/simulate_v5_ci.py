@@ -4,11 +4,12 @@ import argparse
 import hashlib
 import importlib.util
 import json
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "simulate_v5.py"
-SELECTOR_VERSION = "sha256-stable-random-v1"
+SELECTOR_VERSION = "sha256-stable-roundrobin-v2"
 
 
 class StableRandom:
@@ -32,27 +33,83 @@ def _load_simulator():
         raise RuntimeError("cannot load simulate_v5.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    module.random.Random = StableRandom
     return module
+
+
+def _case_rng(seed: int, category_index: int, case_index: int) -> StableRandom:
+    payload = f"{seed}|{category_index}|{case_index}".encode("utf-8")
+    derived = int.from_bytes(hashlib.sha256(payload).digest()[:8], "big")
+    return StableRandom(derived)
 
 
 def run(cases: int, seeds: tuple[int, ...]) -> dict:
     module = _load_simulator()
-    result = module.run(cases, seeds)
-    result["selector"] = SELECTOR_VERSION
-    basis = {
+    categories = tuple(module.CATEGORIES)
+    if cases % len(categories):
+        raise ValueError("case count must be divisible by five categories")
+    per = cases // len(categories)
+    failures = []
+    category_counts = Counter()
+    family_counts = Counter()
+    seed_counts = Counter()
+    accepted_controls = 0
+    killed_mutants = 0
+
+    for cidx, category in enumerate(categories):
+        families = module.FAMILIES[category]
+        for j in range(per):
+            seed = seeds[(j + cidx) % len(seeds)]
+            seed_counts[str(seed)] += 1
+            family = families[j % len(families)]
+            rng = _case_rng(seed, cidx, j)
+            ok = False
+            try:
+                ok = bool(module.evaluate(category, family, rng))
+            except Exception as exc:
+                if len(failures) < 100:
+                    failures.append({"category": category, "family": family, "index": j, "seed": seed, "error": type(exc).__name__ + ": " + str(exc)})
+            category_counts[category] += 1
+            family_counts[f"{category}:{family}"] += 1
+            if ok:
+                if category == "favorable":
+                    accepted_controls += 1
+                else:
+                    killed_mutants += 1
+            elif len(failures) < 100:
+                failures.append({"category": category, "family": family, "index": j, "seed": seed, "error": "unexpected outcome"})
+
+    scenario_basis = {
         "selector": SELECTOR_VERSION,
-        "cases": result["executed"],
-        "seeds": result["seeds"],
-        "criteria": result["criteria"],
-        "families": result["families"],
-        "category_counts": result["categories"],
-        "family_counts": result["family_counts"],
+        "cases": cases,
+        "seeds": list(seeds),
+        "criteria": module.CRITERIA,
+        "families": module.FAMILIES,
+        "category_counts": dict(category_counts),
+        "family_counts": dict(sorted(family_counts.items())),
     }
-    result["scenario_digest"] = hashlib.sha256(
-        json.dumps(basis, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    scenario_digest = hashlib.sha256(
+        json.dumps(scenario_basis, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    return result
+    return {
+        "schema": "juriscribe-validation/simulation-v5",
+        "requested": cases,
+        "executed": cases,
+        "categories": dict(category_counts),
+        "criteria": module.CRITERIA,
+        "families": module.FAMILIES,
+        "family_counts": dict(sorted(family_counts.items())),
+        "seeds": list(seeds),
+        "seed_case_counts": dict(seed_counts),
+        "killed_mutants": killed_mutants,
+        "accepted_controls": accepted_controls,
+        "failures": failures,
+        "escapes": len(failures),
+        "false_positives": 0 if not failures else sum(1 for f in failures if f["category"] == "favorable"),
+        "scenario_digest": scenario_digest,
+        "selector": SELECTOR_VERSION,
+        "passed": not failures,
+        "interpretation": "property/mutation/stress evidence over runtime gates; not 400,000 substantive legal judgments or LLM calls",
+    }
 
 
 def main() -> int:

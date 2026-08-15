@@ -24,7 +24,7 @@ class SimulationSelectorV5Tests(unittest.TestCase):
         left = module.StableRandom(509)
         right = module.StableRandom(509)
         self.assertEqual([left.randrange(17) for _ in range(8)], [right.randrange(17) for _ in range(8)])
-        self.assertEqual(module.SELECTOR_VERSION, "sha256-stable-random-v1")
+        self.assertEqual(module.SELECTOR_VERSION, "sha256-stable-roundrobin-v2")
 
 
 if __name__ == "__main__":
