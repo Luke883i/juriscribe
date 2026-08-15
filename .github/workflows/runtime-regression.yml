@@ -25,7 +25,15 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Compile
-        run: python -m compileall -q juriscribe scripts tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            if ! python -m py_compile "$file"; then
+              echo "::error file=$file::Python compile failed for $file"
+              exit 1
+            fi
+          done < <(find juriscribe scripts tests -type f -name '*.py' -print0 | sort -z)
       - name: Unit, lifecycle, review, continuation and finalization tests
         run: python -m unittest discover -s tests -v
       - name: Admission, bootstrap, manifest and onboarding integrity
