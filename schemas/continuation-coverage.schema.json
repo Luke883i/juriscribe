@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe continuation coverage",
+  "type": "object",
+  "required": ["schema", "plan_digest", "candidate_digest", "status", "coverage_score", "minimum_coverage_score", "obligations", "core_now", "unresolved_core", "errors", "digest"],
+  "properties": {
+    "schema": {"const": "juriscribe-continuation-coverage/v1"},
+    "plan_digest": {"type": "string"},
+    "candidate_digest": {"type": "string"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "coverage_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "minimum_coverage_score": {"type": "number", "minimum": 0.5, "maximum": 1},
+    "obligations": {"type": "integer", "minimum": 0},
+    "core_now": {"type": "integer", "minimum": 0},
+    "unresolved_core": {"type": "array", "items": {"type": "string"}},
+    "developed_later": {"type": "array", "items": {"type": "string"}},
+    "introduced_material_unit_ids": {"type": "array", "items": {"type": "string"}},
+    "bound_introduced_material_unit_ids": {"type": "array", "items": {"type": "string"}},
+    "unbound_introduced_material_unit_ids": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "digest": {"type": "string"}
+  }
+}

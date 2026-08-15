@@ -1,0 +1,19 @@
+{
+  "accepted_controls": 1250,
+  "cases": 10000,
+  "failures": 0,
+  "families": {
+    "favorable": 1250,
+    "omission": 5000,
+    "premature_anticipation": 3750,
+    "shallow_core": 5000,
+    "unbound_material": 5000
+  },
+  "killed_mutants": 8750,
+  "notes": "10,000 unique structured continuation scenarios; observable property tests, not hidden chain-of-thought or legal judgments",
+  "sample_failures": [],
+  "scenario_digest": "6135c1b3bab0b8c570e4891d75de4508cf7248d747e09528fcd6958805915c14",
+  "schema": "juriscribe-validation/continuation-v6",
+  "status": "PASS",
+  "unique_signatures": 10000
+}

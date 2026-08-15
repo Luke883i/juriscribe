@@ -78,9 +78,12 @@ def completion_gate(
     drafts: list[dict[str, Any]] | None = None,
     review: dict[str, Any] | None = None,
     bibliography: dict[str, Any] | None = None,
+    continuation: dict[str, Any] | None = None,
+    continuation_required: bool = False,
 ) -> dict:
     from .benchmark import benchmark_gate
     from .bibliography import bibliography_gate
+    from .continuation import continuation_gate
     from .generation import compression_valid, validate_simulation_receipt
     from .reticulum import generation_contract_valid
     from .review import review_gate
@@ -105,6 +108,7 @@ def completion_gate(
 
     review_summary = {"eligible": True, "errors": []}
     bibliography_summary = {"eligible": True, "errors": []}
+    continuation_summary = {"eligible": not continuation_required, "errors": []}
     if generation_required:
         if not admission or admission.get("status") != "ACCEPTED":
             reasons.append("valid human admission state is required")
@@ -132,6 +136,16 @@ def completion_gate(
                 reasons.append("initial sealed draft is missing")
             if not any(d.get("stage") == "REGENERATED" for d in drafts):
                 reasons.append("at least one regenerated draft is required")
+
+        if continuation_required:
+            ok_cont, cont_errors = continuation_gate(
+                continuation,
+                generation_contract_digest=(generation_contract or {}).get("contract_digest"),
+                candidate_digest=current_digest or None,
+            )
+            continuation_summary = {"eligible": ok_cont, "errors": cont_errors}
+            if not ok_cont:
+                reasons.extend(cont_errors)
 
         precompression_digest = str((review or {}).get("saturation", {}).get("candidate_digest", ""))
         ok_review, review_errors = review_gate(review, expected_candidate_digest=precompression_digest or None, require_regeneration=True)
@@ -180,4 +194,5 @@ def completion_gate(
         "benchmark_gate": bg,
         "review_gate": review_summary,
         "bibliography_gate": bibliography_summary,
+        "continuation_gate": continuation_summary,
     }

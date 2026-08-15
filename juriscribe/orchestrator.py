@@ -2,6 +2,12 @@ from __future__ import annotations
 from typing import Any
 
 from .bibliography import assess_bibliography
+from .continuation import (
+    audit_continuation_coverage,
+    canonical_digest as continuation_digest,
+    derive_continuation_plan,
+    validate_continuation_plan,
+)
 from .convergence import completion_gate
 from .generation import compression_valid, seal_candidate, text_digest, validate_simulation_receipt
 from .mining import deep_mine
@@ -79,8 +85,52 @@ def freeze_dods(state, additional_dods=None):
         dod.setdefault("evidence", [])
         state.dod.append(dod)
     state.generation_contract = build_generation_contract(state.reticulum, state.setup, state.epistemic_units, state.relations)
+    plan = derive_continuation_plan(state.generation_contract, state.epistemic_units, state.relations)
+    state.continuation = {"plan": plan, "coverage": {}, "benchmark_gap": {}, "status": "PLANNED" if plan.get("status") == "PASS" else "INVALID"}
     state.phase = "DOD_FROZEN"
     return state
+
+
+def register_continuation_plan(state, plan: dict[str, Any]):
+    if state.generation_contract.get("status") != "READY":
+        raise ValueError("generation contract not READY")
+    ok, errors = validate_continuation_plan(plan, state.generation_contract, state.epistemic_units)
+    if not ok:
+        raise ValueError("; ".join(errors))
+    normalized = dict(plan)
+    normalized["status"] = "PASS"
+    normalized["errors"] = []
+    normalized["digest"] = continuation_digest({k: v for k, v in normalized.items() if k != "digest"})
+    state.continuation = {
+        **(state.continuation or {}),
+        "plan": normalized,
+        "coverage": {},
+        "status": "PLANNED",
+    }
+    state.phase = "CONTINUATION_PLANNED"
+    return normalized
+
+
+def record_continuation_coverage(state, payload: dict[str, Any]):
+    if not state.drafts:
+        raise ValueError("continuation coverage requires a sealed candidate")
+    plan = (state.continuation or {}).get("plan") or {}
+    current_digest = str(state.drafts[-1].get("digest", ""))
+    records = payload.get("coverage", []) if isinstance(payload, dict) else []
+    report = audit_continuation_coverage(
+        plan,
+        records,
+        introduced_material_unit_ids=payload.get("introduced_material_unit_ids", []),
+        introduced_material_bindings=payload.get("introduced_material_bindings", []),
+        candidate_digest=current_digest,
+    )
+    state.continuation = {
+        **(state.continuation or {}),
+        "coverage": report,
+        "status": "PASS" if report.get("status") == "PASS" else "GAPS_OPEN",
+    }
+    state.phase = "CONTINUATION_COVERAGE" if report.get("status") == "PASS" else "CONTINUATION_REVIEW_REQUIRED"
+    return report
 
 
 def register_bibliography(state, entries: list[dict[str, Any]] | None):
@@ -113,6 +163,8 @@ def validate_claim_ledger(state):
 def seal_draft(state, text: str, *, stage: str = "INITIAL"):
     if state.generation_contract.get("status") != "READY":
         raise ValueError("generation contract not READY")
+    if (state.continuation or {}).get("plan", {}).get("status") != "PASS":
+        raise ValueError("validated continuation plan required before drafting")
     if stage == "INITIAL" and state.drafts:
         raise ValueError("initial draft already sealed")
     if stage == "REGENERATED" and not state.review.get("cycles"):
@@ -125,6 +177,9 @@ def seal_draft(state, text: str, *, stage: str = "INITIAL"):
         if not regenerations or regenerations[-1].get("to_digest") != record.get("digest"):
             raise ValueError("regenerated draft digest does not match latest regeneration record")
     state.drafts.append(record)
+    if (state.continuation or {}).get("coverage"):
+        state.continuation["coverage"] = {}
+        state.continuation["status"] = "PLANNED"
     state.phase = "DRAFT_SEALED" if stage == "INITIAL" else ("REGENERATED_DRAFT_SEALED" if stage == "REGENERATED" else "FINAL_COMPRESSED_DRAFT_SEALED")
     return record
 
@@ -222,7 +277,6 @@ def record_compression(state, record):
     return state
 
 
-
 def record_artifact(state, record: dict[str, Any]):
     if not str(record.get("id", "")).strip():
         raise ValueError("artifact id required")
@@ -233,6 +287,7 @@ def record_artifact(state, record: dict[str, Any]):
     state.artifacts = [a for a in state.artifacts if a.get("id") != record.get("id")] + [dict(record)]
     state.phase = "ARTIFACT_REGISTERED"
     return record
+
 
 def audit_candidate_chapter(state, text, *, reference_text=None, prior_texts=None, artifact_evidence=None):
     if state.generation_contract.get("status") != "READY":
@@ -278,6 +333,8 @@ def evaluate_completion(state):
         drafts=state.drafts,
         review=state.review,
         bibliography=state.bibliography,
+        continuation=state.continuation,
+        continuation_required=True,
     )
     if (state.node_integrity or {}).get("status") != "PASS":
         reason = (state.node_integrity or {}).get("errors") or ["node.h integrity not verified"]
