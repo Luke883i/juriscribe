@@ -91,9 +91,12 @@ def main():
         if forbidden not in atlas_public:
             fail(f"artifact-atlas public scrub policy missing sensitive key {forbidden}")
 
-    for token in ["Configurazione di generazione", "Controllo anti-plagio", "Saturazione e ri-controllo ciclico", "Atlante completo degli artefatti", "Artefatti epistemici"]:
+    # The renderer owns structure and visual presentation, while the atlas
+    # projector owns canonical titles/content. Requiring projector vocabulary to
+    # be copied into the renderer would create semantic drift by duplication.
+    for token in ["Configurazione di generazione", "Controllo anti-plagio", "Saturazione e ri-controllo ciclico", "_artifact_atlas_section", "build_artifact_atlas", "artifact-atlas", "Artefatti materiali", "Artefatti epistemici"]:
         if token not in dashboard:
-            fail(f"dashboard v0.9.7 missing {token}")
+            fail(f"dashboard v0.9.7 missing structural token {token}")
     for forbidden in ["exact_ngram_hashes", "plagiarism_references", "sealed_candidate_fingerprints"]:
         if forbidden in dashboard:
             fail(f"dashboard source directly exposes sensitive anti-plagiarism internals: {forbidden}")
