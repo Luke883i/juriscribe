@@ -1,6 +1,8 @@
 from __future__ import annotations
-import argparse,hashlib,json
+import argparse,hashlib,json,sys
 from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
 from juriscribe.editorial import resolve_editorial_standard,validate_editorial_standard
 from juriscribe.modes import CONTINUATION,GREENFIELD,REVIEW,build_mode_contract,required_artifact_roles
 from juriscribe.setup import accept_setup,propose_setup
