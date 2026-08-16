@@ -169,8 +169,11 @@ def audit_plagiarism(
                 bucket["matched_exact_ngrams"] += 1
                 if authorized:
                     bucket["authorized_exact_ngrams"] += 1
+    fully_authorized_pairs: set[tuple[str, str, str]] = set()
     for (candidate_locator, source_id, source_locator), counts in sorted(pair_counts.items()):
         unauthorized = counts["matched_exact_ngrams"] - counts["authorized_exact_ngrams"]
+        if counts["matched_exact_ngrams"] > 0 and unauthorized == 0:
+            fully_authorized_pairs.add((candidate_locator, source_id, source_locator))
         if unauthorized > 0:
             findings.append({
                 "kind": "UNATTRIBUTED_EXACT_OVERLAP",
@@ -191,7 +194,7 @@ def audit_plagiarism(
             if int(source_segment.get("word_count", 0)) < NEAR_MIN_WORDS:
                 continue
             key = (str(candidate_segment.get("locator") or ""), source_id, str(source_segment.get("locator") or ""))
-            if key in exact_pairs:
+            if key in exact_pairs or key in fully_authorized_pairs:
                 continue
             s_shingles = set(source_segment.get("shingle_hashes") or [])
             if not s_shingles:

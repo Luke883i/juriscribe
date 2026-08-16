@@ -126,7 +126,6 @@ def enrich_setup_proposal(
         recommended[item["key"]] = item["recommended"]
         if item["key"] not in existing:
             parameters.append(item)
-    recommended["generation_configuration_profile"] = PROFILE_ID
     out["recommended"] = recommended
     out["parameters"] = parameters
     out["generation_preview"] = {

@@ -120,7 +120,7 @@ def freeze_dods(state, additional_dods=None):
 
 
 def seal_draft(state, text: str, *, stage: str = "INITIAL"):
-    if _generated_stage(state, stage):
+    if _generated_stage(state, stage) and (state.generation_contract or {}).get("governance_profile") == GOVERNANCE_PROFILE:
         configuration = (state.generation_contract or {}).get("generation_configuration")
         check = generation_conformance(text, configuration)
         if check.get("status") != "PASS":
@@ -184,7 +184,8 @@ def audit_legal_text(
         artifact_evidence=artifact_evidence,
     )
     current_stage = str(state.drafts[-1].get("stage") or "") if state.drafts else ""
-    generated = _generated_stage(state, current_stage)
+    governed = (state.generation_contract or {}).get("governance_profile") == GOVERNANCE_PROFILE
+    generated = _generated_stage(state, current_stage) and governed
     if generated:
         configuration = generation_conformance(text, (state.generation_contract or {}).get("generation_configuration"))
         configuration["sealed_candidate_digest"] = text_digest(text)
@@ -259,7 +260,7 @@ def _artifact_gate(state) -> tuple[bool, list[str]]:
 
 
 def _configuration_gate(state, current_digest: str) -> tuple[bool, list[str]]:
-    if not state.generation_contract or state.generation_contract.get("status") != "READY":
+    if not state.generation_contract or state.generation_contract.get("status") != "READY" or state.generation_contract.get("governance_profile") != GOVERNANCE_PROFILE:
         return True, []
     record = (state.quality or {}).get("generation_configuration") or {}
     errors = []
@@ -274,7 +275,7 @@ def _configuration_gate(state, current_digest: str) -> tuple[bool, list[str]]:
 
 
 def _plagiarism_gate(state, current_digest: str) -> tuple[bool, list[str]]:
-    if not state.generation_contract or state.generation_contract.get("status") != "READY":
+    if not state.generation_contract or state.generation_contract.get("status") != "READY" or state.generation_contract.get("governance_profile") != GOVERNANCE_PROFILE:
         return True, []
     policy = (state.generation_contract or {}).get("plagiarism_policy") or default_policy()
     return plagiarism_gate((state.quality or {}).get("plagiarism"), sealed_candidate_digest=current_digest, policy_digest=policy.get("digest"))
