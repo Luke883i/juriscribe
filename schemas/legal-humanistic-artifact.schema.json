@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe legal-humanistic editorial projection v1",
+  "type": "object",
+  "required": ["titolo", "finalita", "records"],
+  "properties": {
+    "titolo": {"type": "string", "minLength": 1},
+    "finalita": {"type": "string", "minLength": 1},
+    "records": {"type": "array", "items": {"type": "object"}}
+  },
+  "additionalProperties": true
+}
