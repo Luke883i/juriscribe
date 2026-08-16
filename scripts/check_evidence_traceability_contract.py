@@ -16,20 +16,28 @@ def fail(message: str) -> None:
     raise SystemExit("EVIDENCE TRACEABILITY CONTRACT FAIL: " + message)
 
 
+def _version_tuple(value: str) -> tuple[int, ...]:
+    try:
+        return tuple(int(part) for part in value.split("."))
+    except ValueError as exc:
+        raise SystemExit("EVIDENCE TRACEABILITY CONTRACT FAIL: invalid runtime version") from exc
+
+
 def main() -> int:
     manifest = json.loads((ROOT / "MANIFEST.json").read_text(encoding="utf-8"))
     dashboard_router = (ROOT / "juriscribe/dashboard.py").read_text(encoding="utf-8")
-    dashboard = (ROOT / "juriscribe/dashboard_v96.py").read_text(encoding="utf-8")
+    dashboard_v96 = (ROOT / "juriscribe/dashboard_v96.py").read_text(encoding="utf-8")
+    dashboard_v97 = (ROOT / "juriscribe/dashboard_v97.py").read_text(encoding="utf-8") if (ROOT / "juriscribe/dashboard_v97.py").exists() else ""
     traceability = (ROOT / "juriscribe/evidence_traceability.py").read_text(encoding="utf-8")
     semantic_delivery = (ROOT / "juriscribe/semantic_delivery.py").read_text(encoding="utf-8")
     workflow = (ROOT / ".github/workflows/runtime-regression.yml").read_text(encoding="utf-8")
     schema = json.loads((ROOT / "schemas/artifact-evidence.schema.json").read_text(encoding="utf-8"))
     audit = (ROOT / "docs/AUDIT_DASHBOARD_EVIDENCE_V9_6.md").read_text(encoding="utf-8")
 
-    if __version__ != "0.9.6" or manifest.get("runtime_version") != __version__:
-        fail("runtime/manifest version must be 0.9.6")
+    if _version_tuple(__version__) < (0, 9, 6) or manifest.get("runtime_version") != __version__:
+        fail("runtime must preserve v0.9.6+ evidence traceability and match manifest")
     if manifest.get("contract_version") != "1.7.0":
-        fail("access contract must remain 1.7.0 for this additive epistemic release")
+        fail("access contract must remain 1.7.0 for additive epistemic releases")
 
     semantic = manifest.get("semantic_artifacts") or {}
     expected = {
@@ -40,11 +48,13 @@ def main() -> int:
         "dashboard_artifact_index_required": True,
         "dashboard_compressed_outcome_required": True,
         "internal_artifacts_in_human_index": False,
-        "dashboard_design_profile": "JURISCRIBE_EDITORIAL_WORKBENCH_V2",
     }
     for key, value in expected.items():
         if semantic.get(key) != value:
             fail(f"manifest semantic invariant mismatch: {key}")
+    design_profile = str(semantic.get("dashboard_design_profile") or "")
+    if not design_profile.startswith("JURISCRIBE_EDITORIAL_WORKBENCH_V"):
+        fail("dashboard design profile no longer derives from the editorial workbench")
 
     delivery = manifest.get("delivery") or {}
     for key in ("dashboard_complete_evidence_traceability", "dashboard_artifact_recall", "dashboard_compressed_complete_outcome"):
@@ -55,8 +65,10 @@ def main() -> int:
     if delivery.get("internal_records_attached") is not False:
         fail("internal records may not enter public delivery")
 
-    if "from .dashboard_v96 import *" not in dashboard_router:
-        fail("public dashboard does not route to v0.9.6")
+    if "from .dashboard_v96 import *" not in dashboard_router and "from .dashboard_v97 import *" not in dashboard_router:
+        fail("public dashboard no longer routes through the v0.9.6 evidence-aware lineage")
+    if "from .dashboard_v97 import *" in dashboard_router and "dashboard_v96 as base" not in dashboard_v97:
+        fail("v0.9.7 dashboard no longer composes the v0.9.6 evidence-aware renderer")
     for token in (
         "JURISCRIBE_EDITORIAL_WORKBENCH_V2",
         "overall-outcome",
@@ -66,7 +78,7 @@ def main() -> int:
         "build_dashboard_inference_view",
         "base.render_session_dashboard",
     ):
-        if token not in dashboard:
+        if token not in dashboard_v96:
             fail(f"dashboard v0.9.6 missing structural token {token}")
 
     for token in (
