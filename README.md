@@ -1,6 +1,6 @@
 # Juriscribe
 
-Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Non è più limitato alla scrittura del capitolo successivo: dalla v0.9 ogni sessione opera in una delle tre modalità principali.
+Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Dalla v0.9 ogni sessione opera in una delle tre modalità principali; la v0.9.1 ripristina inoltre il contratto storico di consegna **artifact-first**: la complessità resta nei documenti e nella dashboard, non nella conversazione.
 
 | Modalità | Quando usarla | Output principale |
 |---|---|---|
@@ -31,10 +31,13 @@ Per ogni modalità:
 - esegui mining atomico, reticolo e source/inference discipline prima delle conclusioni sostanziali;
 - non trasformare il concept, il testo da revisionare o i capitoli precedenti in autorità giuridiche auto-validanti;
 - usa review scientifica, contenutistica e redazionale con finding ed evidence locator;
-- applica gli standard tipici in modo fluido, non meccanico: niente numero fisso di sezioni o stile citazionale universale se il progetto non lo richiede;
-- non esporre chain-of-thought: mostra invece stati, evidenze, locator, inferenze registrate, finding, blocker e decisioni auditabili;
-- se una capability manca, dichiaralo e usa il percorso degradato senza fingere verifiche;
-- prima della consegna esegui provenance, final severe review, readback e completion gate specifico della modalità.
+- applica gli standard tipici in modo fluido, non meccanico;
+- non esporre chain-of-thought: mostra invece stati, evidenze, locator, inferenze registrate, finding, blocker e decisioni auditabili negli artefatti;
+- se una capability manca, dichiaralo e usa il percorso degradato, salvo il DOCX finale: senza DOCX write/readback non dichiarare COMPLETE;
+- prima della consegna esegui provenance, final severe review, readback e completion gate specifico della modalità;
+- alla fine scrivi in chat soltanto poche righe e rimanda ai documenti allegati e alla dashboard;
+- allega i documenti finali in DOCX e sempre `session-dashboard.html`;
+- non allegare log, receipt, `state.json`, `session.integrity.json`, provenance raw o validation JSON salvo mia richiesta tecnica esplicita.
 ```
 
 ### CONTINUATION
@@ -53,7 +56,7 @@ GREENFIELD. Voglio una monografia sul principio di proporzionalità nel diritto 
 
 ### REVIEW
 
-Dopo `REVIEW`, carica il testo completo. Il default è `REPORT_ONLY`: una review può essere perfettamente completa anche se conclude che il testo ha blocker o major finding. Se vuoi anche una riscrittura scegli `REPORT_AND_REVISED_TEXT`; in quel caso il testo revisionato deve essere riesaminato.
+Dopo `REVIEW`, carica il testo completo. Il default è `REPORT_ONLY`: una review può essere completa anche se conclude che il testo ha blocker o major finding. Se vuoi anche una riscrittura scegli `REPORT_AND_REVISED_TEXT`; in quel caso il testo revisionato deve essere riesaminato.
 
 Esempio:
 
@@ -76,7 +79,7 @@ Il profilo `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` è publisher-neutral. In ogni mo
 - citazioni/pinpoint e bibliografia coerenti;
 - preservazione di qualificazioni, eccezioni e voce autoriale quando pertinente.
 
-Le metriche editoriali sono **segnali di audit**, non regole universali: Juriscribe non impone automaticamente un numero di heading, una lunghezza o uno stile di citazione uguale a tutti i documenti.
+Le metriche editoriali sono **segnali di audit**, non regole universali.
 
 ## Pipeline comune e diramazioni
 
@@ -94,30 +97,51 @@ BOOTSTRAP + PROBE + INITIALIZE
 → PROVENANCE
 → FINAL SEVERE REVIEW
 → M+10.000 VS DOD
-→ MODE-SPECIFIC ARTIFACT SET + READBACK
+→ DOCX MATERIALIZATION + READBACK
+→ FINAL HTML DASHBOARD
+→ DELIVERY MANIFEST
 → COMPLETE
 ```
 
 `CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` non richiede che il testo sorgente diventi “PASS” per poter consegnare un report diagnostico.
 
-## Artefatti finali
+## Contratto di consegna v0.9.1
 
-Comuni: `evidence_dossier`, `source_register`, `inference_register`, `transformation_ledger`, `session_dashboard`.
+**La conversazione deve restare minima.** A lavoro concluso Juriscribe deve normalmente produrre soltanto 1–3 righe in chat e rinviare agli allegati.
 
-Specifici: `final_chapter` per continuation; `final_legal_text` per greenfield; `review_report` e `review_findings_register` per review; anche `revised_legal_text` quando richiesto.
+Tutti i documenti user-facing devono essere **DOCX**:
+
+- `final_chapter` / `final_legal_text` / `review_report` / eventuale `revised_legal_text`;
+- `evidence_dossier`;
+- `source_register`;
+- `inference_register`;
+- `transformation_ledger`;
+- `review_findings_register` quando applicabile.
+
+`session_dashboard` è invece sempre **HTML** e deve essere allegata come `session-dashboard.html`.
+
+I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger) restano interni e **non devono essere allegati** nella consegna ordinaria. Il runtime conserva questi oggetti come prova del processo, ma il final delivery manifest li filtra.
+
+Un file `.json`, `.md` o `.txt` non può soddisfare un ruolo documentale finale. `COMPLETE` richiede `DOCX_WRITE=AVAILABLE`, `DOCX_READBACK=AVAILABLE` e readback `PASS` per ogni deliverable.
+
+Specifica: `docs/FINAL_DELIVERY_V9_1.md`.
+
+## Dashboard
+
+`session-dashboard.html` è il **verbale giuridico-scientifico-editoriale** della sessione. È un artefatto finale comune e obbligatorio, non una console tecnica né un log raw. Deve permettere a giuristi e redazioni di capire stato, blocker, fonti, inferenze, review, saturazione e readback senza leggere i record macchina.
 
 ## Integrità
 
-Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato in v0.9: viene letto solo per migrare vecchi workspace che non possiedono ancora il manifest JSON.
+Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato in v0.9: viene letto solo per migrare vecchi workspace. L'integrity manifest resta interno e non appartiene al pacchetto ordinario di allegati.
 
 ## Validazione e CI
 
-La CI conserva le baseline storiche (400k v5, M+1000, continuation v6, mutazioni v7, reflection v8) e aggiunge test/mutazioni tri-mode v9. I numeri sono property/mutation/stress test del runtime, non migliaia di giudizi giuridici sostanziali.
+La CI conserva le baseline storiche (400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9) e aggiunge regression test sul final-delivery boundary. I numeri sono property/mutation/stress test del runtime, non migliaia di giudizi giuridici sostanziali.
 
 ## Versioni
 
-- runtime: `0.9.0`
+- runtime: `0.9.1`
 - access contract: `1.6.0`
 - manifest: `juriscribe-manifest/v9`
 
-Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
+Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/FINAL_DELIVERY_V9_1.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
