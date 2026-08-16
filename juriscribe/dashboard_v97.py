@@ -15,7 +15,7 @@ dashboard_state_digest = base.dashboard_state_digest
 DASHBOARD_BINDING_KEYS = base.DASHBOARD_BINDING_KEYS
 
 EXTRA_CSS = r'''
-.governance-panel,.artifact-atlas{margin-top:18px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:0 8px 24px #28221c0c;scroll-margin-top:18px}.governance-panel h2,.artifact-atlas h2{margin:7px 0 9px;font:700 clamp(1.55rem,2.2vw,2.25rem)/1.12 var(--serif);letter-spacing:-.012em}.governance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.governance-card{border:1px solid var(--line);border-radius:12px;padding:15px;background:#faf8f3}.governance-card b{display:block;color:var(--navy);font:800 .76rem var(--ui);letter-spacing:.04em;text-transform:uppercase}.governance-card p{margin:.55rem 0 0;line-height:1.5}.concept-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.concept-chip{border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:#fff;font:760 .7rem var(--ui)}.proof-status{display:inline-block;border-radius:999px;padding:6px 10px;background:var(--soft);font:850 .7rem var(--ui);letter-spacing:.06em}.proof-status.pass{background:var(--positive);color:var(--positive-ink)}.cycle-grid{display:grid;gap:9px;margin-top:16px}.cycle-row{display:grid;grid-template-columns:70px 1fr 90px;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:9px}.cycle-row:first-child{border-top:0}.cycle-row span:last-child{font:800 .72rem var(--ui)}.atlas-summary{margin:15px 0 0;padding-left:1.2rem}.atlas-summary li{margin:.45rem 0}.atlas-group{margin-top:24px}.atlas-group-head{display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px}.atlas-group-head h3{margin:0;font:720 1.25rem var(--serif);color:var(--navy)}.atlas-group-head span{font:760 .7rem var(--ui);color:var(--muted)}.atlas-records{display:grid;gap:12px;margin-top:14px}.atlas-record{border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}.atlas-record summary{cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:16px 18px;list-style:none}.atlas-record summary::-webkit-details-marker{display:none}.atlas-title{display:block;color:var(--navy);font:760 1rem var(--serif)}.atlas-summary-line{display:block;margin-top:5px;color:var(--muted);font:.78rem/1.45 var(--ui)}.atlas-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.atlas-badge{border:1px solid var(--line);border-radius:999px;padding:4px 8px;background:var(--soft);font:800 .62rem var(--ui);letter-spacing:.04em}.atlas-body{border-top:1px solid var(--line);padding:17px 18px;background:#fcfbf8}.atlas-function{margin:0 0 12px;color:#4d5359}.atlas-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.atlas-actions a{display:inline-block;border:1px solid var(--strong);border-radius:8px;padding:7px 10px;background:#fff;text-decoration:none;font:780 .72rem var(--ui)}@media(max-width:760px){.governance-grid{grid-template-columns:1fr}.cycle-row{grid-template-columns:55px 1fr 72px}.atlas-record summary{grid-template-columns:1fr}.atlas-badges{justify-content:flex-start}}@media print{.governance-panel,.artifact-atlas{box-shadow:none;border-color:#bbb}.atlas-record{break-inside:avoid}.atlas-actions{display:none!important}}
+.governance-panel,.artifact-atlas{margin-top:18px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:0 8px 24px #28221c0c;scroll-margin-top:18px}.governance-panel h2,.artifact-atlas h2{margin:7px 0 9px;font:700 clamp(1.55rem,2.2vw,2.25rem)/1.12 var(--serif);letter-spacing:-.012em}#generation-configuration{border-top:4px solid var(--gold);background:linear-gradient(180deg,#fffdf8,#fffdfa)}#anti-plagiarism{border-top:4px solid var(--wine);background:linear-gradient(180deg,#fff9fa,#fffdfa)}#predelivery-saturation{border-top:4px solid var(--blue);background:linear-gradient(180deg,#f8fbfd,#fffdfa)}.artifact-atlas{border-top:4px solid #745688;background:linear-gradient(180deg,#fbf8ff,#fffdfa)}.governance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.governance-card{border:1px solid var(--line);border-radius:12px;padding:15px;background:#faf8f3}.governance-card:nth-child(1){box-shadow:inset 4px 0 0 var(--gold)}.governance-card:nth-child(2){box-shadow:inset 4px 0 0 var(--blue)}.governance-card:nth-child(3){box-shadow:inset 4px 0 0 var(--wine)}.governance-card b{display:block;color:var(--navy);font:800 .76rem var(--ui);letter-spacing:.04em;text-transform:uppercase}.governance-card p{margin:.55rem 0 0;line-height:1.5}.concept-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.concept-chip{border:1px solid #cab98d;border-radius:999px;padding:5px 9px;background:#fff9e9;color:#5c4823;font:760 .7rem var(--ui)}.proof-status{display:inline-block;border-radius:999px;padding:6px 10px;background:var(--soft);font:850 .7rem var(--ui);letter-spacing:.06em}.proof-status.pass{background:var(--positive);color:var(--positive-ink)}.cycle-grid{display:grid;gap:9px;margin-top:16px}.cycle-row{display:grid;grid-template-columns:70px 1fr 90px;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:9px}.cycle-row:first-child{border-top:0}.cycle-row span:last-child{font:800 .72rem var(--ui)}.atlas-summary{margin:15px 0 0;padding-left:1.2rem}.atlas-summary li{margin:.45rem 0}.atlas-group{margin-top:24px}.atlas-group-head{display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px}.atlas-group-head h3{margin:0;font:720 1.25rem var(--serif);color:var(--navy)}.atlas-group-head span{font:760 .7rem var(--ui);color:var(--muted)}.atlas-records{display:grid;gap:12px;margin-top:14px}.atlas-record{border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:13px;background:#fff;overflow:hidden}.atlas-record:nth-child(4n+2){border-left-color:var(--wine)}.atlas-record:nth-child(4n+3){border-left-color:var(--gold)}.atlas-record:nth-child(4n+4){border-left-color:#745688}.atlas-record summary{cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:16px 18px;list-style:none}.atlas-record summary::-webkit-details-marker{display:none}.atlas-title{display:block;color:var(--navy);font:760 1rem var(--serif)}.atlas-summary-line{display:block;margin-top:5px;color:var(--muted);font:.78rem/1.45 var(--ui)}.atlas-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.atlas-badge{border:1px solid var(--line);border-radius:999px;padding:4px 8px;background:var(--soft);font:800 .62rem var(--ui);letter-spacing:.04em}.atlas-body{border-top:1px solid var(--line);padding:17px 18px;background:#fcfbf8}.atlas-function{margin:0 0 12px;color:#4d5359}.atlas-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.atlas-actions a{display:inline-block;border:1px solid var(--strong);border-radius:8px;padding:7px 10px;background:#fff;text-decoration:none;font:780 .72rem var(--ui)}@media(max-width:760px){.governance-grid{grid-template-columns:1fr}.cycle-row{grid-template-columns:55px 1fr 72px}.atlas-record summary{grid-template-columns:1fr}.atlas-badges{justify-content:flex-start}}@media print{.governance-panel,.artifact-atlas{box-shadow:none;border-color:#bbb}.atlas-record{break-inside:avoid}.atlas-actions{display:none!important}}
 '''
 
 
@@ -34,12 +34,14 @@ def _configuration_section(state) -> str:
     accepted = setup.get("accepted", setup if setup.get("status") == "ACCEPTED" else {}) or {}
     quality = _get(state, "quality", {}) or {}
     check = quality.get("generation_configuration") or {}
-    abstract = accepted.get("generation_abstract") or (setup.get("generation_preview") or {}).get("abstract") or "Configurazione non ancora proposta."
-    concepts = accepted.get("key_concepts") or (setup.get("generation_preview") or {}).get("key_concepts") or []
-    length = accepted.get("length_words") or (setup.get("generation_preview") or {}).get("length_words") or []
+    preview = setup.get("generation_preview") or {}
+    abstract = accepted.get("generation_abstract") or preview.get("abstract") or "Configurazione non ancora proposta."
+    concepts = accepted.get("key_concepts") or preview.get("key_concepts") or []
+    length = accepted.get("length_words") or preview.get("length_words") or []
     length_text = f"{length[0]}–{length[1]} parole" if isinstance(length, (list, tuple)) and len(length) == 2 else "da definire"
     status = str(check.get("status") or ("ACCETTATA" if accepted.get("generation_abstract") else "DA CONFIGURARE"))
     chips = "".join(f'<span class="concept-chip">{_esc(item)}</span>' for item in concepts)
+    concepts_html = chips or '<span class="concept-chip">da definire</span>'
     return (
         '<section class="governance-panel" id="generation-configuration" aria-labelledby="generation-configuration-title">'
         '<div class="kicker">Contratto editoriale prima della scrittura</div>'
@@ -48,7 +50,7 @@ def _configuration_section(state) -> str:
         '<div class="governance-grid">'
         f'<article class="governance-card"><b>Abstract</b><p>{_esc(abstract)}</p></article>'
         f'<article class="governance-card"><b>Lunghezza</b><p>{_esc(length_text)}</p><p>Conformità: {_esc(status)}</p></article>'
-        f'<article class="governance-card"><b>Concetti chiave</b><div class="concept-list">{chips or "<span class=\"concept-chip\">da definire</span>"}</div></article>'
+        f'<article class="governance-card"><b>Concetti chiave</b><div class="concept-list">{concepts_html}</div></article>'
         '</div></section>'
     )
 
@@ -68,7 +70,7 @@ def _plagiarism_section(state) -> str:
         '<div class="kicker">Originalità dimostrabile</div><h2 id="anti-plagiarism-title">Controllo anti-plagio</h2>'
         f'<span class="proof-status{status_class}">{_esc(status)}</span><p class="purpose">{_esc(proof)}</p>'
         '<div class="governance-grid">'
-        f'<article class="governance-card"><b>Perimetro della prova</b><p>{_esc(scope)}</p><p>La prova è deliberatamente scoped: Juriscribe non formula una falsa pretesa di unicità rispetto a testi non presenti nel corpus di confronto.</p></article>'
+        f'<article class="governance-card"><b>Perimetro della prova</b><p>{_esc(scope)}</p><p>La prova è deliberatamente circoscritta: Juriscribe non formula una falsa pretesa di unicità rispetto a testi non presenti nel corpus di confronto.</p></article>'
         f'<article class="governance-card"><b>Copertura</b><p>{covered} fonti coperte · {missing} mancanti</p></article>'
         f'<article class="governance-card"><b>Sovrapposizioni vietate</b><p>{findings}</p><p>Riusi testuali lunghi sono ammessi solo se esplicitamente autorizzati e associati a una collocazione di attribuzione.</p></article>'
         '</div></section>'
@@ -82,25 +84,30 @@ def _saturation_section(state) -> str:
     status_class = " pass" if status == "PASS" else ""
     cycles = []
     for cycle in record.get("cycles") or []:
+        finding_text = "nessun nuovo blocker" if not cycle.get("new_findings") else str(len(cycle.get("new_findings") or [])) + " nuovi blocker"
         cycles.append(
             '<div class="cycle-row">'
             f'<span>Ciclo {int(cycle.get("cycle", 0))}</span>'
-            f'<span>{"nessun nuovo blocker" if not cycle.get("new_findings") else str(len(cycle.get("new_findings") or [])) + " nuovi blocker"}</span>'
+            f'<span>{_esc(finding_text)}</span>'
             f'<span>{_esc(cycle.get("status") or "")}</span></div>'
         )
+    cycles_html = "".join(cycles) if cycles else "<p>Nessun ciclo di saturazione ancora registrato.</p>"
     return (
         '<section class="governance-panel" id="predelivery-saturation" aria-labelledby="predelivery-saturation-title">'
         '<div class="kicker">Fixed point prima della consegna</div><h2 id="predelivery-saturation-title">Saturazione e ri-controllo ciclico</h2>'
         f'<span class="proof-status{status_class}">{_esc(status)}</span>'
-        '<p class="purpose">Il candidato è consegnabile solo quando configurazione, originalità, qualità, fonti, provenance, review severa, dossier, tracciabilità, completezza dell’atlante artefatti e readback restano verdi in ri-controlli ciclici con ordine variato.</p>'
-        f'<div class="cycle-grid">{"".join(cycles) if cycles else "<p>Nessun ciclo di saturazione ancora registrato.</p>"}</div></section>'
+        '<p class="purpose">Il candidato è consegnabile solo quando configurazione, originalità, qualità, fonti, provenance, review severa, dossier, tracciabilità, completezza dell’atlante e verifica della materializzazione restano verdi in ri-controlli ciclici con ordine variato.</p>'
+        f'<div class="cycle-grid">{cycles_html}</div></section>'
     )
 
 
 def _atlas_record(record: dict[str, Any]) -> str:
-    actions = [f'<a href="{_esc(record.get("richiamo_dashboard"))}">Vai alla sezione correlata</a>'] if record.get("richiamo_dashboard") else []
+    actions = []
+    if record.get("richiamo_dashboard"):
+        actions.append(f'<a href="{_esc(record.get("richiamo_dashboard"))}">Vai alla sezione correlata</a>')
     if record.get("richiamo_artefatto"):
         actions.append(f'<a href="{_esc(record.get("richiamo_artefatto"))}">Apri artefatto</a>')
+    actions_html = "".join(actions)
     return (
         '<details class="atlas-record" open><summary>'
         '<span>'
@@ -114,7 +121,7 @@ def _atlas_record(record: dict[str, Any]) -> str:
         '<div class="atlas-body">'
         f'<p class="atlas-function">{_esc(record.get("funzione"))}</p>'
         f'{_render_semantic(record.get("descrizione_completa") or {})}'
-        f'<div class="atlas-actions">{"".join(actions)}</div>'
+        f'<div class="atlas-actions">{actions_html}</div>'
         '</div></details>'
     )
 
