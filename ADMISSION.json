@@ -3,7 +3,7 @@
   "repository": "Luke883i/juriscribe",
   "contract_version": "1.7.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
-  "contract_sha256": "d2e99fb25911074c5c3b330573f56343afd7375c237becdd83c67f49b9fa0d51",
+  "contract_sha256": "e79ccd58834f3fcdb336ce8551ba867f770711ea696e0e2880302cddb7b9788a",
   "acceptance_phrase": "I ACCEPT",
   "human_actor_required": true,
   "evidence_type": "explicit_user_message",

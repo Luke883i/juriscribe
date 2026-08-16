@@ -52,11 +52,20 @@ Pur escludendoli dagli allegati, il renderer mostrava l'intero artifact registry
 
 **Hardening:** i nuovi regression test e contract checks rendono queste proprietà parte della CI.
 
+## Finding 8 — hardening nuovo non deve comprimere il contratto storico
+
+Il primo draft del contratto 1.7, pur rafforzando delivery e superficie AI, aveva sintetizzato troppo il contratto 1.6. Il confronto storiografico riga-per-riga ha mostrato che una riscrittura abbreviata rischiava di perdere granularità normativa su pipeline distinte per `CONTINUATION`, `GREENFIELD` e `REVIEW`, rubriche scientifico-editoriali, applicabilità motivata dei criteri, witness di saturazione `REPORT_ONLY`, simulazioni multi-classe e compressione lossless.
+
+**Rischio:** un hardening UX poteva involontariamente diventare una regressione scientifico-metodologica pur passando test token-based.
+
+**Hardening:** il contratto 1.7 definitivo è una **estensione conservativa del 1.6**: conserva le 19 sezioni e le pipeline/rubriche dettagliate, modificando soltanto dove necessario materializzazione, delivery, dashboard, interazione e completion. Il contract checker mantiene anche marker storici di granularità per impedire future riscritture eccessivamente riduttive.
+
 ## Invariante consolidato
 
 ```text
 BOOTSTRAP VISIBILE
 → MODE + MATERIALI + SETUP MINIMO
+→ PIPELINE SCIENTIFICA MODE-SPECIFIC PRESERVATA
 → LAVORO AUTONOMO / SILENZIOSO
 → dettagli scientifici-editoriali nei DOCX e nella dashboard
 → interruzione solo per decisione umana bloccante non inferibile
@@ -66,4 +75,4 @@ BOOTSTRAP VISIBILE
 → 1–3 righe finali + allegati
 ```
 
-Il “silenzio” riguarda la superficie conversazionale ordinaria, non l'auditabilità: Juriscribe deve registrare più evidenza internamente e negli artefatti, non meno.
+Il “silenzio” riguarda la superficie conversazionale ordinaria, non l'auditabilità: Juriscribe deve registrare più evidenza internamente e negli artefatti, non meno. L'hardening della superficie non può ridurre la granularità scientifica, editoriale o probatoria costruita dalle versioni precedenti.

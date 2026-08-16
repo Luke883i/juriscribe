@@ -29,8 +29,28 @@ def main():
     if not agents.startswith('# JURISCRIBE AI ADMISSION SENTINEL'): fail('AGENTS sentinel must be first')
     for path in admission['pre_admission_allowlist']:
         if path not in agents: fail(f'pre-admission allowlist missing from sentinel: {path}')
-    for token in ['PROBE JURISCRIBE','INITIALIZE JURISCRIBE','CONTINUATION','GREENFIELD','REVIEW','DOCX_WRITE','DOCX_READBACK','1–3 righe','stack trace','decisione umana','session-dashboard.html']:
+
+    governance_tokens=['PROBE JURISCRIBE','INITIALIZE JURISCRIBE','CONTINUATION','GREENFIELD','REVIEW','DOCX_WRITE','DOCX_READBACK','1–3 righe','stack trace','decisione umana','session-dashboard.html']
+    for token in governance_tokens:
         if token not in contract: fail(f'contract missing v0.9.2 governance token: {token}')
+    historical_detail_tokens=[
+        'CONTINUATION FRONTIER',
+        'ATOMIC CONCEPT DECOMPOSITION + RETICULUM',
+        'DIAGNOSTIC SATURATION',
+        'SCIENTIFIC / CONTENT / SOURCE / LOGICAL / EDITORIAL REVIEW',
+        'contributo/obiettivo del documento',
+        'preservazione epistemica/voce autoriale',
+        'I criteri non applicabili devono essere marcati e motivati',
+        'simulazioni multi-classe',
+        'compressione lossless',
+        'assenza di nuovi finding materiali',
+        'La sequenza futura dell\'autore non è un completion target',
+    ]
+    for token in historical_detail_tokens:
+        if token not in contract: fail(f'contract lost historical scientific/editorial detail: {token}')
+    for section in range(1,20):
+        if f'## {section}.' not in contract: fail(f'contract historical section {section} missing')
+
     for flag in ['artifact_first_surface_required','autonomous_until_blocking_human_decision','materialized_delivery_required','dashboard_state_binding_required']:
         if admission.get(flag) is not True: fail(f'admission missing hardening flag: {flag}')
     if int(admission.get('post_bootstrap_chat_max_lines',99))>3: fail('post-bootstrap chat surface is too verbose')
@@ -76,5 +96,5 @@ def main():
     for required in ['1–3 righe','DOCX','session-dashboard.html','non allegare','non narrare','decisione umana','stack trace','dashboard stale']:
         if required not in agent_rules: fail(f'agent surface rule missing: {required}')
 
-    print(json.dumps({'status':'PASS','runtime_version':__version__,'contract_version':CONTRACT_VERSION,'contract_sha256':admission['contract_sha256'],'modes':manifest['modes']['canonical'],'editorial_standard':manifest['editorial']['standard_id'],'trimode_validation_cases':30000,'delivery':'real DOCX + state-bound HTML dashboard; artifact-first all post-bootstrap'},indent=2)); return 0
+    print(json.dumps({'status':'PASS','runtime_version':__version__,'contract_version':CONTRACT_VERSION,'contract_sha256':admission['contract_sha256'],'modes':manifest['modes']['canonical'],'editorial_standard':manifest['editorial']['standard_id'],'trimode_validation_cases':30000,'delivery':'real DOCX + state-bound HTML dashboard; artifact-first all post-bootstrap','historical_contract_sections_preserved':19},indent=2)); return 0
 if __name__=='__main__': raise SystemExit(main())
