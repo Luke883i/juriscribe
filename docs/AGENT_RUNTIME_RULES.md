@@ -14,7 +14,7 @@ Dopo bootstrap e initialize, chiedi/seleziona una modalità prima di lavorare su
 - nessuna esposizione di chain-of-thought latente.
 
 ## Bootstrap hardening e fast path
-L'accettazione umana resta separata e non inferibile. Dopo un messaggio umano esattamente `I ACCEPT`, l'host può velocizzare il primo avvio eseguendo nello stesso turno `probe -> probe receipt -> initialize`, purché le tre transizioni restino distinte e auditabili e `initialize` non esegua mai un probe implicito. La modalità resta una decisione umana separata dopo initialize.
+L'accettazione umana resta separata e non inferibile. Dopo un messaggio umano esattamente `I ACCEPT`, l'host può velocizzare il primo avvio usando la fast path canonica `bootstrap-after-acceptance`, che esegue nello stesso turno `probe -> probe receipt -> initialize`, purché le tre transizioni restino distinte e auditabili e `initialize` non esegua mai un probe implicito. La modalità resta una decisione umana separata dopo initialize.
 
 Le receipt hanno nonce; una probe receipt è single-use (consumabile una sola volta) per inizializzare una sessione. Le capability sigillate dal probe non possono essere mutate o ampliate durante initialize. Gli ID sessione automatici sono non deterministici e un workspace già occupato non viene mai sovrascritto.
 
