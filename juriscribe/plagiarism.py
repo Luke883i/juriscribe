@@ -42,11 +42,11 @@ def _segments(text: str) -> list[str]:
 
 
 def fingerprint_text(text: str, *, source_id: str, locator_prefix: str = "P") -> dict[str, Any]:
-    records = []
-    normalized_document_words: list[str] = []
+    records: list[dict[str, Any]] = []
+    document_words: list[str] = []
     for index, segment in enumerate(_segments(text), 1):
         words = _words(segment)
-        normalized_document_words.extend(words)
+        document_words.extend(words)
         if not words:
             continue
         exact = sorted({_hash_tokens(words[i:i + EXACT_N]) for i in range(max(0, len(words) - EXACT_N + 1))})
@@ -62,8 +62,8 @@ def fingerprint_text(text: str, *, source_id: str, locator_prefix: str = "P") ->
     payload = {
         "schema": FINGERPRINT_SCHEMA,
         "source_id": str(source_id),
-        "word_count": len(normalized_document_words),
-        "document_digest": _hash_tokens(normalized_document_words),
+        "word_count": len(document_words),
+        "document_digest": _hash_tokens(document_words),
         "exact_n": EXACT_N,
         "shingle_n": SHINGLE_N,
         "segments": records,
@@ -74,11 +74,12 @@ def fingerprint_text(text: str, *, source_id: str, locator_prefix: str = "P") ->
 
 
 def fingerprint_evidence_passages(claims: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Fingerprint only verbatim/source-text evidence, never a claim paraphrase."""
     grouped: dict[str, list[str]] = {}
     for claim in claims or []:
         for evidence in claim.get("source_evidence") or []:
             source_id = str(evidence.get("source_id") or "").strip()
-            text = str(evidence.get("verbatim") or evidence.get("quote") or evidence.get("proposition") or "").strip()
+            text = str(evidence.get("verbatim") or evidence.get("quote") or evidence.get("source_text") or "").strip()
             if source_id and text:
                 grouped.setdefault(source_id, []).append(text)
     return [fingerprint_text("\n\n".join(parts), source_id=source_id, locator_prefix="E") for source_id, parts in sorted(grouped.items())]
@@ -100,28 +101,43 @@ def default_policy() -> dict[str, Any]:
     return payload
 
 
-def _authorized_maps(authorized_reuse: list[dict[str, Any]] | None) -> tuple[dict[str, set[str]], list[dict[str, Any]], list[str]]:
-    exact_by_source: dict[str, set[str]] = {}
-    records: list[dict[str, Any]] = []
+def _authorized_reuse_map(records: list[dict[str, Any]] | None) -> tuple[dict[str, set[str]], list[dict[str, Any]], list[str]]:
+    allowed: dict[str, set[str]] = {}
+    public_records: list[dict[str, Any]] = []
     errors: list[str] = []
-    for index, raw in enumerate(authorized_reuse or [], 1):
+    for index, raw in enumerate(records or [], 1):
         source_id = str(raw.get("source_id") or "").strip()
         text = str(raw.get("text") or "").strip()
-        attribution = str(raw.get("attribution_locator") or "").strip()
-        if not source_id or not text or not attribution:
+        locator = str(raw.get("attribution_locator") or "").strip()
+        if not source_id or not text or not locator:
             errors.append(f"authorized reuse {index} requires source_id, text and attribution_locator")
             continue
         fp = fingerprint_text(text, source_id=source_id, locator_prefix="A")
-        hashes = {item for segment in fp["segments"] for item in segment.get("exact_ngram_hashes", [])}
-        exact_by_source.setdefault(source_id, set()).update(hashes)
-        records.append({
+        allowed.setdefault(source_id, set()).update(
+            digest for segment in fp["segments"] for digest in segment.get("exact_ngram_hashes", [])
+        )
+        public_records.append({
             "source_id": source_id,
             "authorized_text_digest": fp["document_digest"],
-            "attribution_locator": attribution,
+            "attribution_locator": locator,
             "kind": str(raw.get("kind") or "QUOTATION"),
             "rationale": str(raw.get("rationale") or "explicit attributed reuse"),
         })
-    return exact_by_source, records, errors
+    return allowed, public_records, errors
+
+
+def _reference_map(references: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for raw in references or []:
+        if raw.get("schema") == FINGERPRINT_SCHEMA:
+            fp = dict(raw)
+        else:
+            source_id = str(raw.get("source_id") or raw.get("id") or "").strip()
+            fp = fingerprint_text(str(raw.get("text") or ""), source_id=source_id, locator_prefix=str(raw.get("locator_prefix") or "R"))
+        source_id = str(fp.get("source_id") or "").strip()
+        if source_id:
+            out[source_id] = fp
+    return out
 
 
 def audit_plagiarism(
@@ -134,22 +150,12 @@ def audit_plagiarism(
 ) -> dict[str, Any]:
     policy = default_policy()
     candidate = fingerprint_text(text, source_id="CANDIDATE", locator_prefix="C")
-    reference_map: dict[str, dict[str, Any]] = {}
-    for raw in references or []:
-        if raw.get("schema") == FINGERPRINT_SCHEMA:
-            fp = dict(raw)
-        else:
-            source_id = str(raw.get("source_id") or raw.get("id") or "").strip()
-            fp = fingerprint_text(str(raw.get("text") or ""), source_id=source_id, locator_prefix=str(raw.get("locator_prefix") or "R"))
-        source_id = str(fp.get("source_id") or "").strip()
-        if source_id:
-            reference_map[source_id] = fp
+    reference_map = _reference_map(references)
     required = {str(item) for item in (required_source_ids or set()) if str(item)}
     available = set(reference_map)
     missing = sorted(required - available)
-    authorized_exact, authorized_records, authorization_errors = _authorized_maps(authorized_reuse)
+    authorized_exact, authorized_records, authorization_errors = _authorized_reuse_map(authorized_reuse)
 
-    findings: list[dict[str, Any]] = []
     exact_index: dict[str, list[tuple[str, str]]] = {}
     reference_segments: list[tuple[str, dict[str, Any]]] = []
     for source_id, fp in reference_map.items():
@@ -158,43 +164,44 @@ def audit_plagiarism(
             for digest in segment.get("exact_ngram_hashes") or []:
                 exact_index.setdefault(digest, []).append((source_id, str(segment.get("locator") or "")))
 
-    pair_counts: dict[tuple[str, str, str], dict[str, Any]] = {}
+    pair_counts: dict[tuple[str, str, str], tuple[int, int]] = {}
     for segment in candidate.get("segments") or []:
         candidate_locator = str(segment.get("locator") or "")
         for digest in segment.get("exact_ngram_hashes") or []:
             for source_id, source_locator in exact_index.get(digest, []):
-                authorized = digest in authorized_exact.get(source_id, set())
                 key = (candidate_locator, source_id, source_locator)
-                bucket = pair_counts.setdefault(key, {"matched_exact_ngrams": 0, "authorized_exact_ngrams": 0})
-                bucket["matched_exact_ngrams"] += 1
-                if authorized:
-                    bucket["authorized_exact_ngrams"] += 1
-    fully_authorized_pairs: set[tuple[str, str, str]] = set()
-    for (candidate_locator, source_id, source_locator), counts in sorted(pair_counts.items()):
-        unauthorized = counts["matched_exact_ngrams"] - counts["authorized_exact_ngrams"]
-        if counts["matched_exact_ngrams"] > 0 and unauthorized == 0:
-            fully_authorized_pairs.add((candidate_locator, source_id, source_locator))
+                matched, authorized = pair_counts.get(key, (0, 0))
+                pair_counts[key] = (matched + 1, authorized + int(digest in authorized_exact.get(source_id, set())))
+
+    findings: list[dict[str, Any]] = []
+    fully_authorized: set[tuple[str, str, str]] = set()
+    for key, (matched, authorized) in sorted(pair_counts.items()):
+        unauthorized = matched - authorized
+        if matched and unauthorized == 0:
+            fully_authorized.add(key)
         if unauthorized > 0:
             findings.append({
                 "kind": "UNATTRIBUTED_EXACT_OVERLAP",
-                "candidate_locator": candidate_locator,
-                "source_id": source_id,
-                "source_locator": source_locator,
-                "matched_exact_ngrams": counts["matched_exact_ngrams"],
-                "authorized_exact_ngrams": counts["authorized_exact_ngrams"],
+                "candidate_locator": key[0],
+                "source_id": key[1],
+                "source_locator": key[2],
+                "matched_exact_ngrams": matched,
+                "authorized_exact_ngrams": authorized,
                 "status": "BLOCKER",
             })
 
-    exact_pairs = {(item["candidate_locator"], item["source_id"], item["source_locator"]) for item in findings}
+    exact_blocked = {(item["candidate_locator"], item["source_id"], item["source_locator"]) for item in findings}
     for candidate_segment in candidate.get("segments") or []:
+        if int(candidate_segment.get("word_count", 0)) < NEAR_MIN_WORDS:
+            continue
         c_shingles = set(candidate_segment.get("shingle_hashes") or [])
-        if int(candidate_segment.get("word_count", 0)) < NEAR_MIN_WORDS or not c_shingles:
+        if not c_shingles:
             continue
         for source_id, source_segment in reference_segments:
             if int(source_segment.get("word_count", 0)) < NEAR_MIN_WORDS:
                 continue
             key = (str(candidate_segment.get("locator") or ""), source_id, str(source_segment.get("locator") or ""))
-            if key in exact_pairs or key in fully_authorized_pairs:
+            if key in exact_blocked or key in fully_authorized:
                 continue
             s_shingles = set(source_segment.get("shingle_hashes") or [])
             if not s_shingles:
@@ -227,7 +234,7 @@ def audit_plagiarism(
         "candidate_fingerprint_digest": candidate.get("digest", ""),
         "reference_manifest": manifest,
         "required_source_ids": sorted(required),
-        "covered_source_ids": sorted(available & required if required else available),
+        "covered_source_ids": sorted((available & required) if required else available),
         "missing_source_ids": missing,
         "authorized_reuse": authorized_records,
         "findings": findings,
