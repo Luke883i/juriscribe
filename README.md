@@ -20,7 +20,7 @@ Dopo il bootstrap l'esperienza ordinaria deve restare semplice:
 4. accetti o modifichi i parametri;
 5. **attendi gli artefatti finali**, salvo una decisione umana materialmente bloccante che Juriscribe non possa inferire in modo sicuro.
 
-Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione e provenance appartengono al runtime e agli artefatti. La dashboard appartiene al giurista: dalla v0.9.4 non è più una superficie di telemetria, ma il dossier inferenziale integrato della sessione.
+Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione e provenance appartengono al runtime e agli artefatti. La dashboard appartiene al giurista: dalla v0.9.4 è il dossier inferenziale integrato della sessione e dalla v0.9.5 è anche una **editorial workbench** autosufficiente, navigabile, ricercabile e stampabile.
 
 ## Avvio in una sessione AI
 
@@ -108,9 +108,9 @@ BOOTSTRAP + PROBE + INITIALIZE
 
 `CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` non richiede che il testo sorgente diventi “PASS” per poter consegnare un report diagnostico.
 
-## Artefatti giuridico-umanistico-editoriali v0.9.4
+## Artefatti giuridico-umanistico-editoriali v0.9.4+
 
-I quattro dossier comuni non sono più soltanto ruoli di consegna: condividono la proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`.
+I quattro dossier comuni condividono la proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`.
 
 ### Evidence dossier
 
@@ -128,9 +128,31 @@ Separa il dato attestato dal passaggio interpretativo. Per ogni inferenza materi
 
 Racconta la storia causale del testo: finding, interventi, rigenerazioni, contenuti preservati/persi/introdotti, compressione lossless, azioni editoriali e consequence probes della final severe review.
 
-La specifica completa è `docs/EDITORIAL_ARTIFACTS_V9_4.md`.
+La specifica completa resta `docs/EDITORIAL_ARTIFACTS_V9_4.md`.
 
-## Contratto di consegna v0.9.4
+## Dashboard Workbench v0.9.5
+
+`session-dashboard.html` usa il profilo `JURISCRIBE_EDITORIAL_WORKBENCH_V1`. La dashboard non diventa un nuovo motore inferenziale: continua a leggere la stessa proiezione semantica dei quattro dossier, ma la organizza come strumento di lavoro per giuristi e redazioni.
+
+La superficie comprende:
+
+- masthead con mandato, stato editoriale, modalità, genere e destinatari;
+- mappa sintetica dei quattro registri basata soltanto sui loro conteggi;
+- indice interno sticky e landmark nominati;
+- record semantici espandibili, aperti di default;
+- evidenze/premesse annidate in una gerarchia leggibile;
+- badge che ripresentano stati già materializzati, senza crearne di nuovi;
+- ricerca locale nel testo già presente nel DOM;
+- controlli `Espandi`, `Contrai` e `Stampa`;
+- layout responsive, focus visibile e skip link;
+- profilo `@media print` dedicato;
+- zero-state completo: anche prima del mining restano visibili struttura, finalità e quattro registri senza inventare contenuto.
+
+L'HTML è **autosufficiente**: nessun CSS, font, analytics o JavaScript remoto è necessario al renderer. I normali collegamenti alle fonti giuridiche nel Source register restano invece parte del contenuto scientifico.
+
+La specifica di presentazione e la DoD sono in `docs/DASHBOARD_WORKBENCH_V9_5.md`.
+
+## Contratto di consegna v0.9.4+
 
 La chat post-bootstrap è una **superficie di controllo**, non una superficie di report. Normalmente contiene solo richieste umane non inferibili, un next step essenziale o il rinvio finale agli allegati. Il limite ordinario è 1–3 righe.
 
@@ -155,11 +177,11 @@ I record macchina (`state.json`, `session.integrity.json`, receipt, provenance r
 
 Se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, Juriscribe resta non pronto: non degrada a Markdown/JSON né compensa incollando il contenuto in chat.
 
-Specifica corrente: `docs/FINAL_DELIVERY_V9_4.md`. La precedente `FINAL_DELIVERY_V9_2.md` resta come documento storico degli invarianti di materializzazione introdotti in quella release.
+Specifica corrente di delivery: `docs/FINAL_DELIVERY_V9_4.md`. La precedente `FINAL_DELIVERY_V9_2.md` resta come documento storico degli invarianti di materializzazione introdotti in quella release.
 
 ## Dashboard
 
-`session-dashboard.html` è il **dossier inferenziale giuridico-umanistico-editoriale** della sessione. La regola è di parità, non di sommario:
+`session-dashboard.html` è il **dossier inferenziale giuridico-umanistico-editoriale** e la workbench di lettura della sessione. La regola resta di parità, non di sommario:
 
 ```text
 Dashboard = cornice umana
@@ -169,7 +191,7 @@ Dashboard = cornice umana
           + Transformation ledger
 ```
 
-La dashboard non è una console tecnica. Il runtime conserva i controlli tecnici nei record interni e nei metadata invisibili necessari ai gate.
+La dashboard non è una console tecnica. Il runtime conserva i controlli tecnici nei record interni e nei metadata invisibili necessari ai gate. Il renderer v0.9.5 aggiunge soltanto struttura di lettura derivata e strumenti locali che non modificano lo stato.
 
 ## Integrità
 
@@ -177,16 +199,16 @@ Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` �
 
 ## Audit e non-regressione
 
-`docs/AUDIT_MAIN_V9_4.md` documenta il nuovo audit di `main`, i pattern consolidati, gli anti-pattern corretti e la DoD. La strategia è additiva: la proiezione semantica si colloca sopra i record esistenti e non modifica reticolo, provenance, review receipts, simulation receipts o fixed-point.
+`docs/AUDIT_MAIN_V9_4.md` documenta l'audit integrale che ha introdotto la proiezione semantica comune. La v0.9.5 resta additiva sulla superficie: non modifica reticolo, provenance, review receipts, simulation receipts, semantic seal o fixed-point.
 
 ## Validazione e CI
 
-La CI conserva le baseline storiche: 400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9 e tutti i fixed-point. I regression test v0.9.4 aggiungono parità dossier/dashboard, assenza di telemetria dal corpo HTML e semantic-drift detection.
+La CI conserva le baseline storiche: 400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9 e tutti i fixed-point. I regression test v0.9.4 conservano parità dossier/dashboard e semantic-drift detection; quelli v0.9.5 aggiungono zero-state, self-contained/offline, landmark/anchor, escape del materiale utente, ricerca/print surface e assenza di telemetria tecnica nel body.
 
 ## Versioni
 
-- runtime: `0.9.4`
+- runtime: `0.9.5`
 - access contract: `1.7.0`
 - manifest: `juriscribe-manifest/v9`
 
-Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/RUNTIME_HARDENING_V9_3.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
+Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/DASHBOARD_WORKBENCH_V9_5.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/RUNTIME_HARDENING_V9_3.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
