@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-from . import artifact_atlas as _base
+from . import artifact_atlas_core as _base
 
 PROFILE_ID = "JURISCRIBE_ARTIFACT_ATLAS_V1"
 SCHEMA = "juriscribe-artifact-atlas/v1"
@@ -74,7 +74,7 @@ def build_artifact_atlas(state: Any) -> dict[str, Any]:
 
 def artifact_dashboard_coverage_gate(state: Any, atlas: dict[str, Any] | None = None) -> tuple[bool, list[str]]:
     view = atlas or build_artifact_atlas(state)
-    ok, errors = _base.artifact_dashboard_coverage_gate(state, view)
+    _, errors = _base.artifact_dashboard_coverage_gate(state, view)
     payload = state if isinstance(state, dict) else state.__dict__
     if (payload.get("limits") or []) and not any(str(item.get("ruolo")) == "limits" for item in view.get("artefatti_epistemici") or []):
         errors.append("substantive limits are not represented in dashboard artifact atlas")
