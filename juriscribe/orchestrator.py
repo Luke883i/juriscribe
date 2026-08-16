@@ -1,6 +1,10 @@
 """Public orchestration facade.
 
-v0.9 keeps continuation-era primitives available for compatibility, then replaces lifecycle entry points with the tri-mode dispatcher. v0.9.1 applies the final-delivery boundary last so attachment/format rules cannot be bypassed by legacy exports.
+v0.9 keeps continuation-era primitives available for compatibility and routes the
+lifecycle through the tri-mode dispatcher. v0.9.1 applies the final-delivery
+boundary last; v0.9.2 hardens that boundary with real materialization and
+state-bound dashboard verification. Legacy exports therefore cannot bypass the
+current attachment/format gate.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -9,3 +13,4 @@ from .delivery import evaluate_completion, record_artifact
 # Contract-check markers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=True
+# materialized_delivery_required=True dashboard_state_binding_required=True artifact_first_surface_required=True
