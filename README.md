@@ -1,6 +1,6 @@
 # Juriscribe
 
-Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Dalla v0.9 ogni sessione opera in una delle tre modalità principali; la v0.9.1 ripristina inoltre il contratto storico di consegna **artifact-first**: la complessità resta nei documenti e nella dashboard, non nella conversazione.
+Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Opera in tre modalità canoniche e usa una superficie **artifact-first**: la complessità resta nei documenti e nella dashboard, non nella conversazione.
 
 | Modalità | Quando usarla | Output principale |
 |---|---|---|
@@ -8,7 +8,19 @@ Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabil
 | `GREENFIELD` | parti da concept, prompt, quesito o mandato e vuoi un nuovo testo/monografia | `final_legal_text` |
 | `REVIEW` | hai un testo completo e vuoi revisione scientifica, contenutistica e redazionale | `review_report` (+ eventuale `revised_legal_text`) |
 
-In tutte le modalità Juriscribe usa mining epistemico, reticolo, fonti circostanziate, inferenze esplicite, review, saturazione, provenance e una **baseline editoriale comune** adattata al genere: struttura proporzionata, terminologia, autorità e controautorità, citazioni, bibliografia, perimetro temporale/giurisdizionale, registro, leggibilità e audience fit.
+In tutte le modalità Juriscribe usa mining epistemico, reticolo, fonti circostanziate, inferenze esplicite, review, saturazione, provenance e una baseline editoriale comune adattata al genere: struttura proporzionata, terminologia, autorità e controautorità, citazioni, bibliografia, perimetro temporale/giurisdizionale, registro, leggibilità e audience fit.
+
+## Esperienza del giurista
+
+Dopo il bootstrap l'esperienza ordinaria deve restare semplice:
+
+1. scegli `CONTINUATION`, `GREENFIELD` o `REVIEW`;
+2. fornisci i materiali;
+3. ricevi soltanto il setup minimo realmente necessario;
+4. accetti o modifichi i parametri;
+5. **attendi gli artefatti finali**, salvo una decisione umana materialmente bloccante che Juriscribe non possa inferire in modo sicuro.
+
+Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione, provenance e diagnostica tecnica appartengono al runtime, ai DOCX e alla dashboard.
 
 ## Avvio in una sessione AI
 
@@ -25,44 +37,35 @@ Prima di lavorare sui miei materiali:
 5. dopo initialize non presumere il tipo di lavoro: fammi scegliere fra `CONTINUATION`, `GREENFIELD`, `REVIEW` e `ALTRO`;
 6. considera il lavoro sostanziale autorizzato solo dopo la selezione della modalità.
 
-Per ogni modalità:
+Dopo la selezione della modalità:
 - mantieni separati runtime, istruzioni, corpus dell'utente e fonti esterne;
 - materializza un mode contract e uno standard editoriale adatto al genere e al destinatario;
 - esegui mining atomico, reticolo e source/inference discipline prima delle conclusioni sostanziali;
-- non trasformare il concept, il testo da revisionare o i capitoli precedenti in autorità giuridiche auto-validanti;
-- usa review scientifica, contenutistica e redazionale con finding ed evidence locator;
-- applica gli standard tipici in modo fluido, non meccanico;
-- non esporre chain-of-thought: mostra invece stati, evidenze, locator, inferenze registrate, finding, blocker e decisioni auditabili negli artefatti;
-- se una capability manca, dichiaralo e usa il percorso degradato, salvo il DOCX finale: senza DOCX write/readback non dichiarare COMPLETE;
+- non trasformare concept, testo da revisionare o capitoli precedenti in autorità giuridiche auto-validanti;
+- applica gli standard redazionali tipici in modo fluido, non meccanico;
+- lavora autonomamente e NON narrare in chat i passaggi intermedi di mining, ricerca, review, rigenerazione, saturazione, simulazione, compressione, provenance o gate;
+- non chiedere conferme meccaniche: interrompimi soltanto per una decisione materialmente bloccante che non sia inferibile in modo sicuro dai materiali, dal mandato e dal setup già accettato;
+- non esporre chain-of-thought; stati, evidenze, locator, inferenze registrate, finding, blocker e decisioni auditabili devono stare negli artefatti;
+- non riversare in chat report, finding completi, liste estese di fonti/evidenze, ledger, receipt, provenance raw, JSON, log, stderr o traceback;
+- se si verifica un errore tecnico, mostrami soltanto un messaggio breve e non sensibile e conserva il dettaglio nella dashboard/ledger interno;
+- senza DOCX_WRITE e DOCX_READBACK reali non dichiarare COMPLETE;
 - prima della consegna esegui provenance, final severe review, readback e completion gate specifico della modalità;
-- alla fine scrivi in chat soltanto poche righe e rimanda ai documenti allegati e alla dashboard;
-- allega i documenti finali in DOCX e sempre `session-dashboard.html`;
+- alla fine scrivi in chat soltanto 1–3 righe e rimanda ai documenti allegati e alla dashboard;
+- allega i documenti finali in DOCX realmente materializzati e sempre `session-dashboard.html` aggiornata;
 - non allegare log, receipt, `state.json`, `session.integrity.json`, provenance raw o validation JSON salvo mia richiesta tecnica esplicita.
 ```
 
-### CONTINUATION
+## CONTINUATION
 
 Dopo `CONTINUATION`, carica i capitoli `1..N`, bibliografia e vincoli editoriali. Juriscribe costruisce il continuation frontier e genera N+1 solo dopo reticolo, setup e contratti.
 
-### GREENFIELD
+## GREENFIELD
 
 Dopo `GREENFIELD`, fornisci il concept o mandato. Può essere una frase, una tesi, un quesito, un indice provvisorio o un brief. Juriscribe lo scompone in problemi/claim/questioni di ricerca; **il concept orienta, non prova**. Il setup chiarisce tipo di documento, pubblico, lunghezza, postura e livello di ricerca.
 
-Esempio:
-
-```text
-GREENFIELD. Voglio una monografia sul principio di proporzionalità nel diritto amministrativo europeo, con taglio comparato e attenzione alla giurisprudenza recente.
-```
-
-### REVIEW
+## REVIEW
 
 Dopo `REVIEW`, carica il testo completo. Il default è `REPORT_ONLY`: una review può essere completa anche se conclude che il testo ha blocker o major finding. Se vuoi anche una riscrittura scegli `REPORT_AND_REVISED_TEXT`; in quel caso il testo revisionato deve essere riesaminato.
-
-Esempio:
-
-```text
-REVIEW. Esegui revisione scientifica, contenutistica e redazionale completa di questo testo. Voglio prima il report dei finding; non modificare la voce autoriale senza motivazione.
-```
 
 ## Standard editoriale comune
 
@@ -79,9 +82,9 @@ Il profilo `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` è publisher-neutral. In ogni mo
 - citazioni/pinpoint e bibliografia coerenti;
 - preservazione di qualificazioni, eccezioni e voce autoriale quando pertinente.
 
-Le metriche editoriali sono **segnali di audit**, non regole universali.
+Le metriche editoriali sono segnali di audit, non regole universali.
 
-## Pipeline comune e diramazioni
+## Pipeline comune
 
 ```text
 BOOTSTRAP + PROBE + INITIALIZE
@@ -97,19 +100,19 @@ BOOTSTRAP + PROBE + INITIALIZE
 → PROVENANCE
 → FINAL SEVERE REVIEW
 → M+10.000 VS DOD
-→ DOCX MATERIALIZATION + READBACK
-→ FINAL HTML DASHBOARD
+→ REAL DOCX MATERIALIZATION + READBACK
+→ CURRENT STATE-BOUND HTML DASHBOARD
 → DELIVERY MANIFEST
 → COMPLETE
 ```
 
 `CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` non richiede che il testo sorgente diventi “PASS” per poter consegnare un report diagnostico.
 
-## Contratto di consegna v0.9.1
+## Contratto di consegna v0.9.2
 
-**La conversazione deve restare minima.** A lavoro concluso Juriscribe deve normalmente produrre soltanto 1–3 righe in chat e rinviare agli allegati.
+La chat post-bootstrap è una **superficie di controllo**, non una superficie di report. Normalmente contiene solo richieste umane non inferibili, un next step essenziale o il rinvio finale agli allegati. Il limite ordinario è 1–3 righe.
 
-Tutti i documenti user-facing devono essere **DOCX**:
+Tutti i documenti user-facing devono essere **DOCX reali**:
 
 - `final_chapter` / `final_legal_text` / `review_report` / eventuale `revised_legal_text`;
 - `evidence_dossier`;
@@ -118,13 +121,15 @@ Tutti i documenti user-facing devono essere **DOCX**:
 - `transformation_ledger`;
 - `review_findings_register` quando applicabile.
 
-`session_dashboard` è invece sempre **HTML** e deve essere allegata come `session-dashboard.html`.
+Non basta che il path finisca in `.docx`: il file deve esistere, non essere vuoto, risultare un pacchetto OOXML/WordprocessingML leggibile e avere digest/size verificati al gate.
 
-I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger) restano interni e **non devono essere allegati** nella consegna ordinaria. Il runtime conserva questi oggetti come prova del processo, ma il final delivery manifest li filtra.
+`session_dashboard` è sempre **HTML**, deve essere allegata come `session-dashboard.html` e deve contenere un digest che la lega allo stato sostanziale corrente. Una dashboard stale non vale come dashboard finale.
 
-Un file `.json`, `.md` o `.txt` non può soddisfare un ruolo documentale finale. `COMPLETE` richiede `DOCX_WRITE=AVAILABLE`, `DOCX_READBACK=AVAILABLE` e readback `PASS` per ogni deliverable.
+I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger, traceback) restano interni e non devono essere allegati nella consegna ordinaria.
 
-Specifica: `docs/FINAL_DELIVERY_V9_1.md`.
+Se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, Juriscribe resta non pronto: non degrada a Markdown/JSON né compensa incollando il contenuto in chat.
+
+Specifica corrente: `docs/FINAL_DELIVERY_V9_2.md`.
 
 ## Dashboard
 
@@ -132,16 +137,16 @@ Specifica: `docs/FINAL_DELIVERY_V9_1.md`.
 
 ## Integrità
 
-Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato in v0.9: viene letto solo per migrare vecchi workspace. L'integrity manifest resta interno e non appartiene al pacchetto ordinario di allegati.
+Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato: viene letto solo per migrare vecchi workspace. L'integrity manifest resta interno e non appartiene al pacchetto ordinario di allegati.
 
 ## Validazione e CI
 
-La CI conserva le baseline storiche (400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9) e aggiunge regression test sul final-delivery boundary. I numeri sono property/mutation/stress test del runtime, non migliaia di giudizi giuridici sostanziali.
+La CI conserva le baseline storiche (400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9) e aggiunge regression test su materializzazione reale, OOXML, dashboard freshness e superficie conversazionale redatta.
 
 ## Versioni
 
-- runtime: `0.9.1`
-- access contract: `1.6.0`
+- runtime: `0.9.2`
+- access contract: `1.7.0`
 - manifest: `juriscribe-manifest/v9`
 
-Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/FINAL_DELIVERY_V9_1.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
+Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/FINAL_DELIVERY_V9_2.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
