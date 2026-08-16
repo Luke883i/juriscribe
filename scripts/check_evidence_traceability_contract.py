@@ -59,21 +59,24 @@ def main() -> int:
         fail("public dashboard does not route to v0.9.6")
     for token in (
         "JURISCRIBE_EDITORIAL_WORKBENCH_V2",
-        "Esito complessivo",
-        "Indice degli artefatti",
-        "Registro di tracciabilita delle evidenze di artefatto",
+        "overall-outcome",
+        "artifact-index",
+        "evidence-traceability",
         "build_dashboard_evidence_coverage",
         "build_dashboard_inference_view",
         "base.render_session_dashboard",
     ):
         if token not in dashboard:
-            fail(f"dashboard v0.9.6 missing {token}")
+            fail(f"dashboard v0.9.6 missing structural token {token}")
 
     for token in (
         "build_evidence_traceability",
         "build_user_artifact_index",
         "build_dashboard_evidence_coverage",
         "evidence_traceability_gate",
+        "Esito complessivo — quadro compresso e completo",
+        "Indice degli artefatti — richiamo della consegna",
+        "Registro di tracciabilita delle evidenze di artefatto",
         "attributi_ulteriori",
         "riferimenti_claim_non_risolti",
         "riferimenti_fonte_non_risolti",
@@ -81,7 +84,7 @@ def main() -> int:
         "identificativi_evidenza_duplicati",
     ):
         if token not in traceability:
-            fail(f"evidence traceability runtime missing {token}")
+            fail(f"evidence traceability semantic layer missing {token}")
     if "evidence_traceability_gate" not in semantic_delivery or 'completion["evidence_traceability_gate"]' not in semantic_delivery:
         fail("completion boundary does not enforce evidence traceability")
 
