@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -148,7 +149,7 @@ def build_user_artifact_index(state: Any) -> dict[str, Any]:
             "titolo": ROLE_LABELS.get(role, role.replace("_", " ").title()),
             "funzione": ROLE_PURPOSES.get(role, "artefatto finale della sessione"),
             "stato": "DISPONIBILE" if available else ("REGISTRATO" if artifact else "ATTESO"),
-            "contenuto_nella_dashboard": "INTEGRALE" if role in DOSSIER_ROLES else "RICHiamato tramite artefatto",
+            "contenuto_nella_dashboard": "INTEGRALE" if role in DOSSIER_ROLES else "RICHIAMATO TRAMITE ARTEFATTO",
             "richiamo": _relative_artifact_href(s, artifact) if artifact else None,
             "ancora_dashboard": ROLE_ANCHORS.get(role),
         }))
@@ -211,7 +212,7 @@ def build_evidence_traceability(state: Any) -> dict[str, Any]:
             "attributi_ulteriori": extras,
         }))
 
-    duplicates = sorted({item for item in evidence_ids if evidence_ids.count(item) > 1})
+    duplicates = sorted(item for item, count in Counter(evidence_ids).items() if count > 1)
     complete = not (missing_claims or missing_sources or missing_artifacts or missing_locators or duplicates)
     coverage = {
         "evidenze_registrate": len(raw_records),
