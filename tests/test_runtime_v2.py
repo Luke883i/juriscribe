@@ -1,7 +1,7 @@
 import tempfile,unittest
 from juriscribe.convergence import ConvergenceMonitor,completion_gate
 from juriscribe.mining import deep_mine,mine_style,compare_style
-from juriscribe.orchestrator import ingest_and_mine,register_semantic_mining,apply_setup,freeze_dods
+from juriscribe.orchestrator import ingest_and_mine,register_semantic_mining,apply_setup,freeze_dods,select_mode
 from juriscribe.session import Workspace
 from juriscribe.setup import propose_setup,accept_setup,parameter_dods
 from juriscribe.sources import SourceRecord,ClaimRecord,validate_claim,assess_dominance
@@ -11,8 +11,8 @@ def ret():
 class RuntimeV2RegressionTests(unittest.TestCase):
     def test_deep_mining_extracts_style(self):
         result=deep_mine(SAMPLE,source_id='SRC-1',chapter='I'); self.assertGreater(result['surface']['word_count'],30); self.assertIn('tuttavia',result['style']['dominant_connectors'])
-    def test_setup_requires_reticulum_and_stays_minimal(self):
-        mining=deep_mine(SAMPLE,source_id='SRC1'); u,r=ret(); from juriscribe.reticulum import validate_reticulum; rr=validate_reticulum(u,r,source_ids={'SRC1'}).record(); proposal=propose_setup(mining,{'raw':'Scrivi capitolo II'},reticulum=rr); self.assertEqual(proposal['simple_options'],['ACCETTA CONSIGLIATI','MODIFICA']); self.assertEqual(len(proposal['parameters']),4)
+    def test_setup_requires_reticulum_and_remains_guided(self):
+        mining=deep_mine(SAMPLE,source_id='SRC1'); u,r=ret(); from juriscribe.reticulum import validate_reticulum; rr=validate_reticulum(u,r,source_ids={'SRC1'}).record(); proposal=propose_setup(mining,{'raw':'Scrivi capitolo II'},reticulum=rr); self.assertEqual(proposal['simple_options'],['ACCETTA CONSIGLIATI','MODIFICA','ALTRO']); self.assertGreaterEqual(len(proposal['parameters']),4); self.assertIn('document_type',proposal['recommended']); self.assertIn('research_depth',proposal['recommended'])
     def test_parameters_become_blocking_dods(self):
         mining=deep_mine(SAMPLE,source_id='SRC1'); u,r=ret(); from juriscribe.reticulum import validate_reticulum; proposal=propose_setup(mining,{'raw':'Scrivi capitolo II'},reticulum=validate_reticulum(u,r,source_ids={'SRC1'}).record()); accepted=accept_setup(proposal,{'length_words':[1800,2200]}); dods=parameter_dods(accepted); self.assertTrue(all(d['blocking'] for d in dods))
     def test_completion_legacy_gate_still_requires_dod_and_10000(self):
@@ -23,7 +23,9 @@ class RuntimeV2RegressionTests(unittest.TestCase):
         source=SourceRecord('S1','Commento','u','leading_treatise',court_or_author='A',direct_read=True).record(); self.assertEqual(assess_dominance('tesi',[source])['status'],'DOMINANCE_NOT_ESTABLISHED')
     def test_style_compare_is_auditable(self):
         c=compare_style(mine_style(SAMPLE).record(),SAMPLE); self.assertEqual(c['mean_relative_deviation'],0.0); self.assertTrue(c['register_match'])
-    def test_lifecycle_now_requires_reticulum_before_setup(self):
+    def test_lifecycle_requires_explicit_mode_then_reticulum(self):
         with tempfile.TemporaryDirectory() as tmp:
-            s=Workspace(tmp,'SES').initialize('Scrivi II'); ingest_and_mine(s,SAMPLE,source_id='SRC1',chapter='I'); self.assertEqual(s.phase,'SEMANTIC_MINING_REQUIRED'); u,r=ret(); register_semantic_mining(s,u,r); self.assertEqual(s.phase,'USER_SETUP_REQUIRED'); apply_setup(s); freeze_dods(s,[{'id':'DOD-CONTENT','kind':'CONTENT'}]); self.assertEqual(s.generation_contract['status'],'READY')
+            s=Workspace(tmp,'SES').initialize('Scrivi II');
+            with self.assertRaises(ValueError): ingest_and_mine(s,SAMPLE,source_id='SRC1',chapter='I')
+            select_mode(s,'CONTINUATION'); ingest_and_mine(s,SAMPLE,source_id='SRC1',chapter='I'); self.assertEqual(s.phase,'SEMANTIC_MINING_REQUIRED'); u,r=ret(); register_semantic_mining(s,u,r); self.assertEqual(s.phase,'USER_SETUP_REQUIRED'); apply_setup(s); freeze_dods(s,[{'id':'DOD-CONTENT','kind':'CONTENT'}]); self.assertEqual(s.generation_contract['status'],'READY'); self.assertEqual(s.mode_contract['status'],'READY')
 if __name__=='__main__': unittest.main()
