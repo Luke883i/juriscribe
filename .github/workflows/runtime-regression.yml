@@ -78,7 +78,21 @@ jobs:
             exit "$status"
           fi
       - name: Admission, modes, editorial standard, manifest and onboarding integrity
-        run: python scripts/check_contract.py
+        shell: bash
+        run: |
+          set +e
+          python scripts/check_contract.py > /tmp/juriscribe-contract.log 2>&1
+          status=$?
+          cat /tmp/juriscribe-contract.log
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/juriscribe-contract.log').read_text(encoding='utf-8', errors='replace')[-3500:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Juriscribe contract check failure::{text}')
+          PY
+            exit "$status"
+          fi
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
