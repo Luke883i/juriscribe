@@ -99,6 +99,11 @@ jobs:
       - name: Generation configuration anti-plagiarism saturation and artifact-atlas contract
         shell: bash
         run: python scripts/check_generation_governance_contract.py
+      - name: Persistent dashboard contract and real tri-mode E2E
+        shell: bash
+        run: |
+          python scripts/check_persistent_dashboard_contract.py
+          python scripts/exercise_persistent_dashboard_v98.py
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
@@ -108,6 +113,18 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
+      - name: Materialize real persistent dashboard E2E artifacts
+        run: python scripts/exercise_persistent_dashboard_v98.py --out-root /tmp/persistent-dashboard-e2e --json-out /tmp/persistent-dashboard-e2e.json
+      - name: Retain persistent dashboard E2E artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: persistent-dashboard-e2e
+          path: |
+            /tmp/persistent-dashboard-e2e/**/artifacts/session-dashboard.html
+            /tmp/persistent-dashboard-e2e/**/ledger/dashboard-generations.jsonl
+            /tmp/persistent-dashboard-e2e.json
+          if-no-files-found: error
+          retention-days: 7
       - name: 400k five-class multi-seed simulations
         run: python scripts/simulate_v5_ci.py --cases 400000 --seeds 11,29,47,83,131,257,509,1021,2027,4093,8191,12289,16381,24593,32771,40961,49157,57347,65537,99991 --json-out /tmp/simulation-v5.json
       - name: M plus 1000 architecture saturation
