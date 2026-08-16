@@ -6,9 +6,9 @@ boundary last; v0.9.2 hardens that boundary with real materialization and
 state-bound dashboard verification. v0.9.4 adds a legal-humanistic semantic
 projection boundary after delivery so dossier freshness cannot be bypassed.
 v0.9.6 extends that boundary with lossless artifact-evidence traceability. v0.9.7
-adds a user-bound generation configuration, deterministic anti-plagiarism proof,
-cyclic predelivery saturation and complete dashboard artifact coverage as the
-final runtime governance boundary.
+adds user-bound generation configuration, candidate and materialized-artifact
+anti-plagiarism proof, cyclic predelivery saturation and complete dashboard
+artifact coverage as the final runtime governance boundary.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -16,18 +16,15 @@ from .multimode import apply_setup, audit_candidate_chapter, audit_legal_text, e
 from .delivery import evaluate_completion, record_artifact
 from .semantic_delivery import evaluate_completion, record_artifact
 from .generation_governance import (
-    apply_setup,
     audit_candidate_chapter,
     audit_legal_text,
-    freeze_dods,
     ingest_and_mine,
-    record_artifact,
     record_final_review,
     record_provenance,
     register_plagiarism_reference,
     register_semantic_mining,
-    seal_draft,
 )
+from .artifact_governance import apply_setup, freeze_dods, record_artifact, seal_draft
 from .governance_delivery import evaluate_completion
 # Contract-check markers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
@@ -37,3 +34,4 @@ from .governance_delivery import evaluate_completion
 # evidence_traceability_required=True dashboard_artifact_recall_required=True dashboard_compressed_outcome_required=True
 # generation_configuration_required=True anti_plagiarism_required=True predelivery_saturation_required=True
 # artifact_atlas_required=True dashboard_complete_artifact_description_required=True
+# materialized_narrative_antiplagiarism_required=True sealed_candidate_artifact_binding_required=True
