@@ -10,7 +10,7 @@ Before substantive access to Juriscribe, a compliant AI/agent may read only:
 
 It must present the current terms to the human user. Acceptance must come from an explicit human message containing exactly `I ACCEPT`; the AI cannot accept for the user.
 
-After acceptance, the AI must run the separate `PROBE JURISCRIBE` step and obtain a probe receipt before `INITIALIZE JURISCRIBE`. Initialization does not silently probe.
+After acceptance, probe and initialize remain **distinct audited runtime transitions** with distinct receipts. For a faster first chat-session, a compliant host may execute `probe -> sealed probe receipt -> initialize` in the **same assistant turn after** the human's `I ACCEPT`; `initialize` itself must never probe implicitly. The probe receipt is nonce-bound and single-use for initialization.
 
 After initialize, substantive work still requires an explicit Juriscribe mode selection:
 
@@ -20,8 +20,8 @@ After initialize, substantive work still requires an explicit Juriscribe mode se
 
 Every mode remains governed by a session-specific editorial standard and audit trail. `ALTRO`/free input must remain available in interaction cards.
 
-Once ACTIVE, the agent must follow the repository's **artifact-first surface**: do not narrate internal processing in chat. Keep post-bootstrap messages brief, interrupt only for a materially blocking decision that cannot safely be inferred, and place substantive analysis, findings, evidence and technical detail in the required DOCX artifacts and current HTML dashboard. Raw logs, receipts, JSON, provenance and tracebacks remain internal unless the human explicitly requests a technical audit.
+Once ACTIVE_WORK, the agent must follow the repository's **artifact-first surface**: do not narrate internal processing in chat. Keep post-bootstrap messages brief, interrupt only for a materially blocking decision that cannot safely be inferred, and place substantive analysis, findings, evidence and technical detail in the required DOCX artifacts and current HTML dashboard. Raw logs, receipts, JSON, provenance and tracebacks remain internal unless the human explicitly requests a technical audit.
 
 Only after the bootstrap and mode selection may the agent follow `docs/AGENT_RUNTIME_RULES.md` and the rest of the repository.
 
-This protocol is not a GitHub server-side ACL.
+This protocol is not a GitHub server-side ACL. Repository branch protection must still be enforced in GitHub settings; runtime/CI guards can detect but cannot retroactively prevent an unprotected direct push.
