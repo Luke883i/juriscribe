@@ -67,8 +67,6 @@ def _confined_path(state, raw_path: str | Path) -> tuple[Path | None, list[str]]
     try:
         relative = absolute.relative_to(root)
     except ValueError:
-        # A relative spelling may contain '..' or a symlink; use the resolved path
-        # only to provide a deterministic rejection, never to widen the root.
         try:
             absolute.resolve(strict=False).relative_to(root)
         except ValueError:
@@ -249,6 +247,11 @@ def refresh_dashboard_artifact(state, path: str | Path) -> dict[str, Any]:
         state.artifacts.append(record)
     else:
         record["path"] = str(path); record["readback"] = "PASS"
+        # Dashboard regeneration is an authorized replacement. Invalidate only its
+        # prior materialization metadata before verifying and sealing the new bytes.
+        # Other final artifacts still fail closed if their registered digest drifts.
+        for key in ("sha256", "size_bytes", "materialized", "verified_format", "workspace_confined", "resolved_path"):
+            record.pop(key, None)
     normalized = normalize_artifact_record(state, record)
     ok, errors, metadata = verify_materialized_artifact(state, normalized)
     if not ok: raise ValueError("; ".join(errors))

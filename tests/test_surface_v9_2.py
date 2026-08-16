@@ -40,15 +40,22 @@ class ArtifactFirstSurfaceV92Tests(unittest.TestCase):
         self.assertNotIn("Traceback", text)
         self.assertEqual(len([line for line in text.splitlines() if line.strip()]), 1)
 
-    def test_verbose_json_requires_explicit_opt_in(self):
+    def test_verbose_json_requires_explicit_dual_opt_in(self):
         def fake_main(argv=None):
             print("RAW_MACHINE_DETAIL")
             return 0
-        out = io.StringIO()
-        with patch.object(pipeline._v9, "main", fake_main), patch.dict(os.environ, {"JURISCRIBE_VERBOSE_JSON": "1"}), redirect_stdout(out):
+
+        env_only = io.StringIO()
+        with patch.object(pipeline._v9, "main", fake_main), patch.dict(os.environ, {"JURISCRIBE_VERBOSE_JSON": "1"}), redirect_stdout(env_only):
             rc = pipeline.main(["gate", "/path/without/state"])
         self.assertEqual(rc, 0)
-        self.assertIn("RAW_MACHINE_DETAIL", out.getvalue())
+        self.assertNotIn("RAW_MACHINE_DETAIL", env_only.getvalue())
+
+        explicit = io.StringIO()
+        with patch.object(pipeline._v9, "main", fake_main), patch.dict(os.environ, {"JURISCRIBE_VERBOSE_JSON": "1"}), redirect_stdout(explicit):
+            rc = pipeline.main(["--technical-output", "gate", "/path/without/state"])
+        self.assertEqual(rc, 0)
+        self.assertIn("RAW_MACHINE_DETAIL", explicit.getvalue())
 
 
 if __name__ == "__main__": unittest.main()
