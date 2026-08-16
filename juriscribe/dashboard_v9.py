@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import hashlib
 import html
 import json
 from pathlib import Path
 from typing import Any
+
+from .editorial_artifacts import build_dashboard_inference_view
 
 DASHBOARD_BINDING_KEYS = (
     "request",
@@ -61,10 +64,8 @@ def _artifact_binding(artifacts):
 def dashboard_state_digest(state: dict[str, Any] | Any) -> str:
     payload = state if isinstance(state, dict) else state.__dict__
     bound = {key: payload.get(key) for key in DASHBOARD_BINDING_KEYS}
-    # During initialize the dashboard is rendered before its own registry record is
-    # appended. Before mode selection, exclude artifact registry churn from the
-    # freshness binding; selecting a mode immediately changes the digest and from
-    # then on artifact bindings are part of the substantive dashboard state.
+    # The registry is bound only after mode selection, preserving initialization
+    # semantics while keeping the delivered dashboard stale-sensitive.
     bound["artifacts"] = (
         _artifact_binding(payload.get("artifacts") or [])
         if str(payload.get("mode") or "").strip()
@@ -74,37 +75,156 @@ def dashboard_state_digest(state: dict[str, Any] | Any) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def esc(value:Any)->str: return html.escape(str(value if value is not None else ""))
-def _status(value):
-    text=str(value).upper()
-    if text in {"PASS","DONE","READY","COMPLETE","ACCEPTED","SATURATED","DIAGNOSTIC_SATURATED","PASS_CANDIDATE","AVAILABLE"} or value is True: return "ok"
-    if text in {"FAIL","GAPS_OPEN","BLOCKER","REGENERATE_REQUIRED","INVALID"} or value is False: return "bad"
-    return "wait"
-def metric(label,value,hint=""): return f'<div class="metric {_status(value)}"><span>{esc(label)}</span><b>{esc(value)}</b>{f"<small>{esc(hint)}</small>" if hint else ""}</div>'
-def table(items,cols,empty="Nessun elemento registrato"):
-    if not items: return f'<p class="muted">{esc(empty)}</p>'
-    head="".join(f"<th>{esc(label)}</th>" for label,_ in cols); rows=[]
-    for item in items:
-        cells=[]
-        for _,accessor in cols:
-            value=accessor(item) if callable(accessor) else item.get(accessor,"")
-            if isinstance(value,(list,tuple,set)): value=", ".join(map(str,value))
-            cells.append(f"<td>{esc(value)}</td>")
-        rows.append("<tr>"+"".join(cells)+"</tr>")
-    return f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
-def _blockers(state):
-    blockers=[]
-    reason=(state.get("completion") or {}).get("reason","")
-    if reason and reason!="PASS": blockers.extend(x.strip() for x in str(reason).split(";") if x.strip())
-    for item in state.get("limits") or []:
-        if str(item.get("kind","")).upper()=="RUNTIME_BLOCKER" and str(item.get("status","OPEN")).upper()!="RESOLVED":
-            summary=str(item.get("summary") or item.get("message") or "Runtime blocker")
-            if summary: blockers.append(summary)
-    return list(dict.fromkeys(blockers))
-def _next_action(state):
-    choices=((state.get("interaction") or {}).get("card") or {}).get("choices") or []
-    return str(choices[0]) if choices else "Consulta i blocker e completa il passaggio successivo"
-def render_session_dashboard(state:dict[str,Any],output:str|Path)->Path:
-    req=state.get("request") or {}; mode=state.get("mode") or "NON SELEZIONATA"; completion=state.get("completion") or {}; ret=state.get("reticulum") or {}; mode_contract=state.get("mode_contract") or {}; editorial=state.get("editorial_standard") or {}; continuation=state.get("continuation") or {}; coverage=continuation.get("coverage") or {}; review=state.get("review") or {}; final_review=state.get("final_review") or {}; provenance=state.get("provenance") or {}; quality=state.get("quality") or {}; source_intel=state.get("source_intelligence") or {}; bibliography=state.get("bibliography") or {}; artifacts=state.get("artifacts") or []; claims=state.get("claim_ledger") or []; sources=state.get("sources") or []; cycles=review.get("cycles") or []; findings=cycles[-1].get("findings",[]) if cycles else []; blockers=_blockers(state); ready=bool(completion.get("eligible")); accepted=(state.get("setup") or {}).get("accepted") or {}; required_roles=mode_contract.get("required_artifact_roles") or []; required_role_set=set(map(str,required_roles)); visible_artifacts=[a for a in artifacts if str(a.get("role","")) in required_role_set or str(a.get("delivery_class",""))=="ATTACH"]; internal_artifact_count=max(0,len(artifacts)-len(visible_artifacts)); state_digest=dashboard_state_digest(state)
-    page=f'''<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="juriscribe-state-digest" content="{state_digest}"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Juriscribe — fascicolo di sessione</title><style>:root{{--bg:#f6f3ec;--paper:#fffdfa;--ink:#252825;--muted:#6b6f69;--line:#ddd6c8;--ok:#236443;--bad:#973d36;--wait:#92701c;--accent:#365f77}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,'Times New Roman',serif}}main{{max-width:1180px;margin:auto;padding:22px}}header,section{{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin:12px 0;padding:20px}}h1,h2,h3,.eyebrow,.metric,.next,th{{font-family:Arial,sans-serif}}h1{{margin:.2rem 0 .5rem;font-size:2rem}}h2{{font-size:1.25rem;margin-top:0}}.eyebrow{{font-size:.73rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:800}}.verdict{{font:800 1.55rem Arial,sans-serif;margin:.5rem 0}}.ok{{color:var(--ok)}}.bad{{color:var(--bad)}}.wait{{color:var(--wait)}}.next{{padding:12px 14px;background:#eef3f5;border-left:5px solid var(--accent);border-radius:7px}}.blockers{{padding:12px 16px;background:#fff0ee;border-left:5px solid var(--bad)}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px}}.metric{{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}}.metric span{{display:block;font-size:.7rem;text-transform:uppercase;color:var(--muted)}}.metric b{{display:block;font-size:1.02rem}}.metric small{{display:block;color:var(--muted)}}.table-wrap{{overflow:auto}}table{{border-collapse:collapse;width:100%;font-size:.9rem}}th,td{{border-bottom:1px solid #ebe5d9;text-align:left;padding:8px;vertical-align:top}}th{{font-size:.72rem;text-transform:uppercase}}details{{margin:.65rem 0}}summary{{cursor:pointer;font-family:Arial,sans-serif;font-weight:700}}.muted{{color:var(--muted)}}code{{background:#f0ece3;padding:2px 5px;border-radius:4px}}@media(max-width:700px){{main{{padding:8px}}header,section{{padding:14px}}}}</style></head><body><main><header><div class="eyebrow">Juriscribe · fascicolo giuridico-scientifico-editoriale</div><h1>{esc(req.get('summary') or req.get('raw') or 'Sessione Juriscribe')}</h1><div class="verdict {'ok' if ready else 'bad'}">{'PRONTO PER CONSEGNA' if ready else 'NON PRONTO'}</div><p><strong>Modalità:</strong> <code>{esc(mode)}</code> · <strong>Tipo:</strong> {esc(editorial.get('document_type','non definito'))}</p><div class="next"><strong>Prossima azione:</strong> {esc(_next_action(state))}</div>{('<div class="blockers"><strong>Blocker</strong><ul>'+''.join(f'<li>{esc(x)}</li>' for x in blockers)+'</ul></div>') if blockers else '<p class="ok"><strong>Nessun blocker aperto.</strong></p>'}</header><section><h2>1. Stato e contratto di lavoro</h2><div class="grid">{metric('Modalità',mode)}{metric('Mode contract',mode_contract.get('status','NON PRONTO'))}{metric('Standard editoriale',editorial.get('status','NON PRONTO'),editorial.get('standard_id',''))}{metric('Reticolo',ret.get('status','NON ESEGUITO'))}{metric('Review',review.get('status','NON ESEGUITA'))}{metric('Qualità',quality.get('status','NON ESEGUITA'))}{metric('Provenance',provenance.get('status','NON ESEGUITA'))}{metric('Review finale',final_review.get('status','NON ESEGUITA'))}</div><h3>Parametri accettati</h3>{table([{'k':k,'v':v} for k,v in accepted.items()],[('Parametro','k'),('Valore','v')])}</section><section><h2>2. Standard redazionali applicati</h2><p><strong>{esc(editorial.get('standard_id',''))}</strong> · {esc(editorial.get('document_type',''))} · destinatari: {esc(editorial.get('audience',''))}</p>{table([{'regola':k,'valore':v} for k,v in (editorial.get('rules') or {}).items()],[('Regola','regola'),('Valore','valore')])}<p class="muted">Gli standard sono publisher-neutral: gerarchia, proporzione, terminologia, autorità, citazioni e leggibilità restano invarianti; sintassi citazionale e house style seguono il progetto.</p></section><section><h2>3. Evidenze e merito</h2><div class="grid">{metric('Claim',len(claims))}{metric('Fonti',len(sources))}{metric('Coverage fonti',source_intel.get('coverage_status','NON ESEGUITA'))}{metric('Bibliografia',bibliography.get('status','NON DISPONIBILE'))}{metric('Continuation',coverage.get('status',continuation.get('status','N/A')))}</div><details open><summary>Finding dell’ultima review ({len(findings)})</summary>{table(findings,[('Criterio','criterion'),('Gravità','severity'),('Problema',lambda x:x.get('message') or x.get('kind')),('Posizione','artifact_locator'),('Stato','status'),('Intervento','proposed_action')])}</details><details><summary>Fonti</summary>{table(sources,[('ID','id'),('Fonte','title'),('Ruolo','role'),('Lettura diretta','direct_read'),('Verifica','verified_at')])}</details></section><section><h2>4. Artefatti richiesti e prodotti</h2><p><strong>Ruoli richiesti per questa modalità:</strong> {esc(', '.join(required_roles))}</p>{table(visible_artifacts,[('Ruolo','role'),('Artefatto','summary'),('Percorso','path'),('Readback','readback')],empty='Nessun deliverable user-facing materializzato')}</section><section><h2>5. Integrità tecnica</h2><details><summary>Mostra</summary><div class="grid">{metric('session.integrity.json',(state.get('node_integrity') or {}).get('status','NON VERIFICATO'))}{metric('Mode digest',mode_contract.get('digest',''))}{metric('Editorial digest',editorial.get('digest',''))}{metric('Provenance coverage',provenance.get('coverage','n/a'))}{metric('Dashboard state digest',state_digest)}{metric('Record interni esclusi',internal_artifact_count)}</div></details></section></main></body></html>'''
-    out=Path(output); out.parent.mkdir(parents=True,exist_ok=True); out.write_text(page,encoding="utf-8"); return out
+def esc(value: Any) -> str:
+    return html.escape(str(value if value is not None else ""))
+
+
+def _label(key: str) -> str:
+    labels = {
+        "riferimento": "Riferimento",
+        "proposizione": "Proposizione",
+        "funzione_giuridica": "Funzione giuridica",
+        "ambito": "Ambito",
+        "stato_epistemico": "Stato epistemico",
+        "evidenze": "Evidenze",
+        "premesse": "Premesse",
+        "ponte_inferenziale": "Ponte inferenziale",
+        "condizione_di_confutazione": "Condizione di confutazione",
+        "contesto_relazionale": "Relazioni, qualificazioni e contrasti",
+        "ragione_editoriale_o_probatoria": "Ragione editoriale o probatoria",
+        "disposizione_finale": "Disposizione finale",
+        "collocazione_nel_testo": "Collocazione nel testo",
+        "fonte": "Fonte",
+        "carattere_autorita": "Carattere dell'autorita",
+        "autore_o_organo": "Autore o organo",
+        "giurisdizione": "Giurisdizione",
+        "collocazione_temporale": "Collocazione temporale",
+        "ruolo_nel_lavoro": "Ruolo nel lavoro",
+        "uso_nel_ragionamento": "Uso nel ragionamento",
+        "evidenza_circostanziata": "Evidenza circostanziata",
+        "controautorita_o_riserva": "Controautorita o riserva",
+        "nota_critica": "Nota critica",
+        "verifica": "Verifica della fonte",
+        "data_verifica": "Data della verifica",
+        "voce_bibliografica": "Voce bibliografica",
+        "collegamento": "Collegamento",
+        "conclusione_inferenziale": "Conclusione inferenziale",
+        "autorita_o_evidenze": "Autorita o evidenze",
+        "qualificazioni_obiezioni_e_contrasti": "Qualificazioni, obiezioni e contrasti",
+        "ragione_dell_inferenza": "Ragione dell'inferenza",
+        "fase": "Fase",
+        "natura": "Natura della trasformazione",
+        "ragione": "Ragione",
+        "problema_rilevato": "Problema rilevato",
+        "gravita": "Gravita",
+        "intervento_proposto": "Intervento proposto",
+        "riferimenti_epistemici": "Riferimenti epistemici",
+        "fonti_coinvolte": "Fonti coinvolte",
+        "collocazione": "Collocazione",
+        "esito": "Esito",
+        "finding_affrontati": "Finding affrontati",
+        "contenuti_preservati": "Contenuti preservati",
+        "contenuti_persi": "Contenuti persi",
+        "nuovo_materiale": "Nuovo materiale",
+        "degradazioni": "Degradazioni",
+        "estensione_prima": "Estensione prima della trasformazione",
+        "estensione_dopo": "Estensione dopo la trasformazione",
+        "riesame_successivo": "Riesame successivo",
+        "oggetto": "Oggetto",
+        "evidenza": "Evidenza",
+        "conseguenza_esaminata": "Conseguenza esaminata",
+        "modalita": "Modalita",
+        "genere_giuridico": "Genere giuridico",
+        "destinatari": "Destinatari",
+        "orientamento": "Orientamento editoriale",
+        "principi_applicati": "Principi applicati",
+    }
+    return labels.get(key, str(key).replace("_", " ").strip().capitalize())
+
+
+def _render_value(value: Any, *, depth: int = 0) -> str:
+    if isinstance(value, dict):
+        if not value:
+            return '<p class="muted">Nessun elemento materializzato.</p>'
+        rows = []
+        for key, item in value.items():
+            rows.append(
+                f'<div class="field"><dt>{esc(_label(str(key)))}</dt>'
+                f'<dd>{_render_value(item, depth=depth + 1)}</dd></div>'
+            )
+        return '<dl class="fields">' + ''.join(rows) + '</dl>'
+    if isinstance(value, (list, tuple, set)):
+        items = list(value)
+        if not items:
+            return '<span class="muted">Nessun elemento materializzato.</span>'
+        if all(isinstance(item, dict) for item in items):
+            return '<div class="record-list">' + ''.join(
+                f'<article class="record">{_render_value(item, depth=depth + 1)}</article>'
+                for item in items
+            ) + '</div>'
+        return '<ul>' + ''.join(f'<li>{_render_value(item, depth=depth + 1)}</li>' for item in items) + '</ul>'
+    if isinstance(value, bool):
+        return "si" if value else "no"
+    return f'<span>{esc(value)}</span>'
+
+
+def _render_dossier(view: dict[str, Any], number: int) -> str:
+    title = str(view.get("titolo") or "Dossier")
+    purpose = str(view.get("finalita") or "")
+    records = list(view.get("records") or [])
+    return (
+        f'<section><div class="eyebrow">Parte {number}</div><h2>{esc(title)}</h2>'
+        f'<p class="purpose">{esc(purpose)}</p>'
+        f'<p class="count">{len(records)} elementi materializzati</p>'
+        f'{_render_value(records)}</section>'
+    )
+
+
+def render_session_dashboard(state: dict[str, Any] | Any, output: str | Path) -> Path:
+    payload = state if isinstance(state, dict) else state.__dict__
+    inference = build_dashboard_inference_view(payload)
+    state_digest = dashboard_state_digest(payload)
+    frame = inference.get("cornice_editoriale") or {}
+    body = ''.join([
+        _render_dossier(inference.get("evidence_dossier") or {}, 1),
+        _render_dossier(inference.get("source_register") or {}, 2),
+        _render_dossier(inference.get("inference_register") or {}, 3),
+        _render_dossier(inference.get("transformation_ledger") or {}, 4),
+    ])
+    page = f'''<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="juriscribe-state-digest" content="{state_digest}">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Juriscribe — dossier inferenziale</title>
+<style>
+:root{{--bg:#f5f1e8;--paper:#fffdf8;--ink:#242722;--muted:#686c64;--line:#d9d1c2;--accent:#395b67;--soft:#f0ece3}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 Georgia,'Times New Roman',serif}}
+main{{max-width:1120px;margin:auto;padding:24px}}header,section{{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin:14px 0;padding:24px}}
+h1,h2,h3,.eyebrow,.count,dt{{font-family:Arial,sans-serif}}h1{{font-size:2.05rem;line-height:1.15;margin:.25rem 0 .75rem}}h2{{font-size:1.35rem;margin:.25rem 0 .5rem}}h3{{font-size:1rem}}
+.eyebrow{{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}}.mandate{{font-size:1.08rem}}.purpose{{max-width:900px;color:#414740}}.count{{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}}
+.frame{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:18px}}.frame article{{background:var(--soft);border-radius:8px;padding:12px}}.frame h3{{margin:0 0 5px;color:var(--accent)}}
+.record-list{{display:grid;gap:12px}}.record{{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff}}.fields{{margin:0}}.field{{display:grid;grid-template-columns:minmax(155px,220px) 1fr;gap:14px;padding:8px 0;border-bottom:1px solid #ece6da}}.field:last-child{{border-bottom:0}}dt{{font-size:.77rem;font-weight:800;text-transform:uppercase;letter-spacing:.025em;color:var(--accent)}}dd{{margin:0;min-width:0}}ul{{margin:.2rem 0 .2rem 1.2rem;padding:0}}li{{margin:.16rem 0}}.muted{{color:var(--muted)}}
+@media(max-width:720px){{main{{padding:8px}}header,section{{padding:16px}}.field{{grid-template-columns:1fr;gap:3px}}}}
+</style>
+</head>
+<body><main>
+<header>
+<div class="eyebrow">Juriscribe · dossier inferenziale giuridico-umanistico-editoriale</div>
+<h1>{esc(inference.get('titolo') or 'Dossier inferenziale')}</h1>
+<p class="mandate"><strong>Mandato:</strong> {esc(inference.get('mandato') or 'Non ancora definito')}</p>
+<div class="frame">
+<article><h3>Modalita</h3>{_render_value(frame.get('modalita') or 'Non selezionata')}</article>
+<article><h3>Genere giuridico</h3>{_render_value(frame.get('genere_giuridico') or 'Da definire')}</article>
+<article><h3>Destinatari</h3>{_render_value(frame.get('destinatari') or 'Da definire')}</article>
+</div>
+{('<h3>Orientamento editoriale</h3>'+_render_value(frame.get('orientamento'))) if frame.get('orientamento') else ''}
+{('<h3>Principi applicati</h3>'+_render_value(frame.get('principi_applicati'))) if frame.get('principi_applicati') else ''}
+</header>
+{body}
+</main></body></html>'''
+    out = Path(output)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(page, encoding="utf-8")
+    return out
