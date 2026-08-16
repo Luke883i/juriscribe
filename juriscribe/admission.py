@@ -4,7 +4,7 @@ from dataclasses import asdict,dataclass
 from datetime import datetime,timezone
 from pathlib import Path
 from typing import Any
-CONTRACT_VERSION="1.6.0"; LEGACY_ISSUE_VERSIONS={"1.5.0"}; ACCEPT_PHRASE="I ACCEPT"; REPOSITORY="Luke883i/juriscribe"; PRE_ADMISSION_ALLOWLIST=("AGENTS.md","ISENECA_ACCESS_CONTRACT.md","ADMISSION.json"); _VERSION_RE=re.compile(r"(?m)^contract_version:\s*([^\s]+)\s*$")
+CONTRACT_VERSION="1.7.0"; LEGACY_ISSUE_VERSIONS={"1.6.0","1.5.0"}; ACCEPT_PHRASE="I ACCEPT"; REPOSITORY="Luke883i/juriscribe"; PRE_ADMISSION_ALLOWLIST=("AGENTS.md","ISENECA_ACCESS_CONTRACT.md","ADMISSION.json"); _VERSION_RE=re.compile(r"(?m)^contract_version:\s*([^\s]+)\s*$")
 def utc_now(): return datetime.now(timezone.utc).isoformat()
 def contract_version(contract_text):
     match=_VERSION_RE.search(contract_text)

@@ -1,9 +1,9 @@
 {
-  "schema": "juriscribe-admission/v4",
+  "schema": "juriscribe-admission/v5",
   "repository": "Luke883i/juriscribe",
-  "contract_version": "1.6.0",
+  "contract_version": "1.7.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
-  "contract_sha256": "7bba01365503518764608263a629d8c2804a7a639a674aed73850d067986b4d3",
+  "contract_sha256": "d2e99fb25911074c5c3b330573f56343afd7375c237becdd83c67f49b9fa0d51",
   "acceptance_phrase": "I ACCEPT",
   "human_actor_required": true,
   "evidence_type": "explicit_user_message",
@@ -17,6 +17,11 @@
   "probe_receipt_required_for_initialize": true,
   "mode_selection_required_for_substantive_work": true,
   "active_required_for_substantive_read": true,
+  "artifact_first_surface_required": true,
+  "post_bootstrap_chat_max_lines": 3,
+  "autonomous_until_blocking_human_decision": true,
+  "materialized_delivery_required": true,
+  "dashboard_state_binding_required": true,
   "runtime_receipt_required_for": ["probe", "initialize", "select-mode", "mine", "semantic-mining", "bibliography", "accept-setup", "freeze-dods", "continuation-plan", "continuation-coverage", "research-plan", "validate-claims", "seal-draft", "review-cycle", "record-regeneration", "review-saturation", "audit-text", "record-simulation", "record-compression", "record-provenance", "final-review", "record-artifact", "gate", "dashboard", "interaction-card", "integrity"],
   "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access"
 }

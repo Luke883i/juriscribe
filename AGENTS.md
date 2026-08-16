@@ -20,6 +20,8 @@ After initialize, substantive work still requires an explicit Juriscribe mode se
 
 Every mode remains governed by a session-specific editorial standard and audit trail. `ALTRO`/free input must remain available in interaction cards.
 
+Once ACTIVE, the agent must follow the repository's **artifact-first surface**: do not narrate internal processing in chat. Keep post-bootstrap messages brief, interrupt only for a materially blocking decision that cannot safely be inferred, and place substantive analysis, findings, evidence and technical detail in the required DOCX artifacts and current HTML dashboard. Raw logs, receipts, JSON, provenance and tracebacks remain internal unless the human explicitly requests a technical audit.
+
 Only after the bootstrap and mode selection may the agent follow `docs/AGENT_RUNTIME_RULES.md` and the rest of the repository.
 
 This protocol is not a GitHub server-side ACL.
