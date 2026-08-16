@@ -106,9 +106,9 @@ def main():
     for key in ['fast_path_preserves_distinct_probe_and_initialize_receipts','mode_selection_stays_explicit','receipt_nonces','probe_receipt_single_use','sealed_capabilities_immutable','workspace_overwrite']:
         if key not in bootstrap_manifest: fail(f'manifest bootstrap hardening missing {key}')
 
-    checkout_sha='11d5960a326750d5838078e36cf38b85af677262'
-    setup_sha='a26af69be951a213d495a4c3e4e4022e16d87065'
-    if f'actions/checkout@{checkout_sha}' not in workflow or f'actions/setup-python@{setup_sha}' not in workflow: fail('GitHub Actions are not pinned to audited commit SHAs')
+    checkout_sha='fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09'
+    setup_sha='ece7cb06caefa5fff74198d8649806c4678c61a1'
+    if f'actions/checkout@{checkout_sha}' not in workflow or f'actions/setup-python@{setup_sha}' not in workflow: fail('GitHub Actions are not pinned to audited current-major commit SHAs')
     if re.search(r'uses:\s+actions/(checkout|setup-python)@v\d', workflow): fail('movable GitHub Actions major tag remains')
     if 'governance-main-provenance' not in workflow or '/commits/{os.environ[\'SHA\']}/pulls' not in workflow: fail('main direct-push provenance guard missing')
 
