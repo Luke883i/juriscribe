@@ -20,7 +20,7 @@ Dopo il bootstrap l'esperienza ordinaria deve restare semplice:
 4. accetti o modifichi i parametri;
 5. **attendi gli artefatti finali**, salvo una decisione umana materialmente bloccante che Juriscribe non possa inferire in modo sicuro.
 
-Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione, provenance e diagnostica tecnica appartengono al runtime, ai DOCX e alla dashboard.
+Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione e provenance appartengono al runtime e agli artefatti. La dashboard appartiene al giurista: dalla v0.9.4 non è più una superficie di telemetria, ma il dossier inferenziale integrato della sessione.
 
 ## Avvio in una sessione AI
 
@@ -32,8 +32,8 @@ Usa il repository/bundle Juriscribe che ti ho fornito come runtime della session
 Prima di lavorare sui miei materiali:
 1. individua la superficie di admission/bootstrap dichiarata dal repository;
 2. mostrami i termini correnti e non accettarli per mio conto;
-3. se scrivo esattamente `I ACCEPT`, esegui/proponi separatamente `PROBE JURISCRIBE`;
-4. solo con probe receipt valida proponi `INITIALIZE JURISCRIBE`;
+3. se scrivo esattamente `I ACCEPT`, usa la fast path canonica dopo l'accettazione oppure conserva i passaggi separati di probe/initialize;
+4. non inizializzare senza probe receipt valida;
 5. dopo initialize non presumere il tipo di lavoro: fammi scegliere fra `CONTINUATION`, `GREENFIELD`, `REVIEW` e `ALTRO`;
 6. considera il lavoro sostanziale autorizzato solo dopo la selezione della modalità.
 
@@ -44,10 +44,9 @@ Dopo la selezione della modalità:
 - non trasformare concept, testo da revisionare o capitoli precedenti in autorità giuridiche auto-validanti;
 - applica gli standard redazionali tipici in modo fluido, non meccanico;
 - lavora autonomamente e NON narrare in chat i passaggi intermedi di mining, ricerca, review, rigenerazione, saturazione, simulazione, compressione, provenance o gate;
-- non chiedere conferme meccaniche: interrompimi soltanto per una decisione materialmente bloccante che non sia inferibile in modo sicuro dai materiali, dal mandato e dal setup già accettato;
-- non esporre chain-of-thought; stati, evidenze, locator, inferenze registrate, finding, blocker e decisioni auditabili devono stare negli artefatti;
-- non riversare in chat report, finding completi, liste estese di fonti/evidenze, ledger, receipt, provenance raw, JSON, log, stderr o traceback;
-- se si verifica un errore tecnico, mostrami soltanto un messaggio breve e non sensibile e conserva il dettaglio nella dashboard/ledger interno;
+- non chiedere conferme meccaniche: interrompimi soltanto per una decisione materialmente bloccante che non sia inferibile in modo sicuro;
+- non esporre chain-of-thought; evidenze, locator, inferenze registrate, finding e decisioni auditabili devono stare negli artefatti;
+- non riversare in chat report, liste estese di fonti/evidenze, ledger, receipt, provenance raw, JSON, log, stderr o traceback;
 - senza DOCX_WRITE e DOCX_READBACK reali non dichiarare COMPLETE;
 - prima della consegna esegui provenance, final severe review, readback e completion gate specifico della modalità;
 - alla fine scrivi in chat soltanto 1–3 righe e rimanda ai documenti allegati e alla dashboard;
@@ -61,7 +60,7 @@ Dopo `CONTINUATION`, carica i capitoli `1..N`, bibliografia e vincoli editoriali
 
 ## GREENFIELD
 
-Dopo `GREENFIELD`, fornisci il concept o mandato. Può essere una frase, una tesi, un quesito, un indice provvisorio o un brief. Juriscribe lo scompone in problemi/claim/questioni di ricerca; **il concept orienta, non prova**. Il setup chiarisce tipo di documento, pubblico, lunghezza, postura e livello di ricerca.
+Dopo `GREENFIELD`, fornisci il concept o mandato. Juriscribe lo scompone in problemi, claim e questioni di ricerca; **il concept orienta, non prova**. Il setup chiarisce tipo di documento, pubblico, lunghezza, postura e livello di ricerca.
 
 ## REVIEW
 
@@ -100,15 +99,38 @@ BOOTSTRAP + PROBE + INITIALIZE
 → PROVENANCE
 → FINAL SEVERE REVIEW
 → M+10.000 VS DOD
+→ LEGAL-HUMANISTIC ARTIFACT PROJECTION
 → REAL DOCX MATERIALIZATION + READBACK
-→ CURRENT STATE-BOUND HTML DASHBOARD
+→ CURRENT INFERENTIAL HTML DASHBOARD
 → DELIVERY MANIFEST
 → COMPLETE
 ```
 
 `CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` non richiede che il testo sorgente diventi “PASS” per poter consegnare un report diagnostico.
 
-## Contratto di consegna v0.9.2
+## Artefatti giuridico-umanistico-editoriali v0.9.4
+
+I quattro dossier comuni non sono più soltanto ruoli di consegna: condividono la proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`.
+
+### Evidence dossier
+
+Ricostruisce **proposizione → funzione giuridica → fonte/premessa → pinpoint → qualificazioni/contrasti → disposizione → collocazione finale**. Deve consentire a un revisore di capire perché una proposizione è sostenibile nella forma in cui appare.
+
+### Source register
+
+Non è una bibliografia duplicata. Rende visibili carattere dell'autorità, autore/organo, giurisdizione e tempo, ruolo nel ragionamento, claim sostenuti, evidenza circostanziata e controautorità/riserve.
+
+### Inference register
+
+Separa il dato attestato dal passaggio interpretativo. Per ogni inferenza materiale rende leggibili conclusione, premesse testuali, ponte, falsificatore, autorità/evidenze, qualificazioni, obiezioni, contrasti e disposizione finale.
+
+### Transformation ledger
+
+Racconta la storia causale del testo: finding, interventi, rigenerazioni, contenuti preservati/persi/introdotti, compressione lossless, azioni editoriali e consequence probes della final severe review.
+
+La specifica completa è `docs/EDITORIAL_ARTIFACTS_V9_4.md`.
+
+## Contratto di consegna v0.9.4
 
 La chat post-bootstrap è una **superficie di controllo**, non una superficie di report. Normalmente contiene solo richieste umane non inferibili, un next step essenziale o il rinvio finale agli allegati. Il limite ordinario è 1–3 righe.
 
@@ -123,30 +145,48 @@ Tutti i documenti user-facing devono essere **DOCX reali**:
 
 Non basta che il path finisca in `.docx`: il file deve esistere, non essere vuoto, risultare un pacchetto OOXML/WordprocessingML leggibile e avere digest/size verificati al gate.
 
-`session_dashboard` è sempre **HTML**, deve essere allegata come `session-dashboard.html` e deve contenere un digest che la lega allo stato sostanziale corrente. Una dashboard stale non vale come dashboard finale.
+`session_dashboard` è sempre HTML ed è allegata come `session-dashboard.html`. Il suo **corpo contiene soltanto il resoconto giuridico-umanistico-editoriale**: mandato, cornice editoriale e l'intero contenuto dei quattro dossier. Non mostra digest, integrity, path, capability, readback, log o traceback.
+
+Il metadata invisibile `juriscribe-state-digest` resta nel `<head>` per conservare il controllo di freshness: una dashboard stale continua a non valere come dashboard finale.
+
+I quattro dossier registrati dalla v0.9.4 sono inoltre sigillati rispetto alla propria proiezione semantica. Se il quadro inferenziale cambia, devono essere rimaterializzati prima del completion gate.
 
 I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger, traceback) restano interni e non devono essere allegati nella consegna ordinaria.
 
 Se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, Juriscribe resta non pronto: non degrada a Markdown/JSON né compensa incollando il contenuto in chat.
 
-Specifica corrente: `docs/FINAL_DELIVERY_V9_2.md`.
+Specifica corrente: `docs/FINAL_DELIVERY_V9_4.md`. La precedente `FINAL_DELIVERY_V9_2.md` resta come documento storico degli invarianti di materializzazione introdotti in quella release.
 
 ## Dashboard
 
-`session-dashboard.html` è il **verbale giuridico-scientifico-editoriale** della sessione. È un artefatto finale comune e obbligatorio, non una console tecnica né un log raw. Deve permettere a giuristi e redazioni di capire stato, blocker, fonti, inferenze, review, saturazione e readback senza leggere i record macchina.
+`session-dashboard.html` è il **dossier inferenziale giuridico-umanistico-editoriale** della sessione. La regola è di parità, non di sommario:
+
+```text
+Dashboard = cornice umana
+          + Evidence dossier
+          + Source register
+          + Inference register
+          + Transformation ledger
+```
+
+La dashboard non è una console tecnica. Il runtime conserva i controlli tecnici nei record interni e nei metadata invisibili necessari ai gate.
 
 ## Integrità
 
 Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato: viene letto solo per migrare vecchi workspace. L'integrity manifest resta interno e non appartiene al pacchetto ordinario di allegati.
 
+## Audit e non-regressione
+
+`docs/AUDIT_MAIN_V9_4.md` documenta il nuovo audit di `main`, i pattern consolidati, gli anti-pattern corretti e la DoD. La strategia è additiva: la proiezione semantica si colloca sopra i record esistenti e non modifica reticolo, provenance, review receipts, simulation receipts o fixed-point.
+
 ## Validazione e CI
 
-La CI conserva le baseline storiche (400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9) e aggiunge regression test su materializzazione reale, OOXML, dashboard freshness e superficie conversazionale redatta.
+La CI conserva le baseline storiche: 400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9 e tutti i fixed-point. I regression test v0.9.4 aggiungono parità dossier/dashboard, assenza di telemetria dal corpo HTML e semantic-drift detection.
 
 ## Versioni
 
-- runtime: `0.9.2`
+- runtime: `0.9.4`
 - access contract: `1.7.0`
 - manifest: `juriscribe-manifest/v9`
 
-Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/FINAL_DELIVERY_V9_2.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
+Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/RUNTIME_HARDENING_V9_3.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
