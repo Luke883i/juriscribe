@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe final delivery manifest v1",
+  "type": "object",
+  "required": ["schema", "status", "attachments", "errors", "chat_policy", "dashboard_required", "documents_format"],
+  "properties": {
+    "schema": {"const": "juriscribe-final-delivery/v1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "path", "format", "media_type", "readback"],
+        "properties": {
+          "id": {},
+          "role": {"type": "string"},
+          "path": {"type": "string"},
+          "format": {"enum": ["DOCX", "HTML"]},
+          "media_type": {"type": "string"},
+          "readback": {"const": "PASS"}
+        }
+      }
+    },
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "internal_records_excluded": {"type": "integer", "minimum": 0},
+    "chat_policy": {"const": "BRIEF_ARTIFACT_FIRST"},
+    "dashboard_required": {"const": true},
+    "documents_format": {"const": "DOCX"}
+  }
+}
