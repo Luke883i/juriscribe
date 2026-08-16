@@ -15,15 +15,15 @@ class KernelTests(unittest.TestCase):
         self.assertTrue(m.semantic_probe(False,False)); self.assertFalse(m.semantic_probe(True,False))
     def test_epistemic_unit_validation(self): self.assertEqual(EpistemicUnit('EU-1','CLAIM','Una proposizione','SRC-1').record()['kind'],'CLAIM')
     def test_contradiction_deduplicated(self): self.assertEqual(contradiction_pairs([Relation('A','CONTRADICTS','B').record(),Relation('B','CONTRADICTS','A').record()]),[('A','B')])
-    def test_dashboard_is_session_specific(self):
-        state={'session_id':'SES-test','phase':'VALIDATING','request':{'raw':'Scrivi il capitolo 3','summary':'Scrivi il capitolo 3'},'admission':{'status':'ACCEPTED'},'reticulum':{},'generation_contract':{},'epistemic_units':[],'relations':[],'sources':[{'title':'Capitolo 1'}],'setup':{},'dod':[],'claim_ledger':[],'artifact_evidence':[],'quality':{},'metrics':{},'simulations':{},'compression':{},'completion':{},'artifacts':[],'contradictions':[],'source_intelligence':{},'benchmark':{},'limits':[]}
+    def test_dashboard_is_session_and_mode_specific(self):
+        state={'session_id':'SES-test','phase':'VALIDATING','mode':'CONTINUATION','request':{'raw':'Scrivi il capitolo 3','summary':'Scrivi il capitolo 3'},'admission':{'status':'ACCEPTED'},'mode_contract':{'status':'READY','required_artifact_roles':['final_chapter']},'editorial_standard':{'status':'READY','standard_id':'JURISCRIBE_LEGAL_EDITORIAL_CORE_V2','document_type':'LEGAL_CHAPTER','audience':'giuristi','rules':{}},'reticulum':{},'continuation':{},'review':{},'provenance':{},'final_review':{},'sources':[{'title':'Capitolo 1'}],'setup':{},'claim_ledger':[],'quality':{},'completion':{},'artifacts':[],'source_intelligence':{},'bibliography':{},'node_integrity':{}}
         with tempfile.TemporaryDirectory() as tmp:
-            text=render_session_dashboard(state,Path(tmp)/'dash.html').read_text(encoding='utf-8'); self.assertIn('Scrivi il capitolo 3',text); self.assertIn('Mappa scientifica',text)
-    def test_initialize_requires_admission_probe_and_materializes(self):
+            text=render_session_dashboard(state,Path(tmp)/'dash.html').read_text(encoding='utf-8'); self.assertIn('Scrivi il capitolo 3',text); self.assertIn('Modalità:',text); self.assertIn('Standard redazionali applicati',text)
+    def test_initialize_requires_admission_probe_and_materializes_mode_selection(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(PermissionError): initialize('Riorganizza',root=tmp,session_id='BAD',contract_text=CONTRACT)
             r=receipt()
             with self.assertRaises(PermissionError): initialize('Riorganizza',root=tmp,session_id='NO-PROBE',admission_receipt=r,contract_text=CONTRACT)
             base=initialize('Riorganizza',root=tmp,session_id='SES-x',admission_receipt=r,probe_receipt=probe_receipt(r),contract_text=CONTRACT)
-            self.assertTrue((base/'state.json').exists()); self.assertTrue((base/'artifacts'/'session-dashboard.html').exists()); self.assertEqual(json.loads((base/'state.json').read_text())['request']['raw'],'Riorganizza')
+            self.assertTrue((base/'state.json').exists()); self.assertTrue((base/'artifacts'/'session-dashboard.html').exists()); self.assertTrue((base/'session.integrity.json').exists()); state=json.loads((base/'state.json').read_text()); self.assertEqual(state['request']['raw'],'Riorganizza'); self.assertEqual(state['phase'],'MODE_SELECTION_REQUIRED')
 if __name__=='__main__': unittest.main()

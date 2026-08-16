@@ -1,50 +1,26 @@
-# Juriscribe agent runtime rules v0.8 — post-bootstrap ACTIVE
+# Juriscribe agent runtime rules v0.9 — post-bootstrap
 
-Queste regole si applicano solo dopo bootstrap `ACTIVE` con admission receipt e probe receipt valide.
+Dopo bootstrap e initialize, chiedi/seleziona una modalità prima di lavorare sui materiali: `CONTINUATION`, `GREENFIELD`, `REVIEW`, lasciando sempre `ALTRO`.
 
-## Missione
+## Invarianti comuni
+- mode contract e standard editoriale first-class;
+- mining atomico + reticolo prima delle conclusioni sostanziali;
+- setup minimo e adattato al genere;
+- claim/fonti circostanziati e inferenze forti registrate;
+- review scientifica, contenutistica e redazionale evidence-based;
+- provenance e final severe review;
+- M+10.000 vs DoD;
+- artifact set mode-specific con readback;
+- nessuna esposizione di chain-of-thought latente.
 
-Generare un capitolo giuridico `N+1` dai capitoli `1..N`. Un testo plausibile non basta: ogni bozza deve restare vincolata a reticolo, continuation frontier, fonti, inferenze e traiettoria dell'opera.
+## CONTINUATION
+Preserva continuation frontier/coverage, coerenza inter-capitolo e non duplicazione.
 
-## UX conversazionale
+## GREENFIELD
+Non inventare seed o continuità. Il concept genera scope e research questions ma non vale come autorità.
 
-Usa interaction card per fase. Mostra scelte standard concise ma conserva sempre `ALTRO` e richieste libere. Setup standard: `ACCETTA CONSIGLIATI`, `MODIFICA`, `ALTRO`. Non esporre chain-of-thought.
+## REVIEW
+In `REPORT_ONLY`, finding aperti nel target sono output, non blocker del runtime. In `REPORT_AND_REVISED_TEXT`, le modifiche devono essere causalmente legate ai finding e il testo finale deve essere riesaminato.
 
-## Invarianti pre-bozza
-
-- reticolo epistemico validato prima del setup;
-- parametri accettati → DoD bloccanti;
-- generation contract legato a reticolo/setup;
-- continuation frontier valido;
-- claim materiali circostanziati; inferenze forti con premesse/ponte/falsificatore;
-- confronto con capitoli precedenti e bibliografia se disponibile.
-
-## Invarianti post-bozza
-
-- sigillare la prima bozza;
-- review scientifico-editoriale severa;
-- almeno una rigenerazione reale e riesaminata;
-- `P+10.000` no-novelty e no-improvement-without-degradation;
-- simulazione multi-classe;
-- compressione lossless;
-- quality/source/continuation recheck sul candidato compresso;
-- provenance bundle lossless di inferenze, claim, decisioni e trasformazioni;
-- final severe review candidato/corpus/provenance-bound;
-- artefatti finali completi con readback;
-- `M+10.000` e completion gate.
-
-## Integrità di sessione
-
-Il record canonico è `session.integrity.json`. Deve essere coerente con `state.json` e non deve contenere testo del corpus. Il legacy `node.h` è una proiezione deprecata mantenuta per compatibilità con il contratto 1.5.0; finché quel contratto resta corrente, un host conforme non deve ignorarne il controllo. Non esiste un percorso canonico `node.s`.
-
-## Provenance
-
-Ogni inferenza materiale usata deve essere registrata come oggetto epistemico/claim auditabile. Prima della consegna deve avere una disposizione (`IN_FINAL`, `SUPERSEDED`, `REJECTED`, `DEFERRED`, `NOT_APPLICABLE`). Questo non autorizza a conservare chain-of-thought latente.
-
-## Final review
-
-La final review viene dopo il testo compresso e prima degli artefatti. Stressa quadro normativo globale, seed, autorità/controautorità, conseguenze, tempo/giurisdizione, integrità editoriale, provenance e losslessness.
-
-## Dashboard
-
-Parla prima al lettore umano: stato, prossimo passo, blocker, evidenze. Digest e dettagli macchina restano nella sezione `Integrità tecnica`.
+## Editoriale
+Applica `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` con adattamento a genere, destinatari e house style. Non trasformare metriche in regole universali.

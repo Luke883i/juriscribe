@@ -1,23 +1,29 @@
 ---
-schema: juriscribe-ai-access-contract/v4
-contract_version: 1.5.0
-kind: repository-local-ai-admission-bootstrap-and-session-governance
+schema: juriscribe-ai-access-contract/v5
+contract_version: 1.6.0
+kind: repository-local-ai-admission-bootstrap-session-and-workmode-governance
 repository: Luke883i/juriscribe
 canonical_branch: main
 assistant_name: iSeneca
 ---
 
-# Juriscribe — AI Access & Operating Contract 1.5.0
+# Juriscribe — AI Access & Operating Contract 1.6.0
 
 ## 1. Scopo
 
-Juriscribe serve principalmente a **generare il capitolo giuridico N+1 a partire dai capitoli 1..N già scritti**, preservando e sviluppando in modo verificabile architettura monografica, inventario epistemico, relazioni, fonti, qualificazioni, inferenze e stile editoriale.
+Juriscribe è un runtime per lavoro giuridico scientifico-editoriale auditabile. Dalla versione 0.9 non è limitato alla continuazione di una monografia: ogni sessione sostanziale seleziona una delle tre modalità canoniche.
 
-Il contratto governa qualunque AI/agent conforme che operi sul repository per conto di un utente umano, incluso un assistente che abbia trovato o aperto il repository tramite **web browsing, ricerca, connector, API, clone o bundle locale**. Il giudizio professionale e le scelte interpretative finali restano umani.
+1. `CONTINUATION` — generazione del capitolo o segmento N+1 a partire da contenuti 1..N già scritti;
+2. `GREENFIELD` — redazione ex novo di testi, saggi, articoli, memorandum, report o monografie giuridiche a partire da concept, prompt, quesito o mandato iniziale;
+3. `REVIEW` — revisione scientifica, contenutistica e redazionale di testi giuridici completi forniti dall'utente, con report diagnostico e, solo se richiesto, testo revisionato.
+
+In tutte le modalità Juriscribe applica un core editoriale publisher-neutral: autorità, tracciabilità, terminologia, proporzione strutturale, perimetro temporale/giurisdizionale, controautorità, disciplina inferenziale, bibliografia, leggibilità e adeguatezza al destinatario. House style e sintassi citazionale restano configurabili.
+
+Il giudizio professionale e le scelte interpretative finali restano umani.
 
 ## 2. Bootstrap visibile e obbligatorio
 
-La sola scoperta del repository non autorizza la lettura sostanziale. Prima di leggere codice, history, test, documentazione post-admission o corpus, l'AI deve **rendere visibile all'utente il bootstrap corrente** e procedere fail-closed nell'ordine seguente:
+La scoperta del repository non autorizza la lettura sostanziale. Prima di codice, history, test, documentazione post-admission o corpus, un AI/agent conforme procede fail-closed:
 
 ```text
 DISCOVERED
@@ -27,10 +33,9 @@ DISCOVERED
 -> PROBED
 -> INITIALIZE_REQUIRED
 -> INITIALIZING
--> ACTIVE_FILE | ACTIVE_EPHEMERAL | DEGRADED_READ_ONLY
+-> MODE_SELECTION_REQUIRED
+-> ACTIVE_WORK
 ```
-
-Un'AI conforme non può saltare un passaggio, trasformare il probe in un controllo implicito, né inizializzare automaticamente subito dopo `I ACCEPT`. Dopo ciascun passaggio deve esporre la prossima azione canonica all'utente.
 
 Comandi canonici:
 
@@ -40,208 +45,236 @@ Comandi canonici:
 - `INITIALIZE JURISCRIBE`
 - `RESET JURISCRIBE`
 
-Gli alias legacy `PROBE ISENECA`, `INITIALIZE ISENECA`, `RESET ISENECA` possono essere riconosciuti per compatibilità, ma le UI nuove devono mostrare i comandi Juriscribe.
+Dopo initialize l'AI non presume la modalità: deve rendere visibili `CONTINUATION`, `GREENFIELD`, `REVIEW` e `ALTRO`.
 
 ## 3. Superficie pre-admission
 
-Prima dell'accettazione umana un AI/agent conforme può leggere esclusivamente la superficie dichiarata in `ADMISSION.json`:
+Prima dell'accettazione umana sono leggibili esclusivamente:
 
-- `AGENTS.md`
-- questo contratto
-- `ADMISSION.json`
+- `AGENTS.md`;
+- questo contratto;
+- `ADMISSION.json`.
 
-L'utente umano deve esprimere personalmente la formula canonica `I ACCEPT` per la versione corrente. L'AI non può auto-accettare, simulare, dedurre o retrodatare l'accettazione, né riutilizzare receipt stale.
+L'utente deve esprimere personalmente `I ACCEPT`. L'AI non può auto-accettare, dedurre, simulare o retrodatare l'accettazione, né riutilizzare receipt stale. Una modifica materiale del contratto invalida le receipt precedenti.
 
-La receipt di ammissione è vincolata a repository, versione/hash del contratto, formula, actor `human`, evidence type `explicit_user_message` e hash dell'evidenza. Una modifica materiale del contratto invalida le receipt precedenti.
+Il protocollo non è un ACL GitHub server-side: governa il comportamento di AI/host conformi.
 
-**Limite dichiarato:** il protocollo/runtime non è un ACL GitHub server-side e non può impedire fisicamente a un client già autorizzato di scaricare bytes. L'obbligo è un vincolo di comportamento per AI/host conformi.
+## 4. Probe e initialize separati
 
-## 4. Probe separato e receipt obbligatoria
+Dopo l'accettazione lo stato è `PROBE_REQUIRED`. Il probe produce receipt separata, legata a repository, contratto e admission receipt, con capability matrix osservata. `INITIALIZE JURISCRIBE` è vietato senza probe receipt valida e non può eseguire il probe implicitamente.
 
-Dopo l'accettazione, il runtime entra in `PROBE_REQUIRED`. Il probe deve produrre una **probe receipt separata**, legata alla receipt di ammissione e alla stessa versione/hash del contratto. La receipt registra almeno host, timestamp, capability matrix e digest canonico delle capacità osservate.
+Dopo initialize la sessione entra in `MODE_SELECTION_REQUIRED`. Nessun materiale sostanziale deve essere trattato prima della selezione di modalità.
 
-`INITIALIZE JURISCRIBE` è vietato senza probe receipt valida. L'inizializzazione non può eseguire silenziosamente il probe al posto dell'utente. Solo dopo inizializzazione riuscita lo stato diventa `ACTIVE_*` e la lettura/lavorazione sostanziale del repository è autorizzata.
+## 5. Contratto di modalità
 
-## 5. Protocollo di interazione con l'utente
+La selezione crea un record digestato. Dopo mining, setup e standard editoriale viene creato un `mode_contract` che lega almeno:
 
-Juriscribe usa **interaction card deterministiche per fase**, ma non deve trasformarsi in una UI chiusa. Ogni card deve:
+- modalità;
+- richiesta;
+- corpus/concept/target;
+- reticolo epistemico;
+- setup accettato;
+- standard editoriale;
+- eventuale generation/revision contract;
+- requisiti specifici della modalità;
+- ruoli degli artefatti finali.
 
-1. indicare fase e prossimo passo;
-2. proporre scelte standard pre-codificate;
-3. includere sempre `ALTRO` e consentire una richiesta libera;
-4. distinguere opzioni bloccanti da richieste ulteriori non bloccanti.
+Un cambio materiale di questi elementi rende stale il `mode_contract` e blocca la consegna.
 
-Esempi canonici:
+## 6. Standard editoriale comune
 
-- termini: `I ACCEPT` · `I DECLINE` · `ALTRO`;
-- probe: `PROBE JURISCRIBE` · `ALTRO`;
-- initialize: `INITIALIZE JURISCRIBE` · `ALTRO`;
-- setup: `ACCETTA CONSIGLIATI` · `MODIFICA` · `ALTRO`;
-- complete: `APRI ARTEFATTI` · `RICHIEDI MODIFICHE` · `NUOVO CAPITOLO` · `ALTRO`.
+Ogni sessione sostanziale deve materializzare un profilo `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2`, adattato con fluidità a genere, destinatari e house style. Il core richiede almeno:
 
-L'AI non deve esporre chain-of-thought. Può esporre stati, evidenze, alternative, inferenze registrate e motivazioni sintetiche auditabili.
+- struttura e gerarchia proporzionate al genere;
+- registro professionale e leggibilità;
+- terminologia stabile o variazioni motivate;
+- claim materiali distinguibili da valutazioni e inferenze;
+- fonti e autorità adeguate, circostanziate e tracciabili;
+- controautorità e obiezioni materiali non occultate;
+- qualificazione temporale e giurisdizionale quando necessaria;
+- bibliografia/apparato coerenti con i richiami effettivi;
+- disciplina delle inferenze forti;
+- nessuna autorità o citazione inventata;
+- adeguatezza a lettore e funzione del documento.
 
-## 6. Mining atomico e reticolo obbligatori
+Lo standard editoriale non impone automaticamente numero di sezioni, stile citazionale o formato uguale per tutti i generi. Le metriche sono segnali di review, non sostituti del giudizio editoriale.
 
-La redazione è vietata fino a:
+## 7. Mining, reticolo e fonti — invarianti comuni
 
-```text
-DETERMINISTIC_MINE
--> SEMANTIC_ATOMIZATION
--> SOURCE_LOCATOR_BINDING
--> TYPED_RELATION_BUILD
--> RETICULUM_VALIDATION
--> GLOBAL_LOCAL_RELATIONAL_MODEL
--> CONTINUATION_FRONTIER
-```
+Prima della produzione o della conclusione della review, Juriscribe costruisce un inventario epistemico con locator e un reticolo tipizzato. Concept e prompt non sono trattati come fonti giuridiche verificate. Un testo da revisionare è trattato come oggetto dell'audit, non come autorità per la propria correttezza.
 
-Ogni unità epistemica materiale deve avere ID stabile, tipo, proposizione sintetica, sorgente e locator. Le relazioni devono avere endpoint esistenti. Il reticolo produce un digest deterministico. Il setup non è proposto prima di `RETICULUM_VALIDATION=PASS`.
+Ogni claim giuridico esterno usato da Juriscribe richiede fonte letta o premesse registrate. Le inferenze forti richiedono premesse, ponte e falsificatore. La qualificazione `dominante` richiede pluralità di autorità indipendenti adeguate e trattamento delle controautorità.
 
-Il development frontier identifica ciò che il capitolo successivo deve sviluppare e con quale profondità minima. **L'esatta sequenza dell'autore non è un completion target**: la robustezza della continuazione prevale sulla mera imitazione dell'indice.
+## 8. Modalità CONTINUATION
 
-## 7. Setup, DoD e generation contract
+Input necessario: uno o più capitoli/segmenti precedenti e il mandato per N+1.
 
-Dopo il reticolo, Juriscribe propone solo i parametri necessari. La UI standard mostra `ACCETTA CONSIGLIATI`, `MODIFICA` e `ALTRO`. Ogni parametro accettato diventa DoD bloccante.
-
-Dopo il freeze dei DoD viene materializzato un `generation_contract` legato ai digest di reticolo e setup. Identifica almeno unità da preservare, nodi da sviluppare, contenuti da non duplicare e relazioni inter-capitolo. Qualunque variazione rende stale il contratto e blocca la chiusura.
-
-## 8. Fonti, bibliografia e inferenze
-
-Nessun claim giuridico esterno è dichiarato verificato senza fonte effettivamente letta o premesse registrate. Ogni fonte usata per un claim materiale deve essere circostanziata con perimetro, stato di verifica, pinpoint e proposizione supportata quando applicabile.
-
-La bibliografia disponibile è stato di sessione e può orientare ricerca/continuità, ma non prova da sola un claim. Quando esiste, le fonti realmente usate per claim materiali devono essere mappabili all'apparato.
-
-Una **inferenza forte** richiede premesse registrate, perimetro, ponte inferenziale e falsificatore; le dipendenze cicliche sono vietate. La qualificazione `dominante` richiede pluralità di autorità indipendenti, direttamente lette, pertinenti e trattamento delle controautorità materiali. Altrimenti: `DOMINANCE_NOT_ESTABLISHED`.
-
-## 9. Provenance lossless dell'interazione
-
-Ogni inferenza materiale che l'AI usa durante la sessione deve diventare un record auditabile prima della finalizzazione: non basta che sopravviva implicitamente nella prosa. Il record deve identificare almeno proposizione, premesse/evidenze, ponte e falsificatore quando è inferenza forte, nonché la sua **disposizione finale**:
-
-- `IN_FINAL`
-- `SUPERSEDED`
-- `REJECTED`
-- `DEFERRED`
-- `NOT_APPLICABLE`
-
-Anche decisioni utente e trasformazioni materiali devono avere una sorte tracciata. Nessun elemento obbligatorio può scomparire silenziosamente fra chat, review, rigenerazione, compressione e artefatti.
-
-Questo requisito riguarda oggetti epistemici espliciti; non richiede né autorizza la conservazione o l'esposizione di ragionamenti latenti/chain-of-thought.
-
-## 10. Pipeline obbligatoria N+1
+Pipeline minima:
 
 ```text
-BOOTSTRAP ACTIVE
--> INGEST PREVIOUS CHAPTERS + BIBLIOGRAPHY
--> ATOMIC EPISTEMIC MINING
--> VALIDATED RETICULUM
+MODE CONTINUATION
+-> INGEST 1..N
+-> ATOMIC MINING + RETICULUM
 -> CONTINUATION FRONTIER
--> STYLE / GLOBAL / LOCAL / RELATIONAL MODEL
--> MINIMAL USER SETUP
--> PARAMETERS TO DOD
--> GENERATION CONTRACT
--> CLAIM / RESEARCH / SOURCE PLAN
--> SOURCE VERIFICATION
+-> SETUP + EDITORIAL STANDARD
+-> DOD + GENERATION/MODE CONTRACT
+-> SOURCE/CLAIM/INFERENCE WORK
 -> SEALED INITIAL DRAFT
 -> SCIENTIFIC-EDITORIAL REVIEW
--> REGENERATION
--> SEALED REGENERATED DRAFT
--> RE-REVIEW UNTIL PASS_CANDIDATE
--> P+10.000 REVIEW SATURATION
--> MULTI-CLASS EDGE SIMULATION
+-> REGENERATION + RE-REVIEW
+-> REVIEW SATURATION
+-> EDGE SIMULATION
 -> LOSSLESS COMPRESSION
--> SEALED COMPRESSED FINAL
 -> FINAL QUALITY + SOURCE + CONTINUATION RECHECK
--> PROVENANCE LOSSLESS BUNDLE
--> FINAL SEVERE LEGAL-EDITORIAL-LOGICAL-CONSEQUENTIAL REVIEW
--> M+10.000 NO-NOVELTY VS DOD
--> MATERIALIZE COMPLETE ARTIFACT SET
--> READBACK
--> DASHBOARD UPDATE
+-> PROVENANCE
+-> FINAL SEVERE REVIEW
+-> M+10.000 VS DOD
+-> FINAL ARTIFACTS + READBACK
 -> COMPLETE
 ```
 
-**La prima bozza non può essere il risultato finale.** È obbligatorio almeno un ciclo di review post-bozza e almeno una rigenerazione documentata.
+La sequenza futura dell'autore non è un completion target. Copertura, profondità, continuità, fonti e coerenza prevalgono sull'imitazione dell'indice.
 
-## 11. Review scientifico-editoriale post-bozza
+## 9. Modalità GREENFIELD
 
-Il core standard è `JURISCRIBE_LEGAL_MONOGRAPH_V1`. Valuta almeno contributo monografico, coerenza inter-capitolo, autorità, citazioni/pinpoint, controautorità, tempo/giurisdizione, inferenza, terminologia, struttura, stile, bibliografia, preservazione lossless e adeguatezza al lettore.
+Input necessario: concept, prompt, quesito, tesi iniziale o mandato. Non sono richiesti capitoli precedenti.
 
-Ogni ciclo è legato al digest del candidato. Finding `BLOCKER`/`MAJOR` richiedono locator e azione proposta. La rigenerazione registra `from_digest`, `to_digest`, finding affrontati e inventario epistemico preservato.
+Pipeline minima:
 
-## 12. Review finale severa prima degli artefatti
+```text
+MODE GREENFIELD
+-> INGEST CONCEPT/MANDATE
+-> ATOMIC CONCEPT DECOMPOSITION + RETICULUM
+-> SCOPE / QUESTIONS / RESEARCH MAP
+-> SETUP + EDITORIAL STANDARD
+-> DOD + GENERATION/MODE CONTRACT
+-> SOURCE VERIFICATION + CLAIM/INFERENCE MAP
+-> SEALED INITIAL DRAFT
+-> SCIENTIFIC-EDITORIAL REVIEW
+-> REGENERATION + RE-REVIEW
+-> REVIEW SATURATION
+-> EDGE SIMULATION
+-> LOSSLESS COMPRESSION
+-> FINAL QUALITY + SOURCE RECHECK
+-> PROVENANCE
+-> FINAL SEVERE REVIEW
+-> M+10.000 VS DOD
+-> FINAL ARTIFACTS + READBACK
+-> COMPLETE
+```
 
-Dopo la compressione e i recheck sul candidato finale, ma **prima di creare gli artefatti finali**, è obbligatoria una review addizionale legata all'esatto digest del candidato, del corpus seed, del quadro normativo/fonti e della provenance.
+Il concept orienta il lavoro ma non dimostra diritto vigente, dottrina, fatti o autorità. Juriscribe deve rendere espliciti scope, assunzioni e perimetro della ricerca prima di trasformarli in testo.
 
-La review finale verifica almeno:
+## 10. Modalità REVIEW
 
-- quadro normativo globale applicabile o motivata non-applicabilità;
-- coerenza con capitoli e contenuti seed;
-- autorità e controautorità;
-- conseguenze logiche e giuridiche delle tesi;
-- possibili universalizzazioni indebite, conflitti e leakage temporale/giurisdizionale;
-- integrità editoriale;
-- provenance delle inferenze;
-- losslessness delle trasformazioni.
+Input necessario: testo giuridico completo o insieme di contenuti da revisionare. Il setup distingue almeno:
 
-Ogni conseguenza materiale deve essere sottoposta a probe con evidenza o risoluzione. `BLOCKER` o `MAJOR` non risolti vietano la materializzazione finale.
+- `REPORT_ONLY` — diagnosi scientifica, contenutistica e redazionale; finding aperti possono essere il risultato corretto;
+- `REPORT_AND_REVISED_TEXT` — oltre al report è richiesta una versione revisionata e riesaminata.
 
-## 13. Saturazione e simulazioni
+Pipeline `REPORT_ONLY`:
 
-Dopo l'ultima rigenerazione la review termina solo con `PASS_CANDIDATE`, zero blocker/major, almeno 10.000 challenge consecutivi senza nuova criticità materiale e almeno 10.000 senza ulteriore miglioramento materiale non degradante. Il witness è `P+10.000`.
+```text
+MODE REVIEW
+-> INGEST REVIEW TARGET
+-> ATOMIC MINING + RETICULUM
+-> SETUP + EDITORIAL STANDARD
+-> DOD + MODE CONTRACT
+-> SCIENTIFIC / CONTENT / SOURCE / LOGICAL / EDITORIAL REVIEW
+-> DIAGNOSTIC SATURATION
+-> PROVENANCE
+-> FINAL SEVERE REVIEW OF THE AUDIT
+-> M+10.000 VS DOD
+-> REVIEW REPORT + REGISTERS + READBACK
+-> COMPLETE
+```
 
-La simulation receipt è legata al candidato e al generation contract e copre famiglie edge obbligatorie. Le simulazioni sono property/mutation/stress test, non decisioni giuridiche sostanziali.
+Un finding `BLOCKER` o `MAJOR` nel testo revisionato **non rende incompleta una review REPORT_ONLY** se è correttamente identificato, circostanziato, tracciato e incluso nel report.
 
-## 14. Compressione e recheck
+Pipeline `REPORT_AND_REVISED_TEXT`: dopo la prima review, le modifiche sono causalmente legate ai finding; il testo revisionato viene riesaminato. I blocker del testo finale devono essere risolti o portati a decisione umana secondo il setup.
 
-La compressione è legata a candidato pre-compressione, candidato finale, generation contract e inventario epistemico. Perde il `PASS` se omette unità obbligatorie, introduce materiale nuovo non riesaminato o espande impropriamente il candidato. Il testo finale compresso deve superare nuovi quality/source/continuation recheck prima della provenance e della final review.
+## 11. Review scientifico-editoriale
 
-## 15. Artefatti finali completi
+Il motore di review considera, con applicabilità motivata per modalità e genere:
 
-Una generazione completa materializza almeno i ruoli:
+- contributo/obiettivo del documento;
+- coerenza interna e, in continuation, inter-capitolo;
+- autorità giuridiche;
+- tracciabilità citazionale;
+- controautorità;
+- tempo e giurisdizione;
+- inferenze;
+- terminologia;
+- struttura;
+- stile editoriale;
+- bibliografia;
+- preservazione epistemica/voce autoriale;
+- audience fit;
+- conformità al profilo editoriale della sessione.
 
-- `final_chapter`
-- `evidence_dossier`
-- `source_register`
-- `inference_register`
-- `transformation_ledger`
-- `session_dashboard`
+I criteri non applicabili devono essere marcati e motivati, non semplicemente ignorati.
 
-Gli artefatti devono essere coerenti con il provenance bundle e avere readback `PASS` quando la capability esiste. Il dossier deve consentire a un giurista/redattore di risalire dalle proposizioni materiali alle fonti, inferenze, decisioni e trasformazioni senza ricostruire la chat.
+## 12. Saturazione, simulazioni e compressione
 
-## 16. node.h
+Il `M+10.000` rispetto ai DoD resta in tutte le modalità. La review di scrittura/revisione con testo finale usa il witness di saturazione post-review previsto dal runtime. In `REPORT_ONLY` la saturazione misura assenza di nuovi finding materiali e ulteriore miglioramento dell'audit, non assenza di difetti nel testo.
 
-Ogni workspace persistente genera `.juriscribe/<session-id>/node.h`, header di soli metadata/digest. Collega corpus, reticolo, setup, DoD, generation contract, continuation frontier/coverage, candidato, review, provenance, final review, interaction state, bibliografia, simulazione, compressione e artefatti. Il completion gate richiede integrità dell'header corrente.
+Le simulazioni multi-classe e la compressione lossless sono obbligatorie nelle modalità di scrittura (`CONTINUATION`, `GREENFIELD`). Non sono automaticamente obbligatorie per una review diagnostica, dove potrebbero falsare lo scopo dell'incarico.
 
-## 17. Dashboard
+## 13. Provenance
 
-La dashboard è un fascicolo leggibile da autore, umanista, giurista, responsabile scientifico e redazione. Deve privilegiare linguaggio umano e progressiva disclosure:
+Ogni oggetto materiale esplicitamente usato — claim, inferenza, decisione utente, trasformazione, qualificazione o limite — deve avere disposizione finale auditabile. Questo requisito non richiede né autorizza esposizione di chain-of-thought latente.
 
-1. `Dove siamo` — pronto/non pronto e prossimo passo;
-2. `Cosa è stato controllato` — card sintetiche;
-3. `Evidenze circostanziate` — claim, fonte, pinpoint, perimetro, inferenza e locator finale;
-4. `Storia delle revisioni` — finding, rigenerazioni, compressione, final review e provenance;
-5. `Integrità tecnica` — digest/node.h in sezione secondaria o collassabile.
+## 14. Review finale severa
 
-Non espone chain-of-thought.
+Prima degli artefatti finali, in tutte le modalità, Juriscribe esegue una final review legata a candidato/target, corpus, quadro normativo e provenance. I criteri non applicabili alla modalità possono essere `NOT_APPLICABLE` con rationale.
+
+## 15. Artefatti finali per modalità
+
+Ruoli comuni:
+
+- `evidence_dossier`;
+- `source_register`;
+- `inference_register`;
+- `transformation_ledger`;
+- `session_dashboard`.
+
+A questi si aggiungono:
+
+- `CONTINUATION`: `final_chapter`;
+- `GREENFIELD`: `final_legal_text`;
+- `REVIEW`: `review_report` + `review_findings_register`;
+- `REVIEW/REPORT_AND_REVISED_TEXT`: anche `revised_legal_text`.
+
+I ruoli obbligatori devono avere readback `PASS` quando la capability esiste.
+
+## 16. Integrità della sessione
+
+Il record canonico è `.juriscribe/<session-id>/session.integrity.json`. Lega modalità, mode contract, standard editoriale, corpus, reticolo, setup, DoD, contratti, candidato/target, review, provenance, final review e artefatti tramite metadata/digest.
+
+`node.h` non è più generato né richiesto dalla v0.9. Può essere letto esclusivamente per migrare workspace storici privi del manifest canonico.
+
+## 17. Dashboard e interazione
+
+La dashboard deve parlare prima a giuristi, autori e redazioni: modalità, stato, prossimo passo, standard applicato, finding, fonti, blocker e artefatti. Digest e integrità tecnica restano secondari.
+
+Ogni interaction card conserva `ALTRO` e `free_input_allowed=true`. Nessuna modalità trasforma Juriscribe in una UI chiusa.
 
 ## 18. Completion gate
 
-`COMPLETE` è vietato finché non coesistono:
+`COMPLETE` richiede sempre:
 
-- bootstrap `ACTIVE` con admission receipt e probe receipt valide;
-- reticolo `PASS` e continuation coverage `PASS` sul candidato finale;
-- generation contract `READY` e non stale;
-- initial draft + regenerated draft + final compressed draft sigillati;
-- tutti i DoD bloccanti `DONE` e `M+10.000`;
-- nessuna contraddizione bloccante;
-- review post-bozza `PASS_CANDIDATE`, rigenerazione e `P+10.000`;
-- source/claim coverage chiusa e bibliografia coerente quando disponibile;
-- simulation/compression/final quality `PASS` legati al candidato;
-- provenance bundle `PASS` con copertura lossless;
-- final severe review `PASS` legata a candidato/corpus/provenance/quadro normativo;
-- set completo di artefatti finali con readback `PASS`;
-- benchmark blind integro quando richiesto;
-- `node.h` integro.
+- bootstrap valido;
+- modalità selezionata e mode contract non stale;
+- reticolo valido;
+- setup e standard editoriale validi;
+- DoD bloccanti chiusi e `M+10.000`;
+- nessuna contraddizione bloccante non trattata;
+- review/saturazione coerenti con la modalità;
+- provenance e final severe review valide;
+- artefatti mode-specific completi con readback;
+- `session.integrity.json` integro.
+
+I gate specifici di continuation, generation, simulation, compression e revised-text sono applicati solo quando richiesti dal mode contract.
 
 ## 19. Autorità
 
@@ -252,8 +285,9 @@ host system / sicurezza / legge
 -> AGENTS.md admission sentinel
 -> docs/AGENT_RUNTIME_RULES.md dopo ammissione
 -> MANIFEST.json
--> stato strutturato della sessione + node.h
+-> mode contract + standard editoriale
+-> stato strutturato + session.integrity.json
 -> fonti verificate
--> contenuti del corpus
+-> corpus/concept/review target
 -> inferenze registrate
 ```

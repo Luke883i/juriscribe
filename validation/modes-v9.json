@@ -1,0 +1,12 @@
+{
+  "schema": "juriscribe-trimode-validation/v1",
+  "cases": 30000,
+  "per_mode": 10000,
+  "modes": ["CONTINUATION", "GREENFIELD", "REVIEW"],
+  "killed_mutants": 12000,
+  "accepted_controls": 18000,
+  "failures": 0,
+  "status": "PASS",
+  "scenario_digest": "9e8ad831eac09dcf9cf6bbcde42518d151ab88681f59d267282f156b14ad5cf2",
+  "notes": "Property/mutation tests of mode routing and editorial contracts; not legal judgments or LLM calls."
+}

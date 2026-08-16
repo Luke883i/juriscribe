@@ -34,9 +34,9 @@ jobs:
               exit 1
             fi
           done < <(find juriscribe scripts tests -type f -name '*.py' -print0 | sort -z)
-      - name: Unit, lifecycle, review, continuation and finalization tests
+      - name: Unit, lifecycle, review, continuation, multimode and finalization tests
         run: python -m unittest discover -s tests -v
-      - name: Admission, bootstrap, manifest and onboarding integrity
+      - name: Admission, modes, editorial standard, manifest and onboarding integrity
         run: python scripts/check_contract.py
 
   simulation-and-saturation:
@@ -52,11 +52,13 @@ jobs:
       - name: M plus 1000 architecture saturation
         run: python scripts/reflect_v5.py --target 1000 --json-out /tmp/reflection-v5.json
       - name: 10k continuation coverage scenarios
-        run: python scripts/simulate_continuation_v6.py --cases 10000 --json-out /tmp/continuation-v6.json
+        run: python scripts/simulate_continuation_v6.py --json-out /tmp/continuation-v6.json
       - name: 10k bootstrap provenance finalization mutations
         run: python scripts/simulate_v7.py --cases 10000 --json-out /tmp/mutation-v7.json
       - name: Historiography integrity 1..M plus 100 no-novelty
         run: python scripts/reflect_v8.py --target 100 --json-out /tmp/reflection-v8.json
+      - name: 30k tri-mode and editorial contract scenarios
+        run: python scripts/simulate_modes_v9.py --cases 30000 --json-out /tmp/modes-v9.json
       - name: Simulation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/simulation-v5.json /tmp/simulation-v5.json
       - name: Reflection receipt is semantic fixed-point
@@ -67,3 +69,5 @@ jobs:
         run: python scripts/check_validation_receipts.py validation/mutation-v7.json /tmp/mutation-v7.json
       - name: V8 historiography reflection receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/reflection-v8.json /tmp/reflection-v8.json
+      - name: V9 tri-mode receipt is semantic fixed-point
+        run: python scripts/check_validation_receipts.py validation/modes-v9.json /tmp/modes-v9.json

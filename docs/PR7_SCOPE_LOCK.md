@@ -1,3 +1,3 @@
-# PR7 scope lock
+# Historical PR7 scope lock
 
-Scope is frozen to bootstrap, interaction protocol, provenance-complete finalization, final severe review, human-first dashboard, Maine benchmark documentation and anti-regression validation. Further commits after PR opening should be limited to CI/review fixes.
+Questo documento descriveva il perimetro della PR7 e non è più il perimetro corrente del prodotto. Dalla v0.9 Juriscribe ha tre modalità first-class: CONTINUATION, GREENFIELD, REVIEW. Vedi `docs/MODES_V9.md`.

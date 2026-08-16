@@ -1,11 +1,7 @@
-# `node.h` — proiezione legacy di compatibilità
+# `node.h` — retired in v0.9
 
-`node.h` **non indica Node.js e non è un refuso per `node.s`**. Il nome fu introdotto nella linea v0.5 come metafora di un “header” di integrità e il file usa effettivamente direttive `#define` in stile C.
+`node.h` fu introdotto in v0.5 come proiezione C-style dei digest di sessione. Non indicava Node.js né `node.s`.
 
-Da runtime v0.8 il record canonico è [`session.integrity.json`](SESSION_INTEGRITY_MANIFEST.md). `node.h` viene ancora generato perché il contratto di accesso 1.5.0 lo nomina esplicitamente e perché possono esistere workspace/integrations legacy.
+PR8 lo aveva mantenuto come compatibility projection perché il contratto 1.5.0 lo richiedeva ancora. Il contratto 1.6.0 rimuove quel requisito: nuove sessioni non lo generano e il completion gate non lo verifica.
 
-Status: **DEPRECATED_COMPATIBILITY**.
-
-La proiezione contiene soltanto metadata e digest, mai testo del corpus. Il gate verifica sia il manifest JSON canonico sia `node.h`; la rimozione definitiva del legacy file richiederà una futura revisione del contratto.
-
-Per la ricostruzione storica della decisione vedi [`HISTORIOGRAPHIC_AUDIT_V8.md`](HISTORIOGRAPHIC_AUDIT_V8.md).
+Resta soltanto una migrazione one-way: se un vecchio workspace non possiede `session.integrity.json` ma possiede un `node.h` valido rispetto a `state.json`, il runtime può sintetizzare il manifest canonico.
