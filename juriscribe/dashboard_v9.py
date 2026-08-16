@@ -9,6 +9,7 @@ from typing import Any
 from .editorial_artifacts import build_dashboard_inference_view
 
 DASHBOARD_TITLE = "Dossier inferenziale giuridico-umanistico-editoriale"
+DASHBOARD_SECTIONS = ("Evidence dossier", "Source register", "Inference register", "Transformation ledger")
 DASHBOARD_BINDING_KEYS = (
     "request", "mode", "mode_selection", "mode_contract", "editorial_standard",
     "corpus", "sources", "bibliography", "epistemic_units", "relations", "reticulum",
@@ -80,7 +81,7 @@ def _render_value(value: Any, *, depth: int = 0) -> str:
 
 
 def _render_dossier(view: dict[str, Any], number: int) -> str:
-    title = str(view.get("titolo") or "Dossier"); purpose = str(view.get("finalita") or ""); records = list(view.get("records") or [])
+    title = str(view.get("titolo") or DASHBOARD_SECTIONS[number - 1]); purpose = str(view.get("finalita") or ""); records = list(view.get("records") or [])
     return f'<section><div class="eyebrow">Parte {number}</div><h2>{esc(title)}</h2><p class="purpose">{esc(purpose)}</p><p class="count">{len(records)} elementi materializzati</p>{_render_value(records)}</section>'
 
 
