@@ -1,4 +1,4 @@
-# Juriscribe agent runtime rules v0.9.4 — post-bootstrap
+# Juriscribe agent runtime rules v0.9.5 — post-bootstrap
 
 Dopo bootstrap e initialize, chiedi/seleziona una modalità prima di lavorare sui materiali: `CONTINUATION`, `GREENFIELD`, `REVIEW`, lasciando sempre `ALTRO`.
 
@@ -30,8 +30,7 @@ In `REPORT_ONLY`, finding aperti nel target sono output, non blocker del runtime
 ## Editoriale
 Applica `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` con adattamento a genere, destinatari e house style. Non trasformare metriche in regole universali.
 
-## Artefatti semantici v0.9.4
-
+## Artefatti semantici v0.9.4+
 I quattro dossier comuni devono essere costruiti dalla proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`:
 
 - `evidence_dossier`: proposizione, funzione giuridica, evidenze/premesse, pinpoint, qualificazioni/contrasti, disposizione e collocazione;
@@ -42,8 +41,19 @@ I quattro dossier comuni devono essere costruiti dalla proiezione canonica `JURI
 Non duplicare questa logica in renderer diversi: usa `juriscribe.editorial_artifacts.build_editorial_artifact_views` come fonte semantica comune. Non aggiungere contenuti interpretativi che non siano già materializzati nello stato auditato.
 
 ## Dashboard inferenziale — vincolo non negoziabile
-
 `session-dashboard.html` deve essere il dossier inferenziale integrato, non una console tecnica. Il `<body>` deve contenere **ogni informazione giuridico-umanistico-editoriale** presente nelle quattro proiezioni canoniche, oltre a mandato, modalità, genere, destinatari e principi editoriali applicati.
+
+Dalla v0.9.5 la presentazione usa `JURISCRIBE_EDITORIAL_WORKBENCH_V1`:
+- masthead editoriale con mandato e cornice;
+- mappa dei quattro registri ottenuta soltanto da conteggi derivati;
+- indice interno e landmark nominati;
+- record semantici espandibili, aperti di default;
+- ricerca locale sul testo già presente nel DOM;
+- controlli espandi/contrai e profilo di stampa;
+- layout responsive e focus visibile;
+- HTML autosufficiente, senza CSS, font, analytics o JavaScript remoti.
+
+La ricerca e gli strumenti di lettura non devono generare, trasformare o riassumere nuovo contenuto giuridico. Il browser presenta la proiezione: non diventa un secondo motore inferenziale.
 
 Nel corpo della dashboard non mostrare:
 - hash o digest;
@@ -78,9 +88,9 @@ Alla chiusura:
 - un suffisso `.docx` non basta: il file deve esistere, non essere vuoto, essere un pacchetto OOXML/WordprocessingML riconoscibile ed essere rileggibile entro limiti di decompressione/size sicuri;
 - i deliverable finali devono essere materializzati **dentro** `<workspace>/artifacts`; path esterni e symlink non soddisfano il gate;
 - la dashboard deve restare state-bound tramite metadata invisibile; una dashboard stale non soddisfa il gate;
-- i quattro dossier v0.9.4 devono essere materializzati dalla proiezione corrente e, se sigillati, non possono essere stale rispetto al quadro inferenziale;
+- i quattro dossier v0.9.4+ devono essere materializzati dalla proiezione corrente e, se sigillati, non possono essere stale rispetto al quadro inferenziale;
 - se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, non dichiarare `COMPLETE`.
 
 La persistenza di `state.json` e `session.integrity.json` usa replace atomico e ogni `load()` sostanziale valida l'integrità prima di restituire lo stato. Il manifest di consegna canonico resta costruito da `juriscribe.delivery.build_delivery_manifest`; il semantic-drift gate è `juriscribe.semantic_delivery.semantic_dossier_gate`.
 
-Vedi `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md` e `docs/RUNTIME_HARDENING_V9_3.md`.
+Vedi `docs/DASHBOARD_WORKBENCH_V9_5.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md` e `docs/RUNTIME_HARDENING_V9_3.md`.
