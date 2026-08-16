@@ -93,6 +93,9 @@ jobs:
           PY
             exit "$status"
           fi
+      - name: Evidence traceability and dashboard coverage contract
+        shell: bash
+        run: python scripts/check_evidence_traceability_contract.py
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
@@ -114,6 +117,22 @@ jobs:
         run: python scripts/reflect_v8.py --target 100 --json-out /tmp/reflection-v8.json
       - name: 30k tri-mode and editorial contract scenarios
         run: python scripts/simulate_modes_v9.py --cases 30000 --json-out /tmp/modes-v9.json
+      - name: 10k unique dashboard evidence coverage scenarios
+        shell: bash
+        run: |
+          set +e
+          python scripts/simulate_dashboard_evidence_v96.py --cases 10000 --seeds 17,31,53,79,113,157,211,269,337,401,463,541,617,701,809,919,1031,1151,1297,1429 --json-out /tmp/dashboard-evidence-v96.json > /tmp/dashboard-evidence-v96.log 2>&1
+          status=$?
+          cat /tmp/dashboard-evidence-v96.log
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/dashboard-evidence-v96.log').read_text(encoding='utf-8', errors='replace')[-3500:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Dashboard evidence 10k failure::{text}')
+          PY
+            exit "$status"
+          fi
       - name: Simulation receipt is semantic fixed-point
         run: python scripts/check_validation_receipts.py validation/simulation-v5.json /tmp/simulation-v5.json
       - name: Reflection receipt is semantic fixed-point

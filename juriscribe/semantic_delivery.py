@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from . import delivery as _delivery
 from .editorial_artifacts import DOSSIER_ROLES, PROFILE_ID, semantic_projection_digest
+from .evidence_traceability import evidence_traceability_gate
 from .interaction import interaction_card
 
 
@@ -24,11 +25,7 @@ def record_artifact(state, record):
 
 
 def semantic_dossier_gate(state):
-    """Fail closed on semantic drift for dossiers registered by v0.9.4+.
-
-    Records created before the semantic-profile field existed remain readable for
-    migration compatibility; every newly registered dossier is stamped and checked.
-    """
+    """Fail closed on semantic drift for dossiers registered by v0.9.4+."""
     by_role = {str(item.get("role", "")): item for item in state.artifacts if item.get("role")}
     errors = []
     for role in DOSSIER_ROLES:
@@ -46,9 +43,12 @@ def semantic_dossier_gate(state):
 
 def evaluate_completion(state):
     _delivery.evaluate_completion(state)
-    ok, errors = semantic_dossier_gate(state)
-    state.completion["semantic_dossier_gate"] = {"eligible": ok, "errors": errors}
-    if not ok:
+    dossier_ok, dossier_errors = semantic_dossier_gate(state)
+    evidence_ok, evidence_errors = evidence_traceability_gate(state)
+    state.completion["semantic_dossier_gate"] = {"eligible": dossier_ok, "errors": dossier_errors}
+    state.completion["evidence_traceability_gate"] = {"eligible": evidence_ok, "errors": evidence_errors}
+    errors = dossier_errors + evidence_errors
+    if errors:
         state.completion["eligible"] = False
         existing = str(state.completion.get("reason", ""))
         extra = "; ".join(errors)
@@ -58,7 +58,7 @@ def evaluate_completion(state):
             **(state.interaction or {}),
             "card": interaction_card(
                 "HUMAN_DECISION_REQUIRED",
-                summary="I dossier devono essere riallineati al quadro inferenziale corrente. Consulta la dashboard.",
+                summary="I dossier o la tracciabilita delle evidenze devono essere riallineati. Consulta la dashboard.",
             ),
             "status": "READY",
         }
