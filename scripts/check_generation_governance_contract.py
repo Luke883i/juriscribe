@@ -27,7 +27,8 @@ def main():
     plagiarism = text("juriscribe/plagiarism.py")
     artifact_governance = text("juriscribe/artifact_governance.py")
     saturation = text("juriscribe/saturation.py")
-    atlas = text("juriscribe/artifact_atlas.py")
+    atlas_core = text("juriscribe/artifact_atlas_core.py")
+    atlas_public = text("juriscribe/artifact_atlas.py")
     dashboard = text("juriscribe/dashboard_v97.py")
     delivery = text("juriscribe/governance_delivery.py")
     workflow = text(".github/workflows/runtime-regression.yml")
@@ -67,8 +68,8 @@ def main():
     for token in ["_extract_docx_text", "artifact_generation_governance_gate", "sealed_candidate_binding", "materialized narrative"]:
         if token not in artifact_governance:
             fail(f"materialized artifact governance missing {token}")
-    for token in ["minimum cyclic", "fixed point", "cycles", "probe_order", "new_findings"]:
-        if token.lower() not in saturation.lower() and token != "minimum cyclic":
+    for token in ["fixed point", "cycles", "probe_order", "new_findings"]:
+        if token.lower() not in saturation.lower():
             fail(f"predelivery saturation missing {token}")
     for token in ["artifact_atlas_required=True", "anti_plagiarism_required=True", "predelivery_saturation_required=True", "materialized_narrative_antiplagiarism_required=True"]:
         if token not in orchestrator:
@@ -76,9 +77,20 @@ def main():
     for token in ["artifact_dashboard_coverage_gate", "materialized_narrative_governance", "predelivery_saturation_gate"]:
         if token not in delivery:
             fail(f"final governance boundary missing {token}")
-    for token in ["Atlante completo degli artefatti", "artefatti_materiali", "artefatti_epistemici", "sintesi_compressa", "descrizione_completa"]:
-        if token not in atlas:
-            fail(f"artifact atlas missing {token}")
+
+    # The atlas deliberately has two layers. The core owns exhaustive semantic
+    # vocabulary and coverage; the public wrapper owns technical-field scrubbing
+    # and public enrichments. Do not force both responsibilities into one file.
+    for token in ["Atlante completo degli artefatti", "artefatti_materiali", "artefatti_epistemici", "sintesi_compressa", "descrizione_completa", "artifact_dashboard_coverage_gate"]:
+        if token not in atlas_core:
+            fail(f"artifact-atlas core missing {token}")
+    for token in ["artifact_atlas_core", "_scrub", "SENSITIVE_PUBLIC_KEYS", "build_artifact_atlas", "artifact_dashboard_coverage_gate"]:
+        if token not in atlas_public:
+            fail(f"artifact-atlas public boundary missing {token}")
+    for forbidden in ["plagiarism_references", "sealed_candidate_fingerprints", "exact_ngram_hashes", "shingle_hashes"]:
+        if forbidden not in atlas_public:
+            fail(f"artifact-atlas public scrub policy missing sensitive key {forbidden}")
+
     for token in ["Configurazione di generazione", "Controllo anti-plagio", "Saturazione e ri-controllo ciclico", "Atlante completo degli artefatti", "Artefatti epistemici"]:
         if token not in dashboard:
             fail(f"dashboard v0.9.7 missing {token}")
