@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe persistent session dashboard v1",
+  "type": "object",
+  "required": ["schema", "profile", "status", "generation"],
+  "properties": {
+    "schema": {"const": "juriscribe-persistent-session-dashboard/v1"},
+    "profile": {"const": "JURISCRIBE_PERSISTENT_SESSION_DASHBOARD_V1"},
+    "status": {"enum": ["NOT_RENDERED", "RENDERING", "PASS", "FAIL"]},
+    "generation": {"type": "integer", "minimum": 0},
+    "last_trigger": {"type": "string"},
+    "source_state_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "html_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "size_bytes": {"type": "integer", "minimum": 0},
+    "public_leaf_count": {"type": "integer", "minimum": 0},
+    "missing_public_leaf_count": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": true
+}
