@@ -1,5 +1,5 @@
 {
-  "schema": "juriscribe-admission/v5",
+  "schema": "juriscribe-admission/v6",
   "repository": "Luke883i/juriscribe",
   "contract_version": "1.7.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
@@ -11,10 +11,14 @@
   "bootstrap_order": ["TERMS_PRESENTED", "TERMS_ACCEPTED", "PROBE_REQUIRED", "PROBED", "INITIALIZE_REQUIRED", "INITIALIZING", "MODE_SELECTION_REQUIRED", "ACTIVE_WORK"],
   "canonical_probe_command": "PROBE JURISCRIBE",
   "canonical_initialize_command": "INITIALIZE JURISCRIBE",
+  "canonical_fast_path": "bootstrap-after-acceptance",
   "canonical_modes": ["CONTINUATION", "GREENFIELD", "REVIEW"],
   "pre_admission_allowlist": ["AGENTS.md", "ISENECA_ACCESS_CONTRACT.md", "ADMISSION.json"],
   "post_admission_agent_rules": "docs/AGENT_RUNTIME_RULES.md",
   "probe_receipt_required_for_initialize": true,
+  "probe_receipt_single_use": true,
+  "receipt_nonces_required": true,
+  "sealed_capabilities_immutable": true,
   "mode_selection_required_for_substantive_work": true,
   "active_required_for_substantive_read": true,
   "artifact_first_surface_required": true,
@@ -22,6 +26,11 @@
   "autonomous_until_blocking_human_decision": true,
   "materialized_delivery_required": true,
   "dashboard_state_binding_required": true,
+  "workspace_overwrite_forbidden": true,
+  "non_deterministic_session_ids": true,
+  "atomic_session_persistence": true,
+  "artifact_workspace_confinement": true,
+  "technical_output_dual_opt_in": true,
   "runtime_receipt_required_for": ["probe", "initialize", "select-mode", "mine", "semantic-mining", "bibliography", "accept-setup", "freeze-dods", "continuation-plan", "continuation-coverage", "research-plan", "validate-claims", "seal-draft", "review-cycle", "record-regeneration", "review-saturation", "audit-text", "record-simulation", "record-compression", "record-provenance", "final-review", "record-artifact", "gate", "dashboard", "interaction-card", "integrity"],
   "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access"
 }
