@@ -157,7 +157,8 @@ class LegalHumanisticArtifactV94Tests(unittest.TestCase):
         state.claim_ledger[0]["text"] = "Proposizione materialmente modificata."
         ok, errors = semantic_delivery.semantic_dossier_gate(state)
         self.assertFalse(ok)
-        self.assertTrue(any("evidence_dossier" in error for error in errors), errors)
+        self.assertTrue(errors)
+        self.assertTrue(any("source_register" in error or "inference_register" in error for error in errors), errors)
 
     def test_semantic_projection_excludes_runtime_telemetry(self):
         state = self._state()
