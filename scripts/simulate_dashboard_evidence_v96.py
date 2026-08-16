@@ -4,10 +4,15 @@ import argparse
 import html
 import json
 import random
+import sys
 import tempfile
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from juriscribe import dashboard
 from juriscribe.editorial_artifacts import build_dashboard_inference_view
