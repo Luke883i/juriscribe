@@ -9,11 +9,12 @@ from juriscribe.delivery import ATTACH, DOCX_MIME, HTML_MIME, build_delivery_man
 from juriscribe.modes import GREENFIELD, required_artifact_roles
 
 
-class DeliveryV92RegressionTests(unittest.TestCase):
+class DeliveryV93RegressionTests(unittest.TestCase):
     def _state(self, *, docx_write="AVAILABLE", docx_readback="AVAILABLE"):
         return SimpleNamespace(
             mode=GREENFIELD, setup={},
-            runtime={"capabilities": {"DOCX_WRITE": docx_write, "DOCX_READBACK": docx_readback}},
+            runtime={"capabilities": {"DOCX_WRITE": docx_write, "DOCX_READBACK": docx_readback}, "workspace_base": ""},
+            phase="VALIDATING",
             request={"raw": "Monografia", "summary": "Monografia"},
             mode_selection={}, mode_contract={"required_artifact_roles": sorted(required_artifact_roles(GREENFIELD, {})), "status": "READY"},
             editorial_standard={}, corpus=[], sources=[], bibliography={}, epistemic_units=[], relations=[], reticulum={},
@@ -31,9 +32,11 @@ class DeliveryV92RegressionTests(unittest.TestCase):
             package.writestr("word/document.xml", f'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:body></w:document>')
 
     def _populate_valid_delivery(self, state, root: Path):
+        state.runtime["workspace_base"] = str(root.resolve())
+        artifact_root = root / "artifacts"
         roles = sorted(required_artifact_roles(GREENFIELD, {}))
         for role in roles:
-            path = root / ("session-dashboard.html" if role == "session_dashboard" else f"{role}.docx")
+            path = artifact_root / ("session-dashboard.html" if role == "session_dashboard" else f"{role}.docx")
             if role != "session_dashboard":
                 self._write_docx(path, role)
             state.artifacts.append(normalize_artifact_record(state, {"id": role, "role": role, "path": str(path), "readback": "PASS"}))
@@ -47,6 +50,7 @@ class DeliveryV92RegressionTests(unittest.TestCase):
             manifest = build_delivery_manifest(state)
             self.assertEqual(manifest["status"], "PASS", manifest["errors"])
             self.assertTrue(manifest["materialization_verified"])
+            self.assertTrue(manifest["workspace_confinement_verified"])
             self.assertTrue(manifest["dashboard_bound_to_current_state"])
             for artifact in manifest["attachments"]:
                 self.assertGreater(artifact["size_bytes"], 0)
@@ -65,22 +69,22 @@ class DeliveryV92RegressionTests(unittest.TestCase):
         state = self._state()
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); self._populate_valid_delivery(state, root)
-            (root / "final_legal_text.docx").write_text("not a DOCX", encoding="utf-8")
+            (root / "artifacts" / "final_legal_text.docx").write_text("not a DOCX", encoding="utf-8")
             ok, errors = delivery_gate(state)
             self.assertFalse(ok); self.assertTrue(any("valid DOCX" in error or "OOXML" in error for error in errors), errors)
 
     def test_missing_docx_fails_materialization(self):
         state = self._state()
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp); self._populate_valid_delivery(state, root); (root / "final_legal_text.docx").unlink()
+            root = Path(tmp); self._populate_valid_delivery(state, root); (root / "artifacts" / "final_legal_text.docx").unlink()
             ok, errors = delivery_gate(state)
             self.assertFalse(ok); self.assertTrue(any("missing on disk" in error for error in errors), errors)
 
-    def test_stale_dashboard_fails_after_substantive_state_change(self):
+    def test_stale_dashboard_fails_after_control_state_change(self):
         state = self._state()
         with tempfile.TemporaryDirectory() as tmp:
             self._populate_valid_delivery(state, Path(tmp)); self.assertTrue(delivery_gate(state)[0])
-            state.claim_ledger.append({"id": "C1", "claim_type": "direct", "proposition": "nuova"})
+            state.completion = {"eligible": False, "reason": "new blocker"}
             ok, errors = delivery_gate(state)
             self.assertFalse(ok); self.assertTrue(any("dashboard is stale" in error for error in errors), errors)
 
@@ -107,6 +111,27 @@ class DeliveryV92RegressionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             self._populate_valid_delivery(state, Path(tmp)); ok, errors = delivery_gate(state)
             self.assertFalse(ok); self.assertTrue(any("DOCX_WRITE" in error for error in errors), errors); self.assertTrue(any("DOCX_READBACK" in error for error in errors), errors)
+
+    def test_external_artifact_path_is_rejected(self):
+        state = self._state()
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
+            root = Path(tmp); self._populate_valid_delivery(state, root)
+            external = Path(outside) / "final_legal_text.docx"; self._write_docx(external)
+            record = next(a for a in state.artifacts if a["role"] == "final_legal_text"); record["path"] = str(external)
+            ok, errors = delivery_gate(state)
+            self.assertFalse(ok); self.assertTrue(any("outside" in e or "escapes" in e for e in errors), errors)
+
+    def test_zip_bomb_like_docx_is_rejected(self):
+        state = self._state()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); self._populate_valid_delivery(state, root)
+            target = root / "artifacts" / "final_legal_text.docx"
+            with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as package:
+                package.writestr("[Content_Types].xml", "x")
+                package.writestr("_rels/.rels", "x")
+                package.writestr("word/document.xml", "<w:document><w:t>" + ("A" * (2 * 1024 * 1024)) + "</w:t></w:document>")
+            ok, errors = delivery_gate(state)
+            self.assertFalse(ok); self.assertTrue(any("compression ratio" in e for e in errors), errors)
 
 
 if __name__ == "__main__": unittest.main()
