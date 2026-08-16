@@ -8,6 +8,7 @@ from typing import Any
 
 from .editorial_artifacts import build_dashboard_inference_view
 
+DASHBOARD_TITLE = "Dossier inferenziale giuridico-umanistico-editoriale"
 DASHBOARD_BINDING_KEYS = (
     "request", "mode", "mode_selection", "mode_contract", "editorial_standard",
     "corpus", "sources", "bibliography", "epistemic_units", "relations", "reticulum",
@@ -111,7 +112,7 @@ def render_session_dashboard(state: dict[str, Any] | Any, output: str | Path) ->
 <body><main>
 <header>
 <div class="eyebrow">Juriscribe · dossier inferenziale giuridico-umanistico-editoriale · {editorial_state}</div>
-<h1>{esc(inference.get('titolo') or 'Dossier inferenziale')}</h1>
+<h1>{esc(inference.get('titolo') or DASHBOARD_TITLE)}</h1>
 <p class="mandate"><strong>Mandato:</strong> {esc(inference.get('mandato') or 'Non ancora definito')}</p>
 <h2>Standard redazionali applicati</h2>
 <div class="frame">
