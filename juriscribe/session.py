@@ -90,6 +90,12 @@ class SessionState:
     completion: dict[str, Any] = field(default_factory=lambda: {"eligible": False, "reason": "Mode, DoD, review, provenance and final review not yet proven"})
     node_integrity: dict[str, Any] = field(default_factory=lambda: {"status": "NOT_CHECKED", "errors": []})
     artifacts: list[dict[str, Any]] = field(default_factory=list)
+    dashboard_persistence: dict[str, Any] = field(default_factory=lambda: {
+        "schema": "juriscribe-persistent-session-dashboard/v1",
+        "profile": "JURISCRIBE_PERSISTENT_SESSION_DASHBOARD_V1",
+        "status": "NOT_RENDERED",
+        "generation": 0,
+    })
 
     def touch(self):
         self.updated_at = utc_now()

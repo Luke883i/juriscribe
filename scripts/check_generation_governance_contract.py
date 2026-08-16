@@ -20,6 +20,13 @@ def text(path: str) -> str:
     return p.read_text(encoding="utf-8")
 
 
+def version_tuple(value: str) -> tuple[int, ...]:
+    try:
+        return tuple(int(item) for item in str(value).split("."))
+    except ValueError:
+        fail(f"invalid runtime version {value}")
+
+
 def main():
     manifest = json.loads(text("MANIFEST.json"))
     orchestrator = text("juriscribe/orchestrator.py")
@@ -35,8 +42,9 @@ def main():
     audit = text("docs/AUDIT_GENERATION_GOVERNANCE_V9_7.md")
     spec = text("docs/GENERATION_GOVERNANCE_V9_7.md")
 
-    if manifest.get("runtime_version") != "0.9.7":
-        fail("manifest runtime is not 0.9.7")
+    # v0.9.7 is a preserved lower-bound contract, not a permanent version pin.
+    if version_tuple(manifest.get("runtime_version", "0")) < (0, 9, 7):
+        fail("manifest runtime predates v0.9.7 generation governance")
     gov = manifest.get("generation_governance") or {}
     required_true = [
         "configuration_proposed_before_generation",
@@ -78,9 +86,6 @@ def main():
         if token not in delivery:
             fail(f"final governance boundary missing {token}")
 
-    # The atlas deliberately has two layers. The core owns exhaustive semantic
-    # vocabulary and coverage; the public wrapper owns technical-field scrubbing
-    # and public enrichments. Do not force both responsibilities into one file.
     for token in ["Atlante completo degli artefatti", "artefatti_materiali", "artefatti_epistemici", "sintesi_compressa", "descrizione_completa", "artifact_dashboard_coverage_gate"]:
         if token not in atlas_core:
             fail(f"artifact-atlas core missing {token}")
@@ -91,9 +96,6 @@ def main():
         if forbidden not in atlas_public:
             fail(f"artifact-atlas public scrub policy missing sensitive key {forbidden}")
 
-    # The renderer owns structure and visual presentation, while the atlas
-    # projector owns canonical titles/content. Requiring projector vocabulary to
-    # be copied into the renderer would create semantic drift by duplication.
     for token in ["Configurazione di generazione", "Controllo anti-plagio", "Saturazione e ri-controllo ciclico", "_artifact_atlas_section", "build_artifact_atlas", "artifact-atlas", "Artefatti materiali", "Artefatti epistemici"]:
         if token not in dashboard:
             fail(f"dashboard v0.9.7 missing structural token {token}")

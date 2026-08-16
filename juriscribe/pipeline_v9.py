@@ -7,8 +7,7 @@ from pathlib import Path
 
 from .admission import CONTRACT_VERSION, issue_receipt, load_contract_text, load_receipt, require_receipt, validate_receipt
 from .bootstrap import activate_work, bootstrap_card, bootstrap_gate, claim_probe_receipt, issue_probe_receipt, require_probe_receipt
-from .dashboard import render_session_dashboard
-from .delivery import refresh_dashboard_artifact
+from .dashboard_persistence import persist_dashboard_generation
 from .interaction import interaction_card
 from .modes import MODES
 from .orchestrator import (
@@ -64,14 +63,9 @@ def _sealed_capabilities(probe, host_capabilities=None):
     return caps
 
 
-def persist_session(ws: Workspace, state) -> Path:
-    """Render/bind the human dashboard and persist one coherent session generation."""
-    out = (ws.artifact_dir / "session-dashboard.html").resolve()
-    ws.artifact_dir.mkdir(parents=True, exist_ok=True)
-    render_session_dashboard(state.to_dict(), out)
-    refresh_dashboard_artifact(state, out)
-    ws.save(state)
-    return out
+def persist_session(ws: Workspace, state, *, trigger: str = "runtime-mutation") -> Path:
+    """Commit one coherent persistent dashboard/state generation for the session."""
+    return persist_dashboard_generation(ws, state, trigger=trigger)
 
 
 def initialize(request, root=".juriscribe", session_id=None, host_capabilities=None, *, admission_receipt=None, probe_receipt=None, contract_text=None):
@@ -110,7 +104,7 @@ def initialize(request, root=".juriscribe", session_id=None, host_capabilities=N
         "summary": "Manifest canonico di integrità", "path": str(ws.integrity_path),
         "readback": "PASS", "required": False, "delivery_class": "INTERNAL",
     })
-    persist_session(ws, state)
+    persist_session(ws, state, trigger="initialize")
     return ws.base
 
 
@@ -145,7 +139,7 @@ def _ws(session_dir):
 def update_dashboard(session_dir):
     ws = _ws(session_dir)
     state = ws.load()
-    return persist_session(ws, state)
+    return persist_session(ws, state, trigger="dashboard")
 
 
 def _receipt(path):
@@ -228,7 +222,7 @@ def main(argv=None):
     if args.command == "select-mode":
         result = select_mode(state, args.mode)
         activate_work(state.admission, contract_version=(state.admission.get("receipt") or {}).get("contract_version", CONTRACT_VERSION))
-        persist_session(ws, state)
+        persist_session(ws, state, trigger="select-mode")
         print(json.dumps(result, ensure_ascii=False, indent=2)); return 0
     if args.command == "dashboard":
         print(update_dashboard(ws.base)); return 0
@@ -269,7 +263,7 @@ def main(argv=None):
     else:
         return 1
 
-    persist_session(ws, state)
+    persist_session(ws, state, trigger=args.command)
     if output is not None:
         print(json.dumps(output, ensure_ascii=False, indent=2))
     return rc
