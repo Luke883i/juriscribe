@@ -26,7 +26,7 @@ In `REPORT_ONLY`, finding aperti nel target sono output, non blocker del runtime
 Applica `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` con adattamento a genere, destinatari e house style. Non trasformare metriche in regole universali.
 
 ## Superficie AI artifact-first — vincolo non negoziabile
-La complessità deve restare nel runtime, nei DOCX e nella dashboard, **non nella conversazione con l'utente**. Questo vale per tutta la lavorazione post-bootstrap, non soltanto per il messaggio finale.
+La complessità deve restare nel runtime, nei DOCX e nella dashboard, **non nella conversazione con l'utente**. Questo vale per tutta la lavorazione post-bootstrap, non soltanto per il messaggio finale. Regola sintetica: **non narrare** il processo interno; materializzalo.
 
 Dopo modalità, materiali e setup minimo:
 - prosegui autonomamente senza narrare mining, reticolo, ricerca, fonti, review, rigenerazioni, saturazione, simulazioni, compressione, provenance o gate;
