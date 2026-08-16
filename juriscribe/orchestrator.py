@@ -5,6 +5,9 @@ lifecycle through the tri-mode dispatcher. v0.9.1 applies the final-delivery
 boundary last; v0.9.2 hardens that boundary with real materialization and
 state-bound dashboard verification. v0.9.4 adds a legal-humanistic semantic
 projection boundary after delivery so dossier freshness cannot be bypassed.
+v0.9.6 extends that boundary with lossless artifact-evidence traceability: every
+registered evidence link remains visible, broken references fail closed, and the
+human dashboard exposes a compressed outcome plus recall of final artifacts.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -16,3 +19,4 @@ from .semantic_delivery import evaluate_completion, record_artifact
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=True
 # materialized_delivery_required=True dashboard_state_binding_required=True artifact_first_surface_required=True
 # legal_humanistic_projection_required=True semantic_dossier_freshness_required=True dashboard_inference_only=True
+# evidence_traceability_required=True dashboard_artifact_recall_required=True dashboard_compressed_outcome_required=True

@@ -93,6 +93,9 @@ jobs:
           PY
             exit "$status"
           fi
+      - name: Evidence traceability and dashboard coverage contract
+        shell: bash
+        run: python scripts/check_evidence_traceability_contract.py
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
