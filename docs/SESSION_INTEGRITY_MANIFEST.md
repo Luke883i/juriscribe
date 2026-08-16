@@ -1,46 +1,9 @@
-# `session.integrity.json` — manifest canonico di integrità
+# `session.integrity.json` — canonical session integrity v2
 
-Da runtime v0.8 ogni workspace persistente materializza:
+Dalla v0.9 è l'unico record di integrità richiesto. Contiene metadata e digest, non corpus text né chain-of-thought.
 
-```text
-.juriscribe/<session-id>/session.integrity.json
-```
+La v2 lega anche `mode`, `mode_selection`, `mode_contract` e `editorial_standard`, oltre a corpus, fonti, claim, reticolo, setup, DoD, contratti, candidato/target, review, provenance, final review, simulazioni/compressione quando applicabili e artifact registry.
 
-Il file è il record canonico machine-readable dell'integrità della sessione. È JSON deterministico, privo di timestamp volatili e privo di testo del corpus.
+Il validator ricalcola deterministicamente i binding contro `state.json` e rileva missing field, stale state, tampering e campi inattesi.
 
-## Struttura
-
-```json
-{
-  "schema": "juriscribe-session-integrity/v1",
-  "kind": "session_integrity_manifest",
-  "bindings": {
-    "session_id": "…",
-    "phase": "…",
-    "ready": false,
-    "corpus_sha256": "…"
-  },
-  "paths": {
-    "state": "state.json",
-    "ledger": "ledger",
-    "artifacts": "artifacts"
-  },
-  "legacy_projection": {
-    "path": "node.h",
-    "format": "c-preprocessor-header",
-    "status": "DEPRECATED_COMPATIBILITY"
-  }
-}
-```
-
-I `bindings` coprono lo stesso stato materiale protetto storicamente dal legacy header: corpus, fonti, claim, source intelligence, reticolo, setup, DoD, generation contract, continuation, candidato, review, final review, provenance, interaction, bootstrap, bibliografia, simulazioni, compressione, qualità, benchmark e artefatti.
-
-## Proprietà
-
-- **deterministico**: a parità di stato materiale produce lo stesso record;
-- **fail-closed**: field missing, field extra o digest diverso rendono il manifest invalido;
-- **corpus-free**: registra digest, non testo giuridico;
-- **human-inspectable**: JSON esplicito anziché macro C;
-- **migration-aware**: `node.h` resta proiezione legacy finché il contratto 1.5.0 la nomina.
-
-Il completion gate v0.8 verifica sia il manifest canonico sia il legacy `node.h`, così un tampering su uno dei due non passa silenziosamente.
+`node.h` non viene più generato. Un vecchio `node.h` può essere letto una sola volta per migrare un workspace storico privo di `session.integrity.json`.
