@@ -5,15 +5,19 @@ import contextlib
 import io
 import json
 import shutil
+import sys
 import tempfile
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from juriscribe.admission import issue_receipt
 from juriscribe.dashboard_persistence import verify_persistent_dashboard
 from juriscribe.pipeline_v9 import initialize, main as runtime_main, perform_probe
 from juriscribe.session import Workspace
 
-ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = (ROOT / "ISENECA_ACCESS_CONTRACT.md").read_text(encoding="utf-8")
 MODES = ("CONTINUATION", "GREENFIELD", "REVIEW")
 SAMPLE = """CAPITOLO I - Persistenza della conoscenza
@@ -146,7 +150,7 @@ def run(out_root: str | None = None) -> dict:
         root = Path(temporary.name)
     try:
         sessions = [exercise_mode(root, mode, index) for index, mode in enumerate(MODES)]
-        result = {
+        return {
             "schema": "juriscribe-persistent-dashboard-e2e/v1",
             "profile": "JURISCRIBE_PERSISTENT_SESSION_DASHBOARD_V1",
             "status": "PASS",
@@ -160,7 +164,6 @@ def run(out_root: str | None = None) -> dict:
                 "dashboard generation ledger is monotonic and trigger-complete",
             ],
         }
-        return result
     finally:
         if temporary is not None:
             temporary.cleanup()

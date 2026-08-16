@@ -103,7 +103,19 @@ jobs:
         shell: bash
         run: |
           python scripts/check_persistent_dashboard_contract.py
-          python scripts/exercise_persistent_dashboard_v98.py
+          set +e
+          python scripts/exercise_persistent_dashboard_v98.py > /tmp/persistent-dashboard-e2e.log 2>&1
+          status=$?
+          cat /tmp/persistent-dashboard-e2e.log
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/persistent-dashboard-e2e.log').read_text(encoding='utf-8', errors='replace')[-3500:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Persistent dashboard E2E failure::{text}')
+          PY
+            exit "$status"
+          fi
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
