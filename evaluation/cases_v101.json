@@ -1,0 +1,91 @@
+{
+  "schema": "juriscribe-external-eval/v1",
+  "dataset_id": "juriscribe-external-eval-seed-v101",
+  "purpose": "Seed the independent evaluation and future fine-tuning boundary without using runtime-generated labels as gold.",
+  "cases": [
+    {
+      "case_id": "train-constitutional-sovereignty-001",
+      "split": "train",
+      "task": {
+        "instruction": "Spiega in una frase, senza ampliare oltre il testo normativo, a chi appartiene la sovranità secondo l'articolo 1 della Costituzione italiana.",
+        "ideal_output": "La sovranità appartiene al popolo ed è esercitata nelle forme e nei limiti della Costituzione."
+      },
+      "annotation": {
+        "label_origin": "external_reference",
+        "reviewer_count": 2,
+        "adjudication_status": "AGREED",
+        "runtime_generated_ideal_output": false
+      },
+      "provenance": {
+        "source_class": "official_primary_law",
+        "source_locator": "Costituzione italiana, art. 1"
+      },
+      "rubric": {
+        "dimensions": ["source_fidelity", "scope_control", "uncertainty_discipline"]
+      }
+    },
+    {
+      "case_id": "train-effective-remedy-002",
+      "split": "train",
+      "task": {
+        "instruction": "Formula una proposizione minimale sul diritto a un ricorso effettivo partendo esclusivamente dalla Carta dei diritti fondamentali dell'Unione europea, articolo 47.",
+        "ideal_output": "Ogni persona i cui diritti e libertà garantiti dal diritto dell'Unione siano stati violati ha diritto a un ricorso effettivo dinanzi a un giudice."
+      },
+      "annotation": {
+        "label_origin": "external_reference",
+        "reviewer_count": 2,
+        "adjudication_status": "AGREED",
+        "runtime_generated_ideal_output": false
+      },
+      "provenance": {
+        "source_class": "official_primary_law",
+        "source_locator": "Carta dei diritti fondamentali UE, art. 47"
+      },
+      "rubric": {
+        "dimensions": ["source_fidelity", "claim_precision", "scope_control"]
+      }
+    },
+    {
+      "case_id": "eval-automated-decisions-001",
+      "split": "eval",
+      "task": {
+        "instruction": "Distingui la regola generale dall'eccezione, senza aggiungere presupposti non presenti, con riferimento al GDPR articolo 22.",
+        "ideal_output": "L'interessato ha diritto a non essere sottoposto a una decisione basata unicamente sul trattamento automatizzato che produca effetti giuridici o incida in modo analogo significativamente, salvo le eccezioni previste dalla norma."
+      },
+      "annotation": {
+        "label_origin": "external_reference",
+        "reviewer_count": 2,
+        "adjudication_status": "AGREED",
+        "runtime_generated_ideal_output": false
+      },
+      "provenance": {
+        "source_class": "official_primary_law",
+        "source_locator": "Regolamento (UE) 2016/679, art. 22"
+      },
+      "rubric": {
+        "dimensions": ["rule_exception_separation", "source_fidelity", "scope_control"]
+      }
+    },
+    {
+      "case_id": "holdout-fair-hearing-001",
+      "split": "holdout",
+      "task": {
+        "instruction": "Riassumi il nucleo del diritto a un equo processo dell'articolo 6 paragrafo 1 CEDU senza trasformarlo in una regola assoluta oltre il testo.",
+        "ideal_output": "Ogni persona ha diritto che la propria causa sia esaminata equamente, pubblicamente ed entro un termine ragionevole da un tribunale indipendente e imparziale costituito per legge, nei casi coperti dall'articolo 6 paragrafo 1 CEDU."
+      },
+      "annotation": {
+        "label_origin": "external_reference",
+        "reviewer_count": 2,
+        "adjudication_status": "AGREED",
+        "runtime_generated_ideal_output": false
+      },
+      "provenance": {
+        "source_class": "official_primary_law",
+        "source_locator": "CEDU, art. 6(1)"
+      },
+      "rubric": {
+        "dimensions": ["source_fidelity", "scope_control", "qualification_preservation"]
+      }
+    }
+  ]
+}

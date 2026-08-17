@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "juriscribe-external-evaluation-case-v1",
+  "type": "object",
+  "required": ["case_id", "split", "task", "annotation", "provenance", "rubric"],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1},
+    "split": {"enum": ["train", "eval", "holdout"]},
+    "task": {
+      "type": "object",
+      "required": ["instruction", "ideal_output"],
+      "properties": {
+        "instruction": {"type": "string", "minLength": 1},
+        "ideal_output": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "required": ["label_origin", "reviewer_count", "adjudication_status", "runtime_generated_ideal_output"],
+      "properties": {
+        "label_origin": {"enum": ["independent_human_gold", "external_reference"]},
+        "reviewer_count": {"type": "integer", "minimum": 2},
+        "adjudication_status": {"enum": ["AGREED", "ADJUDICATED"]},
+        "runtime_generated_ideal_output": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source_class", "source_locator"],
+      "properties": {
+        "source_class": {"type": "string", "minLength": 1},
+        "source_locator": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "rubric": {
+      "type": "object",
+      "required": ["dimensions"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
