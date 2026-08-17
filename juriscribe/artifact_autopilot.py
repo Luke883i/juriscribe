@@ -8,16 +8,15 @@ from typing import Any
 from xml.sax.saxutils import escape as xml_escape
 
 from .artifact_governance import record_artifact
-from .conversation_contract import build_final_artifact_inference_trace, pipeline_lock_gate
+from .conversation_contract import build_final_artifact_inference_trace, get_pipeline_lock, pipeline_lock_gate
 from .dossier_materialization import render_dossier_text
-from .modes import required_artifact_roles, review_output
+from .modes import required_artifact_roles
 
 PROFILE_ID = "JURISCRIBE_STANDARD_ARTIFACT_AUTOPILOT_V1"
 SCHEMA = "juriscribe-standard-artifact-autopilot/v1"
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 DOSSIER_ROLES = {"evidence_dossier", "source_register", "inference_register", "transformation_ledger"}
 NARRATIVE_ROLES = {"final_chapter", "final_legal_text", "revised_legal_text"}
-REVIEW_ROLES = {"review_report", "review_findings_register"}
 
 
 def _payload(state: Any) -> dict[str, Any]:
@@ -25,9 +24,7 @@ def _payload(state: Any) -> dict[str, Any]:
 
 
 def _strategy(state: Any) -> dict[str, Any]:
-    if isinstance(state, dict):
-        return state.setdefault("strategy", {})
-    return state.strategy
+    return _payload(state).setdefault("strategy", {})
 
 
 def store_candidate_text(state: Any, candidate_digest: str, text: str) -> None:
@@ -35,8 +32,7 @@ def store_candidate_text(state: Any, candidate_digest: str, text: str) -> None:
     if not digest:
         raise ValueError("candidate digest required for runtime candidate store")
     strategy = _strategy(state)
-    store = strategy.setdefault("sealed_candidate_texts", {})
-    store[digest] = str(text or "")
+    strategy.setdefault("sealed_candidate_texts", {})[digest] = str(text or "")
     strategy["sealed_candidate_text_store_profile"] = PROFILE_ID
 
 
@@ -66,12 +62,8 @@ def _word_document(paragraphs: list[str]) -> str:
         text = str(paragraph or "")
         if not text.strip():
             body.append("<w:p/>")
-            continue
-        body.append(
-            '<w:p><w:r><w:t xml:space="preserve">'
-            + xml_escape(text)
-            + "</w:t></w:r></w:p>"
-        )
+        else:
+            body.append('<w:p><w:r><w:t xml:space="preserve">' + xml_escape(text) + "</w:t></w:r></w:p>")
     if not body:
         body.append('<w:p><w:r><w:t xml:space="preserve">Documento Juriscribe</w:t></w:r></w:p>')
     return (
@@ -118,8 +110,7 @@ def _write_docx_atomic(path: Path, title: str, text: str) -> None:
 def _review_findings_text(state: Any) -> str:
     s = _payload(state)
     lines: list[str] = []
-    cycles = list((s.get("review") or {}).get("cycles") or [])
-    for cycle in cycles:
+    for cycle in list((s.get("review") or {}).get("cycles") or []):
         lines.append(f"Ciclo {cycle.get('cycle', '')} — stato {cycle.get('status', '')}")
         findings = list(cycle.get("findings") or [])
         if not findings:
@@ -183,21 +174,13 @@ def _role_text(state: Any, role: str) -> tuple[str, str, str]:
 
 
 def _upsert_record(state: Any, role: str, path: Path, source_kind: str, candidate_digest: str) -> dict[str, Any]:
-    s = _payload(state)
-    if isinstance(state, dict):
-        artifacts = state.setdefault("artifacts", [])
-    else:
-        artifacts = state.artifacts
+    artifacts = _payload(state).setdefault("artifacts", [])
     artifacts[:] = [item for item in artifacts if str(item.get("role") or "") != role]
     record: dict[str, Any] = {
-        "id": f"auto-{role}",
-        "role": role,
+        "id": f"auto-{role}", "role": role,
         "summary": f"Artefatto standard {role} materializzato automaticamente dal runtime Juriscribe.",
-        "path": str(path),
-        "readback": "PASS",
-        "auto_materialized_by_runtime": True,
-        "autopilot_profile": PROFILE_ID,
-        "source_kind": source_kind,
+        "path": str(path), "readback": "PASS", "auto_materialized_by_runtime": True,
+        "autopilot_profile": PROFILE_ID, "source_kind": source_kind,
     }
     if role == "final_chapter":
         trace = build_final_artifact_inference_trace(state, role, candidate_digest)
@@ -208,22 +191,19 @@ def _upsert_record(state: Any, role: str, path: Path, source_kind: str, candidat
 
 
 def materialize_standard_artifacts(state: Any, *, require_all: bool = True) -> dict[str, Any]:
-    s = _payload(state)
-    mode = str(s.get("mode") or "").strip()
+    s = _payload(state); mode = str(s.get("mode") or "").strip()
     receipt: dict[str, Any] = {
-        "schema": SCHEMA,
-        "profile": PROFILE_ID,
-        "mode": mode,
-        "status": "NOT_APPLICABLE" if not mode else "PASS",
-        "required_roles": [],
-        "materialized_roles": [],
-        "errors": [],
-        "runtime_owned": True,
-        "assistant_action_required": False,
-        "browser_action_required": False,
+        "schema": SCHEMA, "profile": PROFILE_ID, "mode": mode,
+        "status": "NOT_APPLICABLE" if not mode else "PASS", "required_roles": [], "materialized_roles": [],
+        "errors": [], "runtime_owned": True, "assistant_action_required": False, "browser_action_required": False,
     }
     if not mode:
-        _strategy(state)["standard_artifact_autopilot"] = receipt
+        return receipt
+    if not get_pipeline_lock(state):
+        # Legacy sessions retain their historical manually-registered artifact flow.
+        # All sessions created through the v0.10.0 public orchestrator have the lock.
+        receipt["status"] = "LEGACY_NOT_APPLICABLE"
+        receipt["runtime_owned"] = False
         return receipt
     if str((s.get("final_review") or {}).get("status") or "") != "PASS":
         receipt["status"] = "DEFERRED"
@@ -232,23 +212,14 @@ def materialize_standard_artifacts(state: Any, *, require_all: bool = True) -> d
         return receipt
     caps = (s.get("runtime") or {}).get("capabilities") or {}
     if caps.get("DOCX_WRITE") != "AVAILABLE" or caps.get("DOCX_READBACK") != "AVAILABLE":
-        receipt["status"] = "FAIL"
-        receipt["errors"] = ["DOCX_WRITE and DOCX_READBACK must be AVAILABLE for standard artifact autopilot"]
-        _strategy(state)["standard_artifact_autopilot"] = receipt
-        return receipt
+        receipt["status"] = "FAIL"; receipt["errors"] = ["DOCX_WRITE and DOCX_READBACK must be AVAILABLE for standard artifact autopilot"]
+        _strategy(state)["standard_artifact_autopilot"] = receipt; return receipt
     lock_ok, lock_errors = pipeline_lock_gate(state)
     if not lock_ok:
-        receipt["status"] = "FAIL"
-        receipt["errors"] = lock_errors
-        _strategy(state)["standard_artifact_autopilot"] = receipt
-        return receipt
-
+        receipt["status"] = "FAIL"; receipt["errors"] = lock_errors; _strategy(state)["standard_artifact_autopilot"] = receipt; return receipt
     roles = sorted(set(required_artifact_roles(mode, s.get("setup") or {})) - {"session_dashboard"})
-    receipt["required_roles"] = roles
-    root = _artifact_root(state)
-    candidate_digest, _ = _current_candidate(state)
-    errors: list[str] = []
-    materialized: list[str] = []
+    receipt["required_roles"] = roles; root = _artifact_root(state); candidate_digest, _ = _current_candidate(state)
+    errors: list[str] = []; materialized: list[str] = []
     for role in roles:
         try:
             title, body, source_kind = _role_text(state, role)
@@ -258,40 +229,29 @@ def materialize_standard_artifacts(state: Any, *, require_all: bool = True) -> d
             materialized.append(role)
         except Exception as exc:
             errors.append(f"{role}: {exc}")
-            if require_all:
-                continue
     receipt["materialized_roles"] = sorted(materialized)
     missing = sorted(set(roles) - set(materialized))
-    if missing:
-        errors.append("standard artifact roles not materialized: " + ", ".join(missing))
-    receipt["errors"] = list(dict.fromkeys(errors))
-    receipt["status"] = "PASS" if not receipt["errors"] else "FAIL"
+    if missing: errors.append("standard artifact roles not materialized: " + ", ".join(missing))
+    receipt["errors"] = list(dict.fromkeys(errors)); receipt["status"] = "PASS" if not receipt["errors"] else "FAIL"
     _strategy(state)["standard_artifact_autopilot"] = receipt
     return receipt
 
 
 def standard_artifact_autopilot_gate(state: Any) -> tuple[bool, list[str]]:
     s = _payload(state)
-    if not str(s.get("mode") or "").strip():
+    if not str(s.get("mode") or "").strip() or not get_pipeline_lock(state):
         return True, []
     receipt = (s.get("strategy") or {}).get("standard_artifact_autopilot") or {}
     errors: list[str] = []
-    if receipt.get("schema") != SCHEMA or receipt.get("profile") != PROFILE_ID:
-        errors.append("standard artifact autopilot receipt missing")
-    if receipt.get("status") != "PASS":
-        errors.extend(receipt.get("errors") or ["standard artifact autopilot is not PASS"])
+    if receipt.get("schema") != SCHEMA or receipt.get("profile") != PROFILE_ID: errors.append("standard artifact autopilot receipt missing")
+    if receipt.get("status") != "PASS": errors.extend(receipt.get("errors") or ["standard artifact autopilot is not PASS"])
     expected = sorted(set(required_artifact_roles(str(s.get("mode") or ""), s.get("setup") or {})) - {"session_dashboard"})
-    if sorted(receipt.get("required_roles") or []) != expected:
-        errors.append("standard artifact autopilot required-role set is stale")
-    if sorted(receipt.get("materialized_roles") or []) != expected:
-        errors.append("standard artifact autopilot did not materialize the full standard DOCX set")
+    if sorted(receipt.get("required_roles") or []) != expected: errors.append("standard artifact autopilot required-role set is stale")
+    if sorted(receipt.get("materialized_roles") or []) != expected: errors.append("standard artifact autopilot did not materialize the full standard DOCX set")
     by_role = {str(item.get("role") or ""): item for item in s.get("artifacts") or [] if item.get("role")}
     for role in expected:
         item = by_role.get(role)
-        if not item:
-            errors.append(f"autopilot materialized role missing from artifact registry: {role}")
-        elif item.get("auto_materialized_by_runtime") is not True:
-            errors.append(f"standard artifact is not runtime-owned: {role}")
-        elif not str(item.get("path") or "").lower().endswith(".docx"):
-            errors.append(f"standard artifact is not DOCX: {role}")
+        if not item: errors.append(f"autopilot materialized role missing from artifact registry: {role}")
+        elif item.get("auto_materialized_by_runtime") is not True: errors.append(f"standard artifact is not runtime-owned: {role}")
+        elif not str(item.get("path") or "").lower().endswith(".docx"): errors.append(f"standard artifact is not DOCX: {role}")
     return not errors, list(dict.fromkeys(errors))

@@ -8,7 +8,7 @@ from . import artifact_atlas_core as _base
 PROFILE_ID = "JURISCRIBE_ARTIFACT_ATLAS_V1"
 SCHEMA = "juriscribe-artifact-atlas/v1"
 SENSITIVE_PUBLIC_KEYS = {
-    "plagiarism_references", "sealed_candidate_fingerprints", "generation_governance",
+    "plagiarism_references", "sealed_candidate_fingerprints", "sealed_candidate_texts", "generation_governance",
     "exact_ngram_hashes", "shingle_hashes", "document_digest", "fingerprint_digest", "segment_digest",
     "candidate_fingerprint_digest", "resolved_path", "sha256", "path", "size_bytes", "readback",
 }
@@ -44,8 +44,28 @@ def _public_registration(artifact: dict[str, Any]) -> dict[str, Any]:
         "id": artifact.get("id"),
         "role": artifact.get("role"),
         "summary": artifact.get("summary"),
+        "auto_materialized_by_runtime": artifact.get("auto_materialized_by_runtime"),
+        "source_kind": artifact.get("source_kind"),
+        "inference_trace": artifact.get("inference_trace"),
         "artifact_generation_governance": artifact.get("artifact_generation_governance"),
         "semantic_materialization": artifact.get("semantic_materialization"),
+    })
+
+
+def _append_epistemic_record(atlas: dict[str, Any], *, role: str, title: str, purpose: str, value: Any, status: str) -> None:
+    public = _scrub(value)
+    if public in EMPTY_PUBLIC_VALUES:
+        return
+    atlas.setdefault("artefatti_epistemici", []).append({
+        "id": f"epistemic:{role}",
+        "tipo": "ARTEFATTO_EPISTEMICO",
+        "ruolo": role,
+        "titolo": title,
+        "funzione": purpose,
+        "stato": status,
+        "sintesi_compressa": f"{title}: stato {status}; dettaglio pubblico materializzato nella dashboard.",
+        "descrizione_completa": public,
+        "richiamo_dashboard": "#epistemic-artifacts",
     })
 
 
@@ -70,13 +90,14 @@ def build_artifact_atlas(state: Any) -> dict[str, Any]:
             detail["completezza_semantica_del_dossier"] = _scrub(semantic_proof)
             status = str(semantic_proof.get("status") or "")
             record["sintesi_compressa"] = (str(record.get("sintesi_compressa") or "").rstrip() + f" Materializzazione semantica del dossier: {status}.").strip()
+        if artifact.get("inference_trace"):
+            detail["tracciabilita_inferenziale_del_prodotto"] = _scrub(artifact.get("inference_trace"))
+            record["sintesi_compressa"] = (str(record.get("sintesi_compressa") or "").rstrip() + " Tracciabilità inferenziale del prodotto: presente.").strip()
+        if artifact.get("auto_materialized_by_runtime") is True:
+            record["sintesi_compressa"] = (str(record.get("sintesi_compressa") or "").rstrip() + " Materializzazione: automatica e runtime-owned.").strip()
         if detail:
             record["descrizione_completa"] = detail
 
-    # The core atlas historically constructed a few optional records from wrapper
-    # dictionaries such as {cycles: [], regenerations: []}. After public scrubbing
-    # those records have no semantic content. Do not publish a false "active"
-    # artifact card with an empty drill-down; mandatory canonical dossiers remain.
     epistemic_records = []
     for record in atlas.get("artefatti_epistemici") or []:
         cleaned = _scrub(record.get("descrizione_completa"))
@@ -89,20 +110,40 @@ def build_artifact_atlas(state: Any) -> dict[str, Any]:
 
     limits = payload.get("limits") or []
     if limits:
-        atlas.setdefault("artefatti_epistemici", []).append({
-            "id": "epistemic:limits",
-            "tipo": "ARTEFATTO_EPISTEMICO",
-            "ruolo": "limits",
-            "titolo": "Limiti e riserve",
-            "funzione": "Rende espliciti limiti sostanziali, riserve e condizioni che incidono sull'affidabilità o sul perimetro del prodotto.",
-            "stato": "REGISTRATO",
-            "sintesi_compressa": f"{len(limits)} limite/i o riserva/e materialmente registrati.",
-            "descrizione_completa": _scrub(limits),
-            "richiamo_dashboard": "#epistemic-artifacts",
-        })
+        _append_epistemic_record(
+            atlas,
+            role="limits",
+            title="Limiti e riserve",
+            purpose="Rende espliciti limiti sostanziali, riserve e condizioni che incidono sull'affidabilità o sul perimetro del prodotto.",
+            value=limits,
+            status="REGISTRATO",
+        )
+
+    strategy = payload.get("strategy") or {}
+    language = strategy.get("natural_language_pipeline") or {}
+    if language:
+        _append_epistemic_record(
+            atlas,
+            role="natural_language_pipeline",
+            title="Contratto conversazionale e di pipeline",
+            purpose="Dimostra come le istruzioni in linguaggio naturale sono state interpretate senza mutare implicitamente modalità, artefatto primario o pipeline.",
+            value=language,
+            status=str(language.get("status") or "REGISTRATO"),
+        )
+    autopilot = strategy.get("standard_artifact_autopilot") or {}
+    if autopilot:
+        _append_epistemic_record(
+            atlas,
+            role="standard_artifact_autopilot",
+            title="Materializzazione automatica degli artefatti standard",
+            purpose="Dimostra che il runtime, e non il comportamento del browser o dell'assistente, ha creato il set documentale canonico previsto dalla modalità.",
+            value=autopilot,
+            status=str(autopilot.get("status") or "REGISTRATO"),
+        )
+
     atlas["copertura"]["epistemici_descritti"] = len(atlas.get("artefatti_epistemici") or [])
     atlas["sintesi_compressa"] = [
-        item if not str(item).startswith("Gli artefatti INTERNAL") else "Gli artefatti INTERNAL, i fingerprint e la telemetria tecnica sono esclusi; ogni contenuto giuridico, probatorio, inferenziale ed editoriale materialmente rilevante resta descritto."
+        item if not str(item).startswith("Gli artefatti INTERNAL") else "Gli artefatti INTERNAL, i fingerprint, i testi candidati sigillati e la telemetria tecnica sono esclusi; ogni contenuto giuridico, probatorio, inferenziale ed editoriale materialmente rilevante resta descritto."
         for item in atlas.get("sintesi_compressa") or []
     ]
     return atlas
@@ -114,6 +155,11 @@ def artifact_dashboard_coverage_gate(state: Any, atlas: dict[str, Any] | None = 
     payload = state if isinstance(state, dict) else state.__dict__
     if (payload.get("limits") or []) and not any(str(item.get("ruolo")) == "limits" for item in view.get("artefatti_epistemici") or []):
         errors.append("substantive limits are not represented in dashboard artifact atlas")
+    strategy = payload.get("strategy") or {}
+    if strategy.get("natural_language_pipeline") and not any(str(item.get("ruolo")) == "natural_language_pipeline" for item in view.get("artefatti_epistemici") or []):
+        errors.append("natural-language pipeline contract is not represented in dashboard atlas")
+    if strategy.get("standard_artifact_autopilot") and not any(str(item.get("ruolo")) == "standard_artifact_autopilot" for item in view.get("artefatti_epistemici") or []):
+        errors.append("standard artifact autopilot receipt is not represented in dashboard atlas")
     by_role = _artifact_by_role(payload)
     atlas_by_role = {str(item.get("ruolo") or ""): item for item in view.get("artefatti_materiali") or [] if item.get("ruolo")}
     for role, artifact in by_role.items():
@@ -128,4 +174,8 @@ def artifact_dashboard_coverage_gate(state: Any, atlas: dict[str, Any] | None = 
             registration = ((atlas_record.get("descrizione_completa") or {}).get("registrazione_artefatto") or {})
             if str(registration.get("summary") or "") != summary:
                 errors.append(f"public artifact summary is not represented in dashboard atlas: {role}")
+        if role == "final_chapter" and artifact.get("inference_trace"):
+            trace = ((atlas_record.get("descrizione_completa") or {}).get("tracciabilita_inferenziale_del_prodotto") or {})
+            if not trace:
+                errors.append("final_chapter inference trace is not represented in dashboard atlas")
     return not errors, list(dict.fromkeys(errors))
