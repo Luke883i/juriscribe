@@ -5,7 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from juriscribe.dashboard_v9 import render_session_dashboard
-from juriscribe.delivery import ATTACH, DOCX_MIME, HTML_MIME, build_delivery_manifest, delivery_gate, normalize_artifact_record
+from juriscribe.delivery import ATTACH, DOCX_MIME, SURFACE, build_delivery_manifest, delivery_gate, normalize_artifact_record
 from juriscribe.modes import GREENFIELD, required_artifact_roles
 
 
@@ -43,7 +43,7 @@ class DeliveryV93RegressionTests(unittest.TestCase):
         dashboard = next(a for a in state.artifacts if a["role"] == "session_dashboard")
         render_session_dashboard(state.__dict__, dashboard["path"])
 
-    def test_every_user_document_is_real_docx_and_dashboard_is_current_html(self):
+    def test_every_chat_attachment_is_real_docx_and_dashboard_is_separate_html_surface(self):
         state = self._state()
         with tempfile.TemporaryDirectory() as tmp:
             self._populate_valid_delivery(state, Path(tmp))
@@ -52,13 +52,17 @@ class DeliveryV93RegressionTests(unittest.TestCase):
             self.assertTrue(manifest["materialization_verified"])
             self.assertTrue(manifest["workspace_confinement_verified"])
             self.assertTrue(manifest["dashboard_bound_to_current_state"])
+            self.assertEqual(manifest["attachment_placement"], "SESSION_CHAT_TAIL")
+            self.assertTrue(manifest["attachments"])
             for artifact in manifest["attachments"]:
                 self.assertGreater(artifact["size_bytes"], 0)
                 self.assertEqual(len(artifact["sha256"]), 64)
-                if artifact["role"] == "session_dashboard":
-                    self.assertTrue(artifact["path"].endswith(".html")); self.assertEqual(artifact["media_type"], HTML_MIME)
-                else:
-                    self.assertTrue(artifact["path"].endswith(".docx"), artifact); self.assertEqual(artifact["media_type"], DOCX_MIME)
+                self.assertTrue(artifact["path"].endswith(".docx"), artifact)
+                self.assertEqual(artifact["media_type"], DOCX_MIME)
+                self.assertEqual(artifact["placement"], "SESSION_CHAT_TAIL")
+            self.assertEqual(manifest["dashboard_surface"]["delivery_class"], SURFACE)
+            self.assertFalse(manifest["dashboard_surface"]["attached"])
+            self.assertNotIn("session_dashboard", {a["role"] for a in manifest["attachments"]})
 
     def test_json_cannot_masquerade_as_final_document(self):
         state = self._state()

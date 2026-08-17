@@ -78,8 +78,11 @@ def _compact_gate(text: str) -> str:
     except Exception:
         return "Consulta la dashboard."
     manifest = payload.get("delivery_manifest") or {}
+    attachments = manifest.get("attachments") or []
     if payload.get("eligible") and manifest.get("status") == "PASS":
-        return f"Completato. Consulta gli artefatti allegati ({len(manifest.get('attachments', []))} file)."
+        if manifest.get("attachment_placement") == "SESSION_CHAT_TAIL" and all(item.get("format") == "DOCX" for item in attachments):
+            return f"Completato. I {len(attachments)} artefatti DOCX scaricabili sono allegati in coda alla sessione-chat; la dashboard ne riepiloga i contenuti senza linkarli."
+        return "Completato, ma il contratto pubblico di allegazione DOCX non risulta materializzato."
     return "Non pronto. Consulta la dashboard; restano blocker di lavorazione."
 
 
@@ -162,7 +165,7 @@ def main(argv=None):
     elif command in {"initialize", "dashboard"}:
         print(_truncate(raw, 600) or "OK.")
     elif rc == 0:
-        print("OK. Dettagli aggiornati negli artefatti e nella dashboard.")
+        print("OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali.")
     else:
         print("Richiede attenzione. Consulta la dashboard.")
     return rc
