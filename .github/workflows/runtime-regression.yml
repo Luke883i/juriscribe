@@ -119,6 +119,9 @@ jobs:
       - name: Real-text dossier and dashboard fine-tuning contract
         shell: bash
         run: python scripts/check_real_text_finetuning_contract.py
+      - name: Universal artifact autopilot and mechanical delivery contract
+        shell: bash
+        run: python scripts/check_universal_artifact_autopilot_contract.py
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
@@ -164,6 +167,20 @@ jobs:
             /tmp/real-text-dashboard-v99/**/artifacts/*
             /tmp/real-text-dashboard-v99/**/ledger/dashboard-generations.jsonl
             /tmp/real-text-dashboard-v99.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: 100 Safari chat-tail DOCX edges plus M+100 no-novelty
+        run: python scripts/simulate_safari_chat_docx_v100.py --cases 100 --no-novelty 100 --json-out /tmp/safari-chat-docx-v100.json
+      - name: 100 Safari universal artifact scenarios plus M+100 no-novelty
+        run: python scripts/simulate_universal_artifacts_v100.py --cases 100 --no-novelty 100 --out-root /tmp/universal-artifact-v100 --json-out /tmp/universal-artifact-v100.json
+      - name: Retain universal artifact v0.10.0 receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: universal-artifact-v100
+          path: |
+            /tmp/safari-chat-docx-v100.json
+            /tmp/universal-artifact-v100.json
+            /tmp/universal-artifact-v100/**/artifacts/*
           if-no-files-found: error
           retention-days: 7
       - name: 400k five-class multi-seed simulations
