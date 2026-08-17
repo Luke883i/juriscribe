@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://juriscribe.local/schemas/chat-docx-delivery.schema.json",
+  "title": "Juriscribe chat-tail DOCX delivery receipt",
+  "type": "object",
+  "required": ["schema", "profile", "status", "required_docx_roles", "attachments", "errors", "placement", "downloadable_artifacts_only_docx", "dashboard_is_summary_surface_not_attachment", "dashboard_links_to_docx", "assistant_agnostic_contract", "browser_agnostic_contract", "host_attachment_capability_required", "global_host_behavior_claim"],
+  "properties": {
+    "schema": {"const": "juriscribe-chat-docx-delivery/v1"},
+    "profile": {"const": "JURISCRIBE_CHAT_DOCX_DELIVERY_V1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "required_docx_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "path", "filename", "media_type", "content_disposition", "delivery_class", "placement", "downloadable_in_chat", "dashboard_link_allowed", "host_attachment_capability_required", "status"],
+        "properties": {
+          "role": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "filename": {"type": "string", "pattern": "(?i)\\.docx$"},
+          "media_type": {"const": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+          "content_disposition": {"type": "string", "pattern": "^attachment;"},
+          "delivery_class": {"const": "ATTACH"},
+          "placement": {"const": "SESSION_CHAT_TAIL"},
+          "downloadable_in_chat": {"const": true},
+          "dashboard_link_allowed": {"const": false},
+          "host_attachment_capability_required": {"const": true},
+          "status": {"enum": ["PASS", "FAIL"]}
+        }
+      }
+    },
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "placement": {"const": "SESSION_CHAT_TAIL"},
+    "downloadable_artifacts_only_docx": {"type": "boolean"},
+    "dashboard_is_summary_surface_not_attachment": {"type": "boolean"},
+    "dashboard_links_to_docx": {"const": false},
+    "assistant_agnostic_contract": {"const": true},
+    "browser_agnostic_contract": {"const": true},
+    "host_attachment_capability_required": {"const": true},
+    "global_host_behavior_claim": {"const": false}
+  },
+  "additionalProperties": true
+}
