@@ -116,6 +116,9 @@ jobs:
           PY
             exit "$status"
           fi
+      - name: Real-text dossier and dashboard fine-tuning contract
+        shell: bash
+        run: python scripts/check_real_text_finetuning_contract.py
 
   simulation-and-saturation:
     runs-on: ubuntu-latest
@@ -135,6 +138,32 @@ jobs:
             /tmp/persistent-dashboard-e2e/**/artifacts/session-dashboard.html
             /tmp/persistent-dashboard-e2e/**/ledger/dashboard-generations.jsonl
             /tmp/persistent-dashboard-e2e.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: 100 official real-text artifact and dashboard sessions
+        shell: bash
+        run: |
+          set +e
+          python scripts/simulate_real_text_artifacts_v99.py --cases 100 --out-root /tmp/real-text-dashboard-v99 --json-out /tmp/real-text-dashboard-v99.json > /tmp/real-text-dashboard-v99.log 2>&1
+          status=$?
+          cat /tmp/real-text-dashboard-v99.log
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/real-text-dashboard-v99.log').read_text(encoding='utf-8', errors='replace')[-5000:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Real-text dashboard v0.9.9 failure::{text}')
+          PY
+            exit "$status"
+          fi
+      - name: Retain 100 real-text dashboard and artifact sessions
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: real-text-dashboard-v99
+          path: |
+            /tmp/real-text-dashboard-v99/**/artifacts/*
+            /tmp/real-text-dashboard-v99/**/ledger/dashboard-generations.jsonl
+            /tmp/real-text-dashboard-v99.json
           if-no-files-found: error
           retention-days: 7
       - name: 400k five-class multi-seed simulations
