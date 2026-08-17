@@ -12,6 +12,10 @@ SENSITIVE_PUBLIC_KEYS = {
     "exact_ngram_hashes", "shingle_hashes", "document_digest", "fingerprint_digest", "segment_digest",
     "candidate_fingerprint_digest", "resolved_path", "sha256", "path", "size_bytes", "readback",
 }
+MANDATORY_EPISTEMIC_ROLES = {
+    "evidence_dossier", "source_register", "inference_register", "transformation_ledger", "artifact_evidence_traceability",
+}
+EMPTY_PUBLIC_VALUES = (None, "", [], {}, ())
 
 
 def _scrub(value: Any) -> Any:
@@ -22,11 +26,11 @@ def _scrub(value: Any) -> Any:
             if token in SENSITIVE_PUBLIC_KEYS or token.endswith("_digest"):
                 continue
             cleaned = _scrub(item)
-            if cleaned not in (None, "", [], {}, ()):
+            if cleaned not in EMPTY_PUBLIC_VALUES:
                 out[token] = cleaned
         return out
     if isinstance(value, list):
-        return [cleaned for cleaned in (_scrub(item) for item in value) if cleaned not in (None, "", [], {}, ())]
+        return [cleaned for cleaned in (_scrub(item) for item in value) if cleaned not in EMPTY_PUBLIC_VALUES]
     return value
 
 
@@ -68,8 +72,21 @@ def build_artifact_atlas(state: Any) -> dict[str, Any]:
             record["sintesi_compressa"] = (str(record.get("sintesi_compressa") or "").rstrip() + f" Materializzazione semantica del dossier: {status}.").strip()
         if detail:
             record["descrizione_completa"] = detail
+
+    # The core atlas historically constructed a few optional records from wrapper
+    # dictionaries such as {cycles: [], regenerations: []}. After public scrubbing
+    # those records have no semantic content. Do not publish a false "active"
+    # artifact card with an empty drill-down; mandatory canonical dossiers remain.
+    epistemic_records = []
     for record in atlas.get("artefatti_epistemici") or []:
-        record["descrizione_completa"] = _scrub(record.get("descrizione_completa"))
+        cleaned = _scrub(record.get("descrizione_completa"))
+        role = str(record.get("ruolo") or "")
+        if cleaned in EMPTY_PUBLIC_VALUES and role not in MANDATORY_EPISTEMIC_ROLES:
+            continue
+        record["descrizione_completa"] = cleaned
+        epistemic_records.append(record)
+    atlas["artefatti_epistemici"] = epistemic_records
+
     limits = payload.get("limits") or []
     if limits:
         atlas.setdefault("artefatti_epistemici", []).append({

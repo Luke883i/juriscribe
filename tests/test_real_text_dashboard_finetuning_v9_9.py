@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from xml.sax.saxutils import escape as xml_escape
 
+from juriscribe.artifact_atlas import build_artifact_atlas
 from juriscribe.dashboard_persistence import dashboard_materialization_report
 from juriscribe.dashboard_v97 import render_session_dashboard
 from juriscribe.dossier_materialization import PROFILE, dossier_semantic_materialization_gate, render_dossier_text, verify_dossier_semantic_materialization
@@ -34,6 +35,21 @@ class RealTextDashboardFinetuningV99Tests(unittest.TestCase):
             relations=[], provenance={}, artifact_evidence=[], review={}, compression={}, final_review={}, editorial_actions=[], artifacts=[],
         )
 
+    def _dashboard_state(self):
+        return {
+            "request": {"raw": "Mandato reale dashboard", "summary": "Mandato reale dashboard"},
+            "phase": "DOD_FROZEN", "mode": "GREENFIELD", "mode_selection": {},
+            "mode_contract": {"status": "READY"}, "editorial_standard": {}, "corpus": [],
+            "sources": [{"id": "S1", "title": "Fonte ufficiale reale", "source_type": "primary_law", "direct_read": True, "verified_at": "2026-08-17"}],
+            "bibliography": {}, "epistemic_units": [{"id": "U1", "kind": "RULE", "text": "Regola reale distintiva della sessione", "source_id": "S1", "material": True}],
+            "relations": [], "reticulum": {"status": "PASS"}, "generation_contract": {}, "continuation": {}, "drafts": [],
+            "review": {"cycles": [], "regenerations": []}, "final_review": {}, "provenance": {}, "contradictions": [], "mining": {}, "style_profile": {},
+            "setup": {}, "source_intelligence": {}, "claim_ledger": [], "artifact_evidence": [], "quality": {}, "benchmark": {},
+            "simulations": {}, "compression": {}, "limits": [], "strategy": {}, "dod": [], "editorial_actions": [], "reflection": {},
+            "metrics": {}, "completion": {"eligible": False}, "interaction": {}, "node_integrity": {}, "runtime": {},
+            "artifacts": [],
+        }
+
     def test_canonical_dossier_docx_is_bound_to_projection_content(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -62,19 +78,8 @@ class RealTextDashboardFinetuningV99Tests(unittest.TestCase):
     def test_dashboard_materialization_report_tracks_real_semantic_witnesses_and_artifact_summary(self):
         marker = "Regola reale distintiva della sessione"
         summary = "Artefatto reale distinto e materializzato"
-        state = {
-            "request": {"raw": "Mandato reale dashboard", "summary": "Mandato reale dashboard"},
-            "phase": "DOD_FROZEN", "mode": "GREENFIELD", "mode_selection": {},
-            "mode_contract": {"status": "READY"}, "editorial_standard": {}, "corpus": [],
-            "sources": [{"id": "S1", "title": "Fonte ufficiale reale", "source_type": "primary_law", "direct_read": True, "verified_at": "2026-08-17"}],
-            "bibliography": {}, "epistemic_units": [{"id": "U1", "kind": "RULE", "text": marker, "source_id": "S1", "material": True}],
-            "relations": [], "reticulum": {"status": "PASS"}, "generation_contract": {}, "continuation": {}, "drafts": [],
-            "review": {}, "final_review": {}, "provenance": {}, "contradictions": [], "mining": {}, "style_profile": {},
-            "setup": {}, "source_intelligence": {}, "claim_ledger": [], "artifact_evidence": [], "quality": {}, "benchmark": {},
-            "simulations": {}, "compression": {}, "limits": [], "strategy": {}, "dod": [], "editorial_actions": [], "reflection": {},
-            "metrics": {}, "completion": {"eligible": False}, "interaction": {}, "node_integrity": {}, "runtime": {},
-            "artifacts": [{"id": "final", "role": "final_legal_text", "summary": summary, "delivery_class": "ATTACH"}],
-        }
+        state = self._dashboard_state()
+        state["artifacts"] = [{"id": "final", "role": "final_legal_text", "summary": summary, "delivery_class": "ATTACH"}]
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "dashboard.html"
             render_session_dashboard(state, path)
@@ -88,6 +93,22 @@ class RealTextDashboardFinetuningV99Tests(unittest.TestCase):
         damaged = page.replace(marker, "")
         damaged_report = dashboard_materialization_report(state, damaged)
         self.assertGreater(damaged_report["missing_semantic_witness_count"], 0)
+
+    def test_empty_optional_epistemic_wrappers_do_not_create_false_dashboard_cards(self):
+        state = self._dashboard_state()
+        atlas = build_artifact_atlas(state)
+        roles = {str(item.get("ruolo")) for item in atlas.get("artefatti_epistemici") or []}
+        self.assertNotIn("review_cycles", roles)
+
+        marker = "Finding reale materializzato nella review"
+        state["review"] = {
+            "cycles": [{"cycle": 1, "status": "PASS", "findings": [{"finding_id": "F1", "problema_rilevato": marker}]}],
+            "regenerations": [],
+        }
+        populated = build_artifact_atlas(state)
+        record = next(item for item in populated.get("artefatti_epistemici") or [] if item.get("ruolo") == "review_cycles")
+        self.assertIn(marker, str(record.get("descrizione_completa")))
+        self.assertTrue(record.get("sintesi_compressa"))
 
 
 if __name__ == "__main__":
