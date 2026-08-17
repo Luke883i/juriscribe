@@ -3,9 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
+from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
-from .browser_delivery import relative_docx_href
 from .modes import required_artifact_roles
 
 PROFILE_ID = "JURISCRIBE_EVIDENCE_TRACEABILITY_V1"
@@ -116,7 +117,21 @@ def _expected_roles(state: dict[str, Any]) -> set[str]:
 
 
 def _relative_artifact_href(state: dict[str, Any], record: dict[str, Any]) -> str | None:
-    return relative_docx_href(state, record)
+    raw_path = str(record.get("path", "")).strip()
+    workspace = str((state.get("runtime") or {}).get("workspace_base", "")).strip()
+    if not raw_path or not workspace:
+        return None
+    root = (Path(workspace) / "artifacts").resolve(strict=False)
+    raw = Path(raw_path)
+    absolute = raw if raw.is_absolute() else (Path.cwd() / raw)
+    resolved = absolute.resolve(strict=False)
+    try:
+        relative = resolved.relative_to(root)
+    except ValueError:
+        return None
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        return None
+    return "./" + quote(relative.as_posix(), safe="/._-@")
 
 
 def build_user_artifact_index(state: Any) -> dict[str, Any]:
@@ -127,23 +142,20 @@ def build_user_artifact_index(state: Any) -> dict[str, Any]:
     records = []
     for role in sorted(expected, key=lambda item: (list(ROLE_LABELS).index(item) if item in ROLE_LABELS else 999, item)):
         artifact = actual_by_role.get(role)
-        href = _relative_artifact_href(s, artifact) if artifact else None
-        available = bool(artifact and artifact.get("path") and artifact.get("readback") == "PASS" and href)
+        available = bool(artifact and artifact.get("path") and artifact.get("readback") == "PASS")
         records.append(_clean({
             "riferimento_artefatto": (artifact or {}).get("id") or role,
             "ruolo": role,
             "titolo": ROLE_LABELS.get(role, role.replace("_", " ").title()),
             "funzione": ROLE_PURPOSES.get(role, "artefatto finale della sessione"),
             "stato": "DISPONIBILE" if available else ("REGISTRATO" if artifact else "ATTESO"),
-            "formato_scaricabile": "DOCX",
-            "scaricabile_docx": available,
             "contenuto_nella_dashboard": "INTEGRALE" if role in DOSSIER_ROLES else "RICHIAMATO TRAMITE ARTEFATTO",
-            "richiamo": href,
+            "richiamo": _relative_artifact_href(s, artifact) if artifact else None,
             "ancora_dashboard": ROLE_ANCHORS.get(role),
         }))
     return {
-        "titolo": "Indice degli artefatti — download DOCX",
-        "finalita": "Rendere immediatamente scaricabili in DOCX gli artefatti finali senza esporre percorsi, digest o telemetria tecnica.",
+        "titolo": "Indice degli artefatti — richiamo della consegna",
+        "finalita": "Rendere immediatamente raggiungibili gli artefatti finali senza esporre percorsi, digest o telemetria tecnica.",
         "records": records,
     }
 
@@ -243,7 +255,7 @@ def build_dashboard_evidence_coverage(state: Any, dossier_views: dict[str, Any] 
     status = "PRONTO" if bool((s.get("completion") or {}).get("eligible")) else "NON PRONTO"
     summary = [
         f"{dossier_counts['evidence_dossier']} elementi probatori, {dossier_counts['source_register']} fonti, {dossier_counts['inference_register']} inferenze e {dossier_counts['transformation_ledger']} trasformazioni sono esposte integralmente nei quattro dossier canonici.",
-        f"{projected}/{raw_evidence} evidenze di artefatto sono proiettate senza omissioni; {available}/{expected} artefatti finali attesi sono scaricabili in DOCX dalla dashboard.",
+        f"{projected}/{raw_evidence} evidenze di artefatto sono proiettate senza omissioni; {available}/{expected} artefatti finali attesi sono richiamabili dalla dashboard.",
     ]
     if gaps:
         summary.append(f"La tracciabilita presenta {gaps} riferimento/i da completare; il dettaglio e riportato nel registro delle evidenze.")
