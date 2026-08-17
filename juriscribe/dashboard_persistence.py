@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .artifact_atlas import build_artifact_atlas
+from .browser_delivery import dashboard_docx_links_report
 from .dashboard import dashboard_state_digest, render_session_dashboard
 from .delivery import refresh_dashboard_artifact
 
@@ -128,6 +129,7 @@ def dashboard_materialization_report(state: Any, page: str) -> dict[str, Any]:
     atlas_roles = {str(item.get("ruolo") or "") for item in atlas.get("artefatti_materiali") or [] if item.get("ruolo")}
     registered_roles = _public_material_roles(state)
     missing_roles = sorted(registered_roles - atlas_roles)
+    download_report = dashboard_docx_links_report(state, page)
     return {
         "public_leaf_count": len(leaves),
         "missing_public_leaf_count": len(missing),
@@ -138,6 +140,11 @@ def dashboard_materialization_report(state: Any, page: str) -> dict[str, Any]:
         "registered_public_material_roles": len(registered_roles),
         "atlas_material_roles": len(atlas_roles),
         "missing_public_material_roles": missing_roles,
+        "docx_download_status": download_report.get("status"),
+        "expected_docx_download_roles": download_report.get("expected_download_roles") or [],
+        "linked_docx_download_roles": download_report.get("linked_download_roles") or [],
+        "docx_download_link_count": int(download_report.get("marked_download_link_count", 0) or 0),
+        "docx_download_errors": download_report.get("errors") or [],
         "body_present": bool(body.strip()),
     }
 
@@ -168,6 +175,8 @@ def verify_persistent_dashboard(state: Any, path: str | Path) -> tuple[bool, lis
         errors.append("persistent dashboard omitted real session semantic witnesses: " + sample)
     if report.get("missing_public_material_roles"):
         errors.append("persistent dashboard atlas omitted registered material roles: " + ", ".join(report["missing_public_material_roles"]))
+    if report.get("docx_download_errors"):
+        errors.extend(str(item) for item in report.get("docx_download_errors") or [])
     return not errors, list(dict.fromkeys(errors)), report
 
 
@@ -235,6 +244,10 @@ def persist_dashboard_generation(ws, state, *, trigger: str = "runtime-mutation"
             "missing_semantic_witness_count": 0,
             "registered_public_material_roles": int(report.get("registered_public_material_roles", 0) or 0),
             "missing_public_material_roles": [],
+            "docx_download_status": report.get("docx_download_status"),
+            "docx_download_link_count": int(report.get("docx_download_link_count", 0) or 0),
+            "expected_docx_download_roles": list(report.get("expected_docx_download_roles") or []),
+            "linked_docx_download_roles": list(report.get("linked_docx_download_roles") or []),
         }
         ws.save(state)
         reloaded = ws.load()
@@ -253,6 +266,10 @@ def persist_dashboard_generation(ws, state, *, trigger: str = "runtime-mutation"
             "public_leaf_count": int(reloaded_report.get("public_leaf_count", 0) or 0),
             "semantic_witness_count": int(reloaded_report.get("semantic_witness_count", 0) or 0),
             "registered_public_material_roles": int(reloaded_report.get("registered_public_material_roles", 0) or 0),
+            "docx_download_status": reloaded_report.get("docx_download_status"),
+            "docx_download_link_count": int(reloaded_report.get("docx_download_link_count", 0) or 0),
+            "expected_docx_download_roles": list(reloaded_report.get("expected_docx_download_roles") or []),
+            "linked_docx_download_roles": list(reloaded_report.get("linked_docx_download_roles") or []),
             "status": "PASS",
         })
         backup.unlink(missing_ok=True)
