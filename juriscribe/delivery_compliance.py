@@ -5,12 +5,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .conversation_contract import get_pipeline_lock
+from .conversation_contract import final_chapter_inference_trace_gate, get_pipeline_lock, pipeline_lock_gate
 from .modes import CONTINUATION, GREENFIELD, REVIEW, required_artifact_roles, review_output
 
 SCHEMA = "juriscribe-delivery-compliance-inventory/v1"
 PROFILE_ID = "JURISCRIBE_MECHANICAL_DELIVERY_COMPLIANCE_V1"
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+DOSSIER_ROLES = {"evidence_dossier", "source_register", "inference_register", "transformation_ledger"}
+NARRATIVE_ROLES = {"final_chapter", "final_legal_text", "revised_legal_text", "review_report"}
 
 
 def _payload(state: Any) -> dict[str, Any]:
@@ -31,14 +33,7 @@ def _status_ok(value: Any, accepted: set[str]) -> bool:
 
 def _node(identifier: str, title: str, purpose: str, *, blocking: bool, applicable: bool, satisfied: bool, evidence: Any = None) -> dict[str, Any]:
     status = "NOT_APPLICABLE" if not applicable else ("PASS" if satisfied else ("FAIL" if blocking else "OPTIONAL_MISSING"))
-    record = {
-        "id": identifier,
-        "title": title,
-        "purpose": purpose,
-        "blocking": bool(blocking),
-        "applicable": bool(applicable),
-        "status": status,
-    }
+    record = {"id": identifier, "title": title, "purpose": purpose, "blocking": bool(blocking), "applicable": bool(applicable), "status": status}
     if isinstance(evidence, dict):
         for key in ("status", "coverage_status", "standard_id", "policy_id", "profile", "schema"):
             if evidence.get(key) not in (None, ""):
@@ -71,6 +66,17 @@ def build_epistemic_inventory(state: Any) -> list[dict[str, Any]]:
     compression = s.get("compression") or {}
     simulations = s.get("simulations") or {}
     provenance = s.get("provenance") or {}
+    expected_doc_roles = sorted(set(required_artifact_roles(mode, setup)) - {"session_dashboard"}) if mode else []
+    autopilot = strategy.get("standard_artifact_autopilot") or {}
+    auto_ok = (
+        str(autopilot.get("status") or "").upper() == "PASS"
+        and autopilot.get("runtime_owned") is True
+        and sorted(autopilot.get("required_roles") or []) == expected_doc_roles
+        and sorted(autopilot.get("materialized_roles") or []) == expected_doc_roles
+    )
+    lock_ok = True
+    if governed_v100:
+        lock_ok, _ = pipeline_lock_gate(s)
 
     rows = [
         _node("mode_contract", "Contratto di modalità", "Blocca modalità, output primario e requisiti del lavoro.", blocking=True, applicable=bool(mode), satisfied=_status_ok(s.get("mode_contract") or {}, {"READY", "PASS"}), evidence=s.get("mode_contract") or {}),
@@ -81,7 +87,7 @@ def build_epistemic_inventory(state: Any) -> list[dict[str, Any]]:
         _node("artifact_evidence", "Registro delle evidenze", "Lega claim, fonti, locator e artefatti finali.", blocking=has_claims, applicable=has_claims, satisfied=bool(s.get("artifact_evidence") or []), evidence=s.get("artifact_evidence") or []),
         _node("source_register_logic", "Fonti e source intelligence", "Dimostra copertura, autorità e uso effettivo delle fonti.", blocking=True, applicable=bool(mode), satisfied=bool(s.get("sources") or []) or source_coverage == "NOT_REQUIRED", evidence={"coverage_status": source_coverage}),
         _node("bibliography", "Bibliografia", "Registra la componente bibliografica quando disponibile o necessaria.", blocking=False, applicable=True, satisfied=bool(bibliography.get("available") is False or bibliography.get("entries") or bibliography.get("status") in {"PASS", "NOT_AVAILABLE", "NOT_REQUIRED"}), evidence=bibliography),
-        _node("inference_structure", "Struttura inferenziale", "Rende verificabili premesse, ponti inferenziali, conclusioni e falsificatori.", blocking=has_claims, applicable=has_claims, satisfied=bool(s.get("claim_ledger") or []) and bool(s.get("reticulum") or {}), evidence=s.get("claim_ledger") or []),
+        _node("inference_structure", "Struttura inferenziale", "Rende verificabili premesse, ponti inferenziali, conclusioni e falsificatori.", blocking=has_claims, applicable=has_claims, satisfied=has_claims and bool(s.get("reticulum") or {}), evidence=s.get("claim_ledger") or []),
         _node("generation_contract", "Contratto di generazione", "Lega configurazione accettata, reticolo e candidato finale.", blocking=narrative, applicable=narrative, satisfied=_status_ok(generation, {"READY", "PASS"}), evidence=generation),
         _node("generation_configuration", "Configurazione accettata", "Vincola abstract, concetti chiave e lunghezza del testo generato.", blocking=narrative and bool(generation.get("governance_profile")), applicable=narrative and bool(generation.get("governance_profile")), satisfied=_status_ok(generation_config, {"READY", "PASS"}), evidence=generation_config),
         _node("continuation_plan", "Piano di continuazione", "Identifica la frontiera da sviluppare e ciò che deve essere preservato.", blocking=mode == CONTINUATION, applicable=mode == CONTINUATION, satisfied=_status_ok(continuation.get("plan") or {}, {"PASS"}), evidence=continuation.get("plan") or {}),
@@ -93,8 +99,8 @@ def build_epistemic_inventory(state: Any) -> list[dict[str, Any]]:
         _node("compression", "Compressione finale", "Dimostra la compressione lossless e il binding al candidato finale.", blocking=mode in {CONTINUATION, GREENFIELD}, applicable=mode in {CONTINUATION, GREENFIELD}, satisfied=_present(compression) and str(compression.get("status") or "PASS").upper() != "FAIL", evidence=compression),
         _node("provenance", "Provenance", "Ricostruisce fonti, trasformazioni, decisioni e derivazione del prodotto.", blocking=True, applicable=bool(mode), satisfied=_present(provenance), evidence=provenance),
         _node("final_severe_review", "Review finale severa", "Ultimo controllo circostanziato prima della materializzazione e release.", blocking=True, applicable=bool(mode), satisfied=_status_ok(s.get("final_review") or {}, {"PASS"}), evidence=s.get("final_review") or {}),
-        _node("natural_language_pipeline", "Contratto conversazionale", "Impedisce che locuzioni naturali cambino implicitamente modalità, pipeline o set artefatti.", blocking=governed_v100, applicable=governed_v100, satisfied=str(language.get("status") or "").upper() == "LOCKED", evidence=language),
-        _node("standard_artifact_autopilot", "Autopilot artefatti standard", "Dimostra che il runtime ha materializzato il set canonico senza dipendere dal browser/assistant.", blocking=governed_v100, applicable=governed_v100, satisfied=str((strategy.get("standard_artifact_autopilot") or {}).get("status") or "").upper() == "PASS", evidence=strategy.get("standard_artifact_autopilot") or {}),
+        _node("natural_language_pipeline", "Contratto conversazionale", "Impedisce che locuzioni naturali cambino implicitamente modalità, pipeline o set artefatti.", blocking=governed_v100, applicable=governed_v100, satisfied=lock_ok, evidence=language),
+        _node("standard_artifact_autopilot", "Autopilot artefatti standard", "Dimostra che il runtime ha materializzato esattamente il set canonico senza dipendere dal browser/assistant.", blocking=governed_v100, applicable=governed_v100, satisfied=auto_ok, evidence=autopilot),
     ]
     return rows
 
@@ -107,18 +113,12 @@ def _role_dependencies(mode: str, role: str, setup: dict[str, Any]) -> list[str]
         "inference_register": common + ["inference_structure"],
         "transformation_ledger": common + ["scientific_editorial_review"],
     }
-    if role in dossier:
-        return list(dict.fromkeys(dossier[role]))
-    if role == "final_chapter":
-        return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "continuation_plan", "continuation_coverage", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "simulations", "compression", "natural_language_pipeline", "standard_artifact_autopilot"]))
-    if role == "final_legal_text":
-        return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "simulations", "compression", "natural_language_pipeline", "standard_artifact_autopilot"]))
-    if role == "revised_legal_text":
-        return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "natural_language_pipeline", "standard_artifact_autopilot"]))
-    if role in {"review_report", "review_findings_register"}:
-        return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "scientific_editorial_review", "quality_audit", "natural_language_pipeline", "standard_artifact_autopilot"]))
-    if role == "session_dashboard":
-        return list(dict.fromkeys(common + ["scientific_editorial_review"]))
+    if role in dossier: return list(dict.fromkeys(dossier[role]))
+    if role == "final_chapter": return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "continuation_plan", "continuation_coverage", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "simulations", "compression", "natural_language_pipeline", "standard_artifact_autopilot"]))
+    if role == "final_legal_text": return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "simulations", "compression", "natural_language_pipeline", "standard_artifact_autopilot"]))
+    if role == "revised_legal_text": return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "generation_contract", "generation_configuration", "scientific_editorial_review", "quality_audit", "anti_plagiarism", "natural_language_pipeline", "standard_artifact_autopilot"]))
+    if role in {"review_report", "review_findings_register"}: return list(dict.fromkeys(common + ["artifact_evidence", "inference_structure", "scientific_editorial_review", "quality_audit", "natural_language_pipeline", "standard_artifact_autopilot"]))
+    if role == "session_dashboard": return list(dict.fromkeys(common + ["scientific_editorial_review"]))
     return common
 
 
@@ -133,6 +133,8 @@ def build_delivery_compliance_inventory(state: Any) -> dict[str, Any]:
     epi_by_id = {row["id"]: row for row in epistemic}
     material: list[dict[str, Any]] = []
     blocking_errors: list[str] = []
+    generation_governed = bool((s.get("generation_contract") or {}).get("governance_profile"))
+    trace_ok, trace_errors = final_chapter_inference_trace_gate(s)
 
     for role in expected:
         artifact = by_role.get(role) or {}
@@ -150,25 +152,21 @@ def build_delivery_compliance_inventory(state: Any) -> dict[str, Any]:
                     and str(artifact.get("media_type") or DOCX_MIME) == DOCX_MIME
                     and artifact.get("readback") == "PASS"
                 )
-                if governed_v100:
-                    artifact_ok = artifact_ok and artifact.get("auto_materialized_by_runtime") is True
-        if role in {"final_chapter", "final_legal_text", "revised_legal_text"} and artifact:
+                if governed_v100: artifact_ok = artifact_ok and artifact.get("auto_materialized_by_runtime") is True
+        if role in NARRATIVE_ROLES and artifact and generation_governed:
             proof = artifact.get("artifact_generation_governance") or {}
-            if proof and proof.get("status") != "PASS":
-                artifact_ok = False
-        if role == "final_chapter" and governed_v100:
-            trace = artifact.get("inference_trace") or {}
-            if trace.get("status") != "PASS":
-                artifact_ok = False
-                dep_failures.append("final_chapter_inference_trace")
+            if proof.get("status") != "PASS": artifact_ok = False
+        if role in DOSSIER_ROLES and artifact and governed_v100:
+            semantic_proof = artifact.get("semantic_materialization") or {}
+            if semantic_proof.get("status") != "PASS": artifact_ok = False
+        if role == "final_chapter" and governed_v100 and not trace_ok:
+            artifact_ok = False
+            dep_failures.extend(["final_chapter_inference_trace"] + list(trace_errors))
         eligible = artifact_ok and not dep_failures
         row = {
-            "role": role,
-            "kind": "HTML_SURFACE" if is_dashboard else "DOCX_ATTACHMENT",
-            "artifact_present": bool(artifact),
-            "artifact_contract_pass": bool(artifact_ok),
-            "dependency_ids": deps,
-            "failed_dependency_ids": sorted(set(dep_failures)),
+            "role": role, "kind": "HTML_SURFACE" if is_dashboard else "DOCX_ATTACHMENT",
+            "artifact_present": bool(artifact), "artifact_contract_pass": bool(artifact_ok),
+            "dependency_ids": deps, "failed_dependency_ids": sorted(set(dep_failures)),
             "eligible_for_delivery": bool(eligible),
             "release_placement": "SESSION_DASHBOARD_SURFACE" if is_dashboard else "SESSION_CHAT_TAIL",
         }
@@ -181,16 +179,11 @@ def build_delivery_compliance_inventory(state: Any) -> dict[str, Any]:
     blocking_errors = list(dict.fromkeys(blocking_errors))
     atomic_release = not blocking_errors
     inventory = {
-        "schema": SCHEMA,
-        "profile": PROFILE_ID,
-        "mode": mode,
+        "schema": SCHEMA, "profile": PROFILE_ID, "mode": mode,
         "status": "LEGACY_NOT_APPLICABLE" if mode and not governed_v100 else ("PASS" if atomic_release else "FAIL"),
-        "runtime_governed": governed_v100,
-        "atomic_release": True,
+        "runtime_governed": governed_v100, "atomic_release": True,
         "release_authorized": bool(atomic_release) if governed_v100 else True,
-        "expected_material_roles": expected,
-        "material_artifacts": material,
-        "epistemic_artifacts": epistemic,
+        "expected_material_roles": expected, "material_artifacts": material, "epistemic_artifacts": epistemic,
         "blocking_errors": blocking_errors if governed_v100 else [],
         "withheld_roles": [] if (atomic_release or not governed_v100) else [row["role"] for row in material if not row["eligible_for_delivery"]],
         "logic": "No final attachment is released unless the complete applicable material+epistemic dependency graph is compliant.",
@@ -202,6 +195,5 @@ def build_delivery_compliance_inventory(state: Any) -> dict[str, Any]:
 
 def delivery_compliance_gate(state: Any) -> tuple[bool, list[str]]:
     inventory = build_delivery_compliance_inventory(state)
-    if inventory.get("status") == "LEGACY_NOT_APPLICABLE":
-        return True, []
+    if inventory.get("status") == "LEGACY_NOT_APPLICABLE": return True, []
     return inventory.get("status") == "PASS" and inventory.get("release_authorized") is True, list(inventory.get("blocking_errors") or [])

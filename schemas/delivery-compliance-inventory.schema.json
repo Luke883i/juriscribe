@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://juriscribe.local/schemas/delivery-compliance-inventory.schema.json",
+  "title": "Juriscribe mechanical delivery compliance inventory",
+  "type": "object",
+  "required": ["schema", "profile", "mode", "status", "runtime_governed", "atomic_release", "release_authorized", "expected_material_roles", "material_artifacts", "epistemic_artifacts", "blocking_errors", "withheld_roles", "logic", "inventory_digest"],
+  "properties": {
+    "schema": {"const": "juriscribe-delivery-compliance-inventory/v1"},
+    "profile": {"const": "JURISCRIBE_MECHANICAL_DELIVERY_COMPLIANCE_V1"},
+    "mode": {"enum": ["", "CONTINUATION", "GREENFIELD", "REVIEW"]},
+    "status": {"enum": ["PASS", "FAIL", "LEGACY_NOT_APPLICABLE"]},
+    "runtime_governed": {"type": "boolean"},
+    "atomic_release": {"const": true},
+    "release_authorized": {"type": "boolean"},
+    "expected_material_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "material_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "kind", "artifact_present", "artifact_contract_pass", "dependency_ids", "failed_dependency_ids", "eligible_for_delivery", "release_placement"],
+        "properties": {
+          "role": {"type": "string"},
+          "kind": {"enum": ["DOCX_ATTACHMENT", "HTML_SURFACE"]},
+          "artifact_present": {"type": "boolean"},
+          "artifact_contract_pass": {"type": "boolean"},
+          "dependency_ids": {"type": "array", "items": {"type": "string"}},
+          "failed_dependency_ids": {"type": "array", "items": {"type": "string"}},
+          "eligible_for_delivery": {"type": "boolean"},
+          "release_placement": {"enum": ["SESSION_CHAT_TAIL", "SESSION_DASHBOARD_SURFACE"]}
+        }
+      }
+    },
+    "epistemic_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "purpose", "blocking", "applicable", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "purpose": {"type": "string"},
+          "blocking": {"type": "boolean"},
+          "applicable": {"type": "boolean"},
+          "status": {"enum": ["PASS", "FAIL", "OPTIONAL_MISSING", "NOT_APPLICABLE"]}
+        }
+      }
+    },
+    "blocking_errors": {"type": "array", "items": {"type": "string"}},
+    "withheld_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "logic": {"type": "string"},
+    "inventory_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": true
+}
