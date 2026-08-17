@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from juriscribe import dashboard
+from juriscribe.chat_delivery import dashboard_attachment_isolation_report
 from juriscribe.dashboard_v9 import dashboard_state_digest
 from juriscribe.editorial_artifacts import build_dashboard_inference_view
 from juriscribe.evidence_traceability import (
@@ -84,16 +85,23 @@ class DashboardEvidenceTraceabilityV96Tests(unittest.TestCase):
         for forbidden in ("/tmp/juriscribe-v96", "sha256", "readback", "workspace_base", "session.integrity.json"):
             self.assertNotIn(forbidden, text)
 
-    def test_dashboard_shows_compressed_outcome_full_trace_and_artifact_recall(self):
+    def test_dashboard_shows_compressed_outcome_and_full_trace_without_document_links(self):
         state = self._state()
         aggregate = build_dashboard_inference_view(state)
         coverage = build_dashboard_evidence_coverage(state, aggregate)
         html = self._render(state)
         body = html.split("<body>", 1)[1].split("</body>", 1)[0]
-        for token in ("Esito complessivo", "Indice degli artefatti", "Registro di tracciabilita delle evidenze di artefatto", "Apri artefatto", "EV-1", "La citazione sostiene il nucleo della regola."):
+        for token in ("Esito complessivo", "Indice degli artefatti", "Registro di tracciabilita delle evidenze di artefatto", "EV-1", "La citazione sostiene il nucleo della regola."):
             self.assertIn(token, body)
         self.assertIn(coverage["esito_complessivo"]["sintesi_compressa"][0], body)
-        self.assertIn('href="./final_legal_text.docx"', body)
+        self.assertIn("chat-tail-delivery-summary", body)
+        self.assertIn("allegati in formato DOCX in coda alla sessione-chat", body)
+        isolation = dashboard_attachment_isolation_report(html)
+        self.assertEqual(isolation["status"], "PASS", isolation["errors"])
+        self.assertEqual(isolation["docx_link_count"], 0)
+        self.assertEqual(isolation["download_anchor_count"], 0)
+        self.assertNotIn('href="./final_legal_text.docx"', body)
+        self.assertNotIn("Apri artefatto", body)
         for forbidden in ("/tmp/juriscribe-v96", "sha256", "readback", "workspace_base", "session.integrity.json"):
             self.assertNotIn(forbidden, body)
 

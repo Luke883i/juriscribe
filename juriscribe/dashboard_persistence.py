@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .artifact_atlas import build_artifact_atlas
+from .chat_delivery import dashboard_attachment_isolation_report
 from .dashboard import dashboard_state_digest, render_session_dashboard
 from .delivery import refresh_dashboard_artifact
 
@@ -33,7 +34,6 @@ def _visible_atlas_projection(state: Any) -> dict[str, Any]:
             "funzione": record.get("funzione"),
             "descrizione_completa": record.get("descrizione_completa"),
             "richiamo_dashboard": record.get("richiamo_dashboard"),
-            "richiamo_artefatto": record.get("richiamo_artefatto"),
         }
 
     request = s.get("request") or {}
@@ -128,6 +128,11 @@ def dashboard_materialization_report(state: Any, page: str) -> dict[str, Any]:
     atlas_roles = {str(item.get("ruolo") or "") for item in atlas.get("artefatti_materiali") or [] if item.get("ruolo")}
     registered_roles = _public_material_roles(state)
     missing_roles = sorted(registered_roles - atlas_roles)
+    isolation = dashboard_attachment_isolation_report(page)
+    summary_marker_present = (
+        'id="chat-tail-delivery-summary"' in page
+        and 'content="html-summary-docx-chat-tail-v1"' in page
+    )
     return {
         "public_leaf_count": len(leaves),
         "missing_public_leaf_count": len(missing),
@@ -138,6 +143,11 @@ def dashboard_materialization_report(state: Any, page: str) -> dict[str, Any]:
         "registered_public_material_roles": len(registered_roles),
         "atlas_material_roles": len(atlas_roles),
         "missing_public_material_roles": missing_roles,
+        "attachment_isolation_status": isolation.get("status"),
+        "docx_link_count": int(isolation.get("docx_link_count", 0) or 0),
+        "download_anchor_count": int(isolation.get("download_anchor_count", 0) or 0),
+        "attachment_isolation_errors": isolation.get("errors") or [],
+        "chat_tail_summary_present": summary_marker_present,
         "body_present": bool(body.strip()),
     }
 
@@ -168,6 +178,10 @@ def verify_persistent_dashboard(state: Any, path: str | Path) -> tuple[bool, lis
         errors.append("persistent dashboard omitted real session semantic witnesses: " + sample)
     if report.get("missing_public_material_roles"):
         errors.append("persistent dashboard atlas omitted registered material roles: " + ", ".join(report["missing_public_material_roles"]))
+    if report.get("attachment_isolation_errors"):
+        errors.extend(str(item) for item in report.get("attachment_isolation_errors") or [])
+    if not report.get("chat_tail_summary_present"):
+        errors.append("persistent dashboard lacks the synthetic chat-tail DOCX delivery summary")
     return not errors, list(dict.fromkeys(errors)), report
 
 
@@ -188,7 +202,6 @@ def _ensure_dashboard_record(state: Any, out: Path) -> None:
 
 
 def persist_dashboard_generation(ws, state, *, trigger: str = "runtime-mutation") -> Path:
-    """Atomically materialize one dashboard generation, persist state, then reload and verify it."""
     out = (ws.artifact_dir / "session-dashboard.html").resolve()
     ws.artifact_dir.mkdir(parents=True, exist_ok=True)
     _ensure_dashboard_record(state, out)
@@ -235,6 +248,10 @@ def persist_dashboard_generation(ws, state, *, trigger: str = "runtime-mutation"
             "missing_semantic_witness_count": 0,
             "registered_public_material_roles": int(report.get("registered_public_material_roles", 0) or 0),
             "missing_public_material_roles": [],
+            "attachment_isolation_status": report.get("attachment_isolation_status"),
+            "docx_link_count": int(report.get("docx_link_count", 0) or 0),
+            "download_anchor_count": int(report.get("download_anchor_count", 0) or 0),
+            "chat_tail_summary_present": True,
         }
         ws.save(state)
         reloaded = ws.load()
@@ -253,6 +270,10 @@ def persist_dashboard_generation(ws, state, *, trigger: str = "runtime-mutation"
             "public_leaf_count": int(reloaded_report.get("public_leaf_count", 0) or 0),
             "semantic_witness_count": int(reloaded_report.get("semantic_witness_count", 0) or 0),
             "registered_public_material_roles": int(reloaded_report.get("registered_public_material_roles", 0) or 0),
+            "attachment_isolation_status": reloaded_report.get("attachment_isolation_status"),
+            "docx_link_count": int(reloaded_report.get("docx_link_count", 0) or 0),
+            "download_anchor_count": int(reloaded_report.get("download_anchor_count", 0) or 0),
+            "chat_tail_summary_present": bool(reloaded_report.get("chat_tail_summary_present")),
             "status": "PASS",
         })
         backup.unlink(missing_ok=True)

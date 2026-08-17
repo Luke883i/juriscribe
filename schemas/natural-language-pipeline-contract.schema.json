@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://juriscribe.local/schemas/natural-language-pipeline-contract.schema.json",
+  "title": "Juriscribe natural-language pipeline lock",
+  "type": "object",
+  "required": ["schema", "profile", "status", "locked_mode", "locked_primary_artifact_role", "locked_required_artifact_roles", "interpretations", "policy", "lock_digest"],
+  "properties": {
+    "schema": {"const": "juriscribe-natural-language-pipeline-contract/v1"},
+    "profile": {"const": "JURISCRIBE_NATURAL_LANGUAGE_PIPELINE_LOCK_V1"},
+    "status": {"const": "LOCKED"},
+    "locked_mode": {"enum": ["CONTINUATION", "GREENFIELD", "REVIEW"]},
+    "locked_primary_artifact_role": {"type": "string", "minLength": 1},
+    "locked_required_artifact_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "interpretations": {"type": "array"},
+    "policy": {"type": "object"},
+    "lock_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": true
+}

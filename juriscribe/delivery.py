@@ -8,9 +8,8 @@ from typing import Any
 
 from . import multimode as _multimode
 from . import dashboard_v9 as _dashboard_v9
+from .chat_delivery import build_chat_delivery_manifest
 
-# Extend the canonical dashboard binding without duplicating the renderer. This is
-# applied at module import before runtime rendering and keeps v0.9 UI semantics.
 _DASHBOARD_CONTROL_KEYS = ("phase", "interaction", "completion", "node_integrity", "runtime")
 _dashboard_v9.DASHBOARD_BINDING_KEYS = tuple(dict.fromkeys(_dashboard_v9.DASHBOARD_BINDING_KEYS + _DASHBOARD_CONTROL_KEYS))
 dashboard_state_digest = _dashboard_v9.dashboard_state_digest
@@ -21,6 +20,7 @@ DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.docu
 HTML_MIME = "text/html"
 DELIVERY_SCHEMA = "juriscribe-final-delivery/v3"
 ATTACH = "ATTACH"
+SURFACE = "SURFACE"
 INTERNAL = "INTERNAL"
 DASHBOARD_DIGEST_RE = re.compile(r'<meta\s+name=["\']juriscribe-state-digest["\']\s+content=["\']([0-9a-f]{64})["\']', re.IGNORECASE)
 DOCX_REQUIRED_MEMBERS = {"[Content_Types].xml", "_rels/.rels", "word/document.xml"}
@@ -208,10 +208,12 @@ def normalize_artifact_record(state, record: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"final artifact {role} must be {spec['format']} ({spec['extension']})")
         if normalized.get("readback") != "PASS":
             raise ValueError(f"required final artifact {role} requires readback PASS")
-        normalized.update({"format": spec["format"], "media_type": spec["media_type"], "delivery_class": ATTACH, "required": True})
+        delivery_class = SURFACE if role == "session_dashboard" else ATTACH
+        normalized.update({"format": spec["format"], "media_type": spec["media_type"], "delivery_class": delivery_class, "required": True})
     else:
-        if str(normalized.get("delivery_class", INTERNAL)).upper() == ATTACH:
-            raise ValueError(f"internal/non-final artifact {role} cannot be attached in final delivery")
+        requested_class = str(normalized.get("delivery_class", INTERNAL)).upper()
+        if requested_class in {ATTACH, SURFACE}:
+            raise ValueError(f"internal/non-final artifact {role} cannot enter final delivery surface")
         normalized["delivery_class"] = INTERNAL; normalized["required"] = False
     return normalized
 
@@ -231,7 +233,7 @@ def _normalize_existing_artifacts(state) -> None:
 
 def record_artifact(state, record: dict[str, Any]):
     normalized = normalize_artifact_record(state, record)
-    if normalized.get("delivery_class") == ATTACH:
+    if normalized.get("delivery_class") in {ATTACH, SURFACE}:
         ok, errors, metadata = verify_materialized_artifact(state, normalized)
         if not ok: raise ValueError("; ".join(errors))
         normalized.update(metadata)
@@ -247,9 +249,6 @@ def refresh_dashboard_artifact(state, path: str | Path) -> dict[str, Any]:
         state.artifacts.append(record)
     else:
         record["path"] = str(path); record["readback"] = "PASS"
-        # Dashboard regeneration is an authorized replacement. Invalidate only its
-        # prior materialization metadata before verifying and sealing the new bytes.
-        # Other final artifacts still fail closed if their registered digest drifts.
         for key in ("sha256", "size_bytes", "materialized", "verified_format", "workspace_confined", "resolved_path"):
             record.pop(key, None)
     normalized = normalize_artifact_record(state, record)
@@ -262,8 +261,15 @@ def refresh_dashboard_artifact(state, path: str | Path) -> dict[str, Any]:
 
 
 def delivery_gate(state) -> tuple[bool, list[str]]:
+    """Verify the materialized artifact set only.
+
+    Final user release authorization is deliberately evaluated later by
+    ``build_delivery_manifest`` / governance_delivery through the mechanical
+    material+epistemic inventory. Keeping this gate material-only preserves the
+    historical artifact-admission boundary used by v0.9.x E2E suites.
+    """
     _normalize_existing_artifacts(state); required = _required_roles(state); errors = []
-    root, root_errors = _artifact_root(state); errors.extend(root_errors)
+    _, root_errors = _artifact_root(state); errors.extend(root_errors)
     by_role = {str(a.get("role", "")): a for a in state.artifacts if a.get("role")}
     document_roles = required - {"session_dashboard"}; capabilities = (state.runtime or {}).get("capabilities", {})
     if document_roles:
@@ -275,7 +281,9 @@ def delivery_gate(state) -> tuple[bool, list[str]]:
         spec = artifact_spec(role)
         if Path(str(record.get("path", ""))).suffix.lower() != spec["extension"]: errors.append(f"required final artifact has wrong format: {role} must be {spec['format']}")
         if record.get("readback") != "PASS": errors.append(f"required final artifact readback failed: {role}")
-        if record.get("delivery_class") != ATTACH: errors.append(f"required final artifact is not marked for attachment: {role}")
+        expected_class = SURFACE if role == "session_dashboard" else ATTACH
+        if record.get("delivery_class") != expected_class:
+            errors.append(f"required final artifact has wrong delivery class: {role} must be {expected_class}")
         if record.get("media_type") not in {None, "", spec["media_type"]}: errors.append(f"required final artifact media type mismatch: {role}")
         materialized_ok, materialized_errors, _ = verify_materialized_artifact(state, record)
         if not materialized_ok: errors.extend(materialized_errors)
@@ -283,31 +291,63 @@ def delivery_gate(state) -> tuple[bool, list[str]]:
 
 
 def build_delivery_manifest(state) -> dict[str, Any]:
-    ok, errors = delivery_gate(state); required = _required_roles(state)
+    material_ok, material_errors = delivery_gate(state); required = _required_roles(state)
     by_role = {str(a.get("role", "")): a for a in state.artifacts if a.get("role")}
-    order = [role for role in PRIMARY_ROLE_ORDER if role in required]; order.extend(sorted(required - set(order)))
+    document_roles = required - {"session_dashboard"}
+    order = [role for role in PRIMARY_ROLE_ORDER if role in document_roles]; order.extend(sorted(document_roles - set(order)))
+    chat_manifest = build_chat_delivery_manifest(state, require_all=True)
+    chat_ok = chat_manifest.get("status") == "PASS"
+    errors = list(dict.fromkeys(list(material_errors) + list(chat_manifest.get("errors") or [])))
+    ok = material_ok and chat_ok
+    descriptors = {str(item.get("role") or ""): item for item in chat_manifest.get("attachments") or []}
     attachments = []
     if ok:
         for role in order:
             artifact = by_role[role]; spec = artifact_spec(role); _, _, data = verify_materialized_artifact(state, artifact)
-            attachments.append({"id": artifact.get("id"), "role": role, "path": artifact.get("path"), "format": spec["format"], "media_type": spec["media_type"], "readback": artifact.get("readback"), "size_bytes": data.get("size_bytes"), "sha256": data.get("sha256")})
+            descriptor = descriptors.get(role) or {}
+            attachments.append({
+                "id": artifact.get("id"), "role": role, "path": artifact.get("path"),
+                "format": spec["format"], "media_type": spec["media_type"], "readback": artifact.get("readback"),
+                "size_bytes": data.get("size_bytes"), "sha256": data.get("sha256"),
+                "filename": descriptor.get("filename"), "content_disposition": descriptor.get("content_disposition"),
+                "placement": descriptor.get("placement"), "downloadable_in_chat": True,
+            })
+    dashboard = by_role.get("session_dashboard") or {}
+    dashboard_surface = None
+    if dashboard:
+        dashboard_surface = {
+            "id": dashboard.get("id"), "role": "session_dashboard", "path": dashboard.get("path"),
+            "format": "HTML", "media_type": HTML_MIME, "delivery_class": SURFACE,
+            "attached": False, "links_to_docx": False, "purpose": "synthetic browser workbench only",
+        }
     internal_count = sum(1 for a in state.artifacts if a.get("delivery_class") == INTERNAL)
-    return {"schema": DELIVERY_SCHEMA, "status": "PASS" if ok else "FAIL", "attachments": attachments, "errors": errors, "internal_records_excluded": internal_count, "chat_policy": "BRIEF_ARTIFACT_FIRST_ALL_POST_BOOTSTRAP", "dashboard_required": True, "dashboard_bound_to_current_state": ok, "documents_format": "DOCX", "materialization_verified": ok, "workspace_confinement_verified": ok}
+    return {
+        "schema": DELIVERY_SCHEMA, "status": "PASS" if ok else "FAIL", "attachments": attachments, "errors": errors,
+        "internal_records_excluded": internal_count, "chat_policy": "BRIEF_ARTIFACT_FIRST_ALL_POST_BOOTSTRAP",
+        "attachment_placement": "SESSION_CHAT_TAIL", "dashboard_required": True,
+        "dashboard_bound_to_current_state": material_ok, "dashboard_surface": dashboard_surface,
+        "documents_format": "DOCX", "downloadable_artifacts_only_docx": bool(chat_manifest.get("downloadable_artifacts_only_docx")),
+        "chat_docx_delivery": chat_manifest, "materialization_verified": material_ok, "workspace_confinement_verified": material_ok,
+    }
 
 
 def brief_delivery_text(state) -> str:
     manifest = build_delivery_manifest(state)
-    if state.completion.get("eligible") and manifest.get("status") == "PASS": return f"Completato. Consulta gli artefatti allegati ({len(manifest['attachments'])} file)."
+    if state.completion.get("eligible") and manifest.get("status") == "PASS":
+        return f"Completato. Gli artefatti DOCX scaricabili sono allegati in coda alla sessione-chat ({len(manifest['attachments'])} file)."
     return "Non pronto. Consulta la dashboard; restano blocker di lavorazione."
 
 
 def evaluate_completion(state):
     _normalize_existing_artifacts(state); _multimode.evaluate_completion(state)
-    ok, errors = delivery_gate(state); manifest = build_delivery_manifest(state)
-    state.completion["delivery_gate"] = {"eligible": ok, "errors": errors}; state.completion["delivery_manifest"] = manifest
-    if not ok:
+    material_ok, material_errors = delivery_gate(state); manifest = build_delivery_manifest(state)
+    release_ok = manifest.get("status") == "PASS"
+    errors = list(dict.fromkeys(list(material_errors) + list(manifest.get("errors") or [])))
+    state.completion["delivery_gate"] = {"eligible": material_ok, "errors": material_errors}
+    state.completion["delivery_manifest"] = manifest
+    if not release_ok:
         state.completion["eligible"] = False; existing = str(state.completion.get("reason", "")); extra = "; ".join(errors); state.completion["reason"] = (existing + "; " + extra).strip("; "); state.phase = "VALIDATING"
     else: state.phase = "COMPLETE" if state.completion.get("eligible") else "VALIDATING"
     complete = bool(state.completion.get("eligible"))
-    state.interaction = {**(state.interaction or {}), "card": interaction_card("COMPLETE" if complete else "HUMAN_DECISION_REQUIRED", summary=("Completato. Consulta gli artefatti allegati." if complete else "Restano blocker. Consulta la dashboard."), choices=["APRI ARTEFATTI", "RICHIEDI MODIFICHE", "ALTRO"] if complete else None), "status": "READY"}
+    state.interaction = {**(state.interaction or {}), "card": interaction_card("COMPLETE" if complete else "HUMAN_DECISION_REQUIRED", summary=("Completato. I DOCX sono allegati in coda alla sessione-chat; la dashboard li riepiloga senza linkarli." if complete else "Restano blocker. Consulta la dashboard."), choices=["SCARICA DOCX DALLA CHAT", "RICHIEDI MODIFICHE", "ALTRO"] if complete else None), "status":"READY"}
     return state

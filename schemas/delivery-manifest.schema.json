@@ -1,35 +1,54 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Juriscribe final delivery manifest v2",
+  "title": "Juriscribe final delivery manifest v3",
   "type": "object",
-  "required": ["schema", "status", "attachments", "errors", "chat_policy", "dashboard_required", "dashboard_bound_to_current_state", "documents_format", "materialization_verified"],
+  "required": ["schema", "status", "attachments", "errors", "chat_policy", "attachment_placement", "dashboard_required", "dashboard_bound_to_current_state", "dashboard_surface", "documents_format", "downloadable_artifacts_only_docx", "chat_docx_delivery", "materialization_verified", "workspace_confinement_verified"],
   "properties": {
-    "schema": {"const": "juriscribe-final-delivery/v2"},
+    "schema": {"const": "juriscribe-final-delivery/v3"},
     "status": {"enum": ["PASS", "FAIL"]},
     "attachments": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["role", "path", "format", "media_type", "readback", "size_bytes", "sha256"],
+        "required": ["role", "path", "format", "media_type", "readback", "size_bytes", "sha256", "placement", "downloadable_in_chat"],
         "properties": {
           "id": {},
           "role": {"type": "string"},
           "path": {"type": "string"},
-          "format": {"enum": ["DOCX", "HTML"]},
-          "media_type": {"type": "string"},
+          "format": {"const": "DOCX"},
+          "media_type": {"const": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
           "readback": {"const": "PASS"},
           "size_bytes": {"type": "integer", "minimum": 1},
-          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "filename": {"type": ["string", "null"]},
+          "content_disposition": {"type": ["string", "null"]},
+          "placement": {"const": "SESSION_CHAT_TAIL"},
+          "downloadable_in_chat": {"const": true}
         }
       }
     },
     "errors": {"type": "array", "items": {"type": "string"}},
     "internal_records_excluded": {"type": "integer", "minimum": 0},
     "chat_policy": {"const": "BRIEF_ARTIFACT_FIRST_ALL_POST_BOOTSTRAP"},
+    "attachment_placement": {"const": "SESSION_CHAT_TAIL"},
     "dashboard_required": {"const": true},
     "dashboard_bound_to_current_state": {"type": "boolean"},
+    "dashboard_surface": {
+      "type": ["object", "null"],
+      "properties": {
+        "role": {"const": "session_dashboard"},
+        "format": {"const": "HTML"},
+        "media_type": {"const": "text/html"},
+        "delivery_class": {"const": "SURFACE"},
+        "attached": {"const": false},
+        "links_to_docx": {"const": false}
+      }
+    },
     "documents_format": {"const": "DOCX"},
-    "materialization_verified": {"type": "boolean"}
+    "downloadable_artifacts_only_docx": {"type": "boolean"},
+    "chat_docx_delivery": {"type": "object"},
+    "materialization_verified": {"type": "boolean"},
+    "workspace_confinement_verified": {"type": "boolean"}
   },
   "allOf": [
     {
@@ -37,9 +56,12 @@
       "then": {
         "properties": {
           "dashboard_bound_to_current_state": {"const": true},
-          "materialization_verified": {"const": true}
+          "downloadable_artifacts_only_docx": {"const": true},
+          "materialization_verified": {"const": true},
+          "workspace_confinement_verified": {"const": true}
         }
       }
     }
-  ]
+  ],
+  "additionalProperties": true
 }

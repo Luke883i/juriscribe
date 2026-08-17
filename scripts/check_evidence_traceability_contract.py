@@ -28,6 +28,7 @@ def main() -> int:
     dashboard_router = (ROOT / "juriscribe/dashboard.py").read_text(encoding="utf-8")
     dashboard_v96 = (ROOT / "juriscribe/dashboard_v96.py").read_text(encoding="utf-8")
     dashboard_v97 = (ROOT / "juriscribe/dashboard_v97.py").read_text(encoding="utf-8") if (ROOT / "juriscribe/dashboard_v97.py").exists() else ""
+    dashboard_v100 = (ROOT / "juriscribe/dashboard_v100.py").read_text(encoding="utf-8") if (ROOT / "juriscribe/dashboard_v100.py").exists() else ""
     traceability = (ROOT / "juriscribe/evidence_traceability.py").read_text(encoding="utf-8")
     semantic_delivery = (ROOT / "juriscribe/semantic_delivery.py").read_text(encoding="utf-8")
     workflow = (ROOT / ".github/workflows/runtime-regression.yml").read_text(encoding="utf-8")
@@ -65,35 +66,28 @@ def main() -> int:
     if delivery.get("internal_records_attached") is not False:
         fail("internal records may not enter public delivery")
 
-    if "from .dashboard_v96 import *" not in dashboard_router and "from .dashboard_v97 import *" not in dashboard_router:
+    lineage_ok = False
+    if "from .dashboard_v96 import *" in dashboard_router:
+        lineage_ok = True
+    elif "from .dashboard_v97 import *" in dashboard_router:
+        lineage_ok = "dashboard_v96 as base" in dashboard_v97
+    elif "from .dashboard_v100 import *" in dashboard_router:
+        lineage_ok = "dashboard_v97 as base" in dashboard_v100 and "dashboard_v96 as base" in dashboard_v97
+    if not lineage_ok:
         fail("public dashboard no longer routes through the v0.9.6 evidence-aware lineage")
-    if "from .dashboard_v97 import *" in dashboard_router and "dashboard_v96 as base" not in dashboard_v97:
-        fail("v0.9.7 dashboard no longer composes the v0.9.6 evidence-aware renderer")
+
     for token in (
-        "JURISCRIBE_EDITORIAL_WORKBENCH_V2",
-        "overall-outcome",
-        "artifact-index",
-        "evidence-traceability",
-        "build_dashboard_evidence_coverage",
-        "build_dashboard_inference_view",
-        "base.render_session_dashboard",
+        "JURISCRIBE_EDITORIAL_WORKBENCH_V2", "overall-outcome", "artifact-index", "evidence-traceability",
+        "build_dashboard_evidence_coverage", "build_dashboard_inference_view", "base.render_session_dashboard",
     ):
         if token not in dashboard_v96:
             fail(f"dashboard v0.9.6 missing structural token {token}")
 
     for token in (
-        "build_evidence_traceability",
-        "build_user_artifact_index",
-        "build_dashboard_evidence_coverage",
-        "evidence_traceability_gate",
-        "Esito complessivo — quadro compresso e completo",
-        "Indice degli artefatti — richiamo della consegna",
-        "Registro di tracciabilita delle evidenze di artefatto",
-        "attributi_ulteriori",
-        "riferimenti_claim_non_risolti",
-        "riferimenti_fonte_non_risolti",
-        "riferimenti_artefatto_non_risolti",
-        "identificativi_evidenza_duplicati",
+        "build_evidence_traceability", "build_user_artifact_index", "build_dashboard_evidence_coverage", "evidence_traceability_gate",
+        "Esito complessivo — quadro compresso e completo", "Indice degli artefatti — richiamo della consegna",
+        "Registro di tracciabilita delle evidenze di artefatto", "attributi_ulteriori", "riferimenti_claim_non_risolti",
+        "riferimenti_fonte_non_risolti", "riferimenti_artefatto_non_risolti", "identificativi_evidenza_duplicati",
     ):
         if token not in traceability:
             fail(f"evidence traceability semantic layer missing {token}")
@@ -113,15 +107,7 @@ def main() -> int:
     if "python scripts/check_evidence_traceability_contract.py" not in workflow:
         fail("CI missing evidence traceability contract checker")
 
-    for token in (
-        "10.000",
-        "lossless",
-        "artifact_evidence",
-        "Esito complessivo",
-        "Indice degli artefatti",
-        "Definition of Done",
-        "anti-pattern",
-    ):
+    for token in ("10.000", "lossless", "artifact_evidence", "Esito complessivo", "Indice degli artefatti", "Definition of Done", "anti-pattern"):
         if token.lower() not in audit.lower():
             fail(f"severe audit missing {token}")
 
