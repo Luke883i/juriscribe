@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from . import artifact_atlas_core as _base
+from .delivery_compliance import build_delivery_compliance_inventory
 
 PROFILE_ID = "JURISCRIBE_ARTIFACT_ATLAS_V1"
 SCHEMA = "juriscribe-artifact-atlas/v1"
@@ -140,6 +141,16 @@ def build_artifact_atlas(state: Any) -> dict[str, Any]:
             value=autopilot,
             status=str(autopilot.get("status") or "REGISTRATO"),
         )
+    if language:
+        compliance = strategy.get("delivery_compliance_inventory") or build_delivery_compliance_inventory(payload)
+        _append_epistemic_record(
+            atlas,
+            role="delivery_compliance_inventory",
+            title="Inventario meccanico di conformità della consegna",
+            purpose="Rende visibile il controllo che collega ogni artefatto finale a reticolo, evidenze, fonti, inferenze, review, provenance e altri prerequisiti contrattuali prima della release atomica.",
+            value=compliance,
+            status=str(compliance.get("status") or "REGISTRATO"),
+        )
 
     atlas["copertura"]["epistemici_descritti"] = len(atlas.get("artefatti_epistemici") or [])
     atlas["sintesi_compressa"] = [
@@ -160,6 +171,8 @@ def artifact_dashboard_coverage_gate(state: Any, atlas: dict[str, Any] | None = 
         errors.append("natural-language pipeline contract is not represented in dashboard atlas")
     if strategy.get("standard_artifact_autopilot") and not any(str(item.get("ruolo")) == "standard_artifact_autopilot" for item in view.get("artefatti_epistemici") or []):
         errors.append("standard artifact autopilot receipt is not represented in dashboard atlas")
+    if strategy.get("natural_language_pipeline") and not any(str(item.get("ruolo")) == "delivery_compliance_inventory" for item in view.get("artefatti_epistemici") or []):
+        errors.append("mechanical delivery compliance inventory is not represented in dashboard atlas")
     by_role = _artifact_by_role(payload)
     atlas_by_role = {str(item.get("ruolo") or ""): item for item in view.get("artefatti_materiali") or [] if item.get("ruolo")}
     for role, artifact in by_role.items():
