@@ -94,7 +94,7 @@ def main():
     for token in ["python scripts/check_real_text_finetuning_contract.py", "python scripts/simulate_real_text_artifacts_v99.py --cases 100", "real-text-dashboard-v99"]:
         if token not in workflow:
             fail(f"CI missing real-text fine-tuning gate {token}")
-    for token in ["DoD globale", "DoD locale", "100", "testi reali", "dashboard", "dossier", "anti-plagio", "regressioni", "fine-tuning"]:
+    for token in ["DoD globale", "DoD locali", "100", "testi reali", "dashboard", "dossier", "anti-plagio", "regressioni", "fine-tuning"]:
         if token.lower() not in audit.lower():
             fail(f"v0.9.9 audit missing {token}")
 
