@@ -53,7 +53,7 @@ Il profilo `JURISCRIBE_MECHANICAL_DELIVERY_COMPLIANCE_V1` inventaria almeno i se
 | `mode_contract` | congela modalità, output primario e requisiti | sì |
 | `editorial_standard` | standard giuridico-editoriale applicabile | sì |
 | `atomic_mining` | unità epistemiche atomiche | sì |
-| `epistemic_reticulum` | reticolo e dipendenze semantiche | sì |
+| `epistemic_reticulum` | reticolo epistemico e dipendenze semantiche | sì |
 | `claim_ledger` | proposizioni materiali | sì |
 | `artifact_evidence` | evidence register: claim, fonte, locator, artefatto | sì quando esistono claim |
 | `source_register_logic` | fonti e source intelligence | sì |
@@ -146,7 +146,7 @@ Se `release_authorized=false`:
 La dashboard HTML resta il workbench sintetico della sessione. Deve riepilogare:
 
 - artefatti materiali e relativo stato;
-- reticolo, evidence, source e inference registers;
+- reticolo epistemico, evidence, source e inference registers;
 - contratto conversazionale;
 - autopilot;
 - inventario meccanico di conformità della consegna;
