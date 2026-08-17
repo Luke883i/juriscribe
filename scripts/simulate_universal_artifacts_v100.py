@@ -3,10 +3,16 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 import tempfile
+import traceback
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from juriscribe.artifact_autopilot import materialize_standard_artifacts, standard_artifact_autopilot_gate, store_candidate_text
 from juriscribe.chat_delivery import build_chat_delivery_manifest, dashboard_attachment_isolation_report
@@ -239,7 +245,15 @@ def run(cases: int = M, no_novelty: int = NO_NOVELTY_EXTENSION, out_root: str | 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(); parser.add_argument("--cases", type=int, default=M); parser.add_argument("--no-novelty", type=int, default=NO_NOVELTY_EXTENSION); parser.add_argument("--out-root"); parser.add_argument("--json-out")
-    args = parser.parse_args(argv); result = run(args.cases, args.no_novelty, args.out_root); payload = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
+    args = parser.parse_args(argv)
+    try:
+        result = run(args.cases, args.no_novelty, args.out_root)
+    except Exception as exc:
+        detail = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[-6000:]
+        safe = detail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::error title=Universal artifact saturation::{safe}")
+        raise
+    payload = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
     if args.json_out: Path(args.json_out).write_text(payload + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in ("schema", "status", "M", "one_to_M_cases", "M_plus_100_cases", "total_cases", "safari_primary_cases", "no_novelty_after_M", "learned_categories_at_M")}, ensure_ascii=False, sort_keys=True)); return 0
 
