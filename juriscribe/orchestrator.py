@@ -9,9 +9,8 @@ v0.9.6 extends that boundary with lossless artifact-evidence traceability. v0.9.
 adds user-bound generation configuration, candidate and materialized-artifact
 anti-plagiarism proof, cyclic predelivery saturation and complete dashboard
 artifact coverage as the final runtime governance boundary. v0.10.0 adds a
-natural-language pipeline lock and runtime-owned standard artifact autopilot so
-external assistants cannot implicitly alter the selected workflow or omit the
-canonical DOCX deliverables.
+natural-language pipeline lock, runtime-owned standard artifact autopilot and a
+material+epistemic compliance inventory that authorizes only atomic delivery.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -50,3 +49,4 @@ from .runtime_autopilot import (
 # materialized_narrative_antiplagiarism_required=True sealed_candidate_artifact_binding_required=True
 # natural_language_pipeline_lock_required=True implicit_mode_change_forbidden=True
 # standard_artifact_autopilot_required=True final_chapter_inference_trace_required=True
+# mechanical_delivery_compliance_required=True atomic_attachment_release_required=True
