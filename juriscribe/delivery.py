@@ -8,6 +8,7 @@ from typing import Any
 
 from . import multimode as _multimode
 from . import dashboard_v9 as _dashboard_v9
+from .browser_delivery import build_browser_delivery_manifest, browser_docx_delivery_gate
 
 # Extend the canonical dashboard binding without duplicating the renderer. This is
 # applied at module import before runtime rendering and keeps v0.9 UI semantics.
@@ -21,6 +22,7 @@ DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.docu
 HTML_MIME = "text/html"
 DELIVERY_SCHEMA = "juriscribe-final-delivery/v3"
 ATTACH = "ATTACH"
+SURFACE = "SURFACE"
 INTERNAL = "INTERNAL"
 DASHBOARD_DIGEST_RE = re.compile(r'<meta\s+name=["\']juriscribe-state-digest["\']\s+content=["\']([0-9a-f]{64})["\']', re.IGNORECASE)
 DOCX_REQUIRED_MEMBERS = {"[Content_Types].xml", "_rels/.rels", "word/document.xml"}
@@ -208,10 +210,12 @@ def normalize_artifact_record(state, record: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"final artifact {role} must be {spec['format']} ({spec['extension']})")
         if normalized.get("readback") != "PASS":
             raise ValueError(f"required final artifact {role} requires readback PASS")
-        normalized.update({"format": spec["format"], "media_type": spec["media_type"], "delivery_class": ATTACH, "required": True})
+        delivery_class = SURFACE if role == "session_dashboard" else ATTACH
+        normalized.update({"format": spec["format"], "media_type": spec["media_type"], "delivery_class": delivery_class, "required": True})
     else:
-        if str(normalized.get("delivery_class", INTERNAL)).upper() == ATTACH:
-            raise ValueError(f"internal/non-final artifact {role} cannot be attached in final delivery")
+        requested_class = str(normalized.get("delivery_class", INTERNAL)).upper()
+        if requested_class in {ATTACH, SURFACE}:
+            raise ValueError(f"internal/non-final artifact {role} cannot enter final delivery surface")
         normalized["delivery_class"] = INTERNAL; normalized["required"] = False
     return normalized
 
@@ -231,7 +235,7 @@ def _normalize_existing_artifacts(state) -> None:
 
 def record_artifact(state, record: dict[str, Any]):
     normalized = normalize_artifact_record(state, record)
-    if normalized.get("delivery_class") == ATTACH:
+    if normalized.get("delivery_class") in {ATTACH, SURFACE}:
         ok, errors, metadata = verify_materialized_artifact(state, normalized)
         if not ok: raise ValueError("; ".join(errors))
         normalized.update(metadata)
@@ -275,29 +279,58 @@ def delivery_gate(state) -> tuple[bool, list[str]]:
         spec = artifact_spec(role)
         if Path(str(record.get("path", ""))).suffix.lower() != spec["extension"]: errors.append(f"required final artifact has wrong format: {role} must be {spec['format']}")
         if record.get("readback") != "PASS": errors.append(f"required final artifact readback failed: {role}")
-        if record.get("delivery_class") != ATTACH: errors.append(f"required final artifact is not marked for attachment: {role}")
+        expected_class = SURFACE if role == "session_dashboard" else ATTACH
+        if record.get("delivery_class") != expected_class:
+            errors.append(f"required final artifact has wrong delivery class: {role} must be {expected_class}")
         if record.get("media_type") not in {None, "", spec["media_type"]}: errors.append(f"required final artifact media type mismatch: {role}")
         materialized_ok, materialized_errors, _ = verify_materialized_artifact(state, record)
         if not materialized_ok: errors.extend(materialized_errors)
+    browser_ok, browser_errors = browser_docx_delivery_gate(state)
+    if not browser_ok:
+        errors.extend(browser_errors)
     return not errors, list(dict.fromkeys(errors))
 
 
 def build_delivery_manifest(state) -> dict[str, Any]:
     ok, errors = delivery_gate(state); required = _required_roles(state)
     by_role = {str(a.get("role", "")): a for a in state.artifacts if a.get("role")}
-    order = [role for role in PRIMARY_ROLE_ORDER if role in required]; order.extend(sorted(required - set(order)))
+    document_roles = required - {"session_dashboard"}
+    order = [role for role in PRIMARY_ROLE_ORDER if role in document_roles]; order.extend(sorted(document_roles - set(order)))
+    browser_manifest = build_browser_delivery_manifest(state, require_all=True)
+    descriptors = {str(item.get("role") or ""): item for item in browser_manifest.get("records") or []}
     attachments = []
     if ok:
         for role in order:
             artifact = by_role[role]; spec = artifact_spec(role); _, _, data = verify_materialized_artifact(state, artifact)
-            attachments.append({"id": artifact.get("id"), "role": role, "path": artifact.get("path"), "format": spec["format"], "media_type": spec["media_type"], "readback": artifact.get("readback"), "size_bytes": data.get("size_bytes"), "sha256": data.get("sha256")})
+            descriptor = descriptors.get(role) or {}
+            attachments.append({
+                "id": artifact.get("id"), "role": role, "path": artifact.get("path"),
+                "format": spec["format"], "media_type": spec["media_type"], "readback": artifact.get("readback"),
+                "size_bytes": data.get("size_bytes"), "sha256": data.get("sha256"),
+                "download_href": descriptor.get("href"), "download_filename": descriptor.get("download_filename"),
+                "content_disposition": descriptor.get("content_disposition"),
+            })
+    dashboard = by_role.get("session_dashboard") or {}
+    dashboard_surface = None
+    if dashboard:
+        dashboard_surface = {
+            "id": dashboard.get("id"), "role": "session_dashboard", "path": dashboard.get("path"),
+            "format": "HTML", "media_type": HTML_MIME, "delivery_class": SURFACE,
+            "attached": False, "purpose": "browser workbench only",
+        }
     internal_count = sum(1 for a in state.artifacts if a.get("delivery_class") == INTERNAL)
-    return {"schema": DELIVERY_SCHEMA, "status": "PASS" if ok else "FAIL", "attachments": attachments, "errors": errors, "internal_records_excluded": internal_count, "chat_policy": "BRIEF_ARTIFACT_FIRST_ALL_POST_BOOTSTRAP", "dashboard_required": True, "dashboard_bound_to_current_state": ok, "documents_format": "DOCX", "materialization_verified": ok, "workspace_confinement_verified": ok}
+    return {
+        "schema": DELIVERY_SCHEMA, "status": "PASS" if ok else "FAIL", "attachments": attachments, "errors": errors,
+        "internal_records_excluded": internal_count, "chat_policy": "BRIEF_ARTIFACT_FIRST_ALL_POST_BOOTSTRAP",
+        "dashboard_required": True, "dashboard_bound_to_current_state": ok, "dashboard_surface": dashboard_surface,
+        "documents_format": "DOCX", "downloadable_artifacts_only_docx": bool(browser_manifest.get("downloadable_artifacts_only_docx")),
+        "browser_docx_delivery": browser_manifest, "materialization_verified": ok, "workspace_confinement_verified": ok,
+    }
 
 
 def brief_delivery_text(state) -> str:
     manifest = build_delivery_manifest(state)
-    if state.completion.get("eligible") and manifest.get("status") == "PASS": return f"Completato. Consulta gli artefatti allegati ({len(manifest['attachments'])} file)."
+    if state.completion.get("eligible") and manifest.get("status") == "PASS": return f"Completato. Scarica gli artefatti DOCX ({len(manifest['attachments'])} file) dalla dashboard."
     return "Non pronto. Consulta la dashboard; restano blocker di lavorazione."
 
 
@@ -309,5 +342,5 @@ def evaluate_completion(state):
         state.completion["eligible"] = False; existing = str(state.completion.get("reason", "")); extra = "; ".join(errors); state.completion["reason"] = (existing + "; " + extra).strip("; "); state.phase = "VALIDATING"
     else: state.phase = "COMPLETE" if state.completion.get("eligible") else "VALIDATING"
     complete = bool(state.completion.get("eligible"))
-    state.interaction = {**(state.interaction or {}), "card": interaction_card("COMPLETE" if complete else "HUMAN_DECISION_REQUIRED", summary=("Completato. Consulta gli artefatti allegati." if complete else "Restano blocker. Consulta la dashboard."), choices=["APRI ARTEFATTI", "RICHIEDI MODIFICHE", "ALTRO"] if complete else None), "status": "READY"}
+    state.interaction = {**(state.interaction or {}), "card": interaction_card("COMPLETE" if complete else "HUMAN_DECISION_REQUIRED", summary=("Completato. Scarica gli artefatti DOCX dalla dashboard." if complete else "Restano blocker. Consulta la dashboard."), choices=["SCARICA DOCX", "RICHIEDI MODIFICHE", "ALTRO"] if complete else None), "status": "READY"}
     return state
