@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Juriscribe canonical dossier semantic materialization v1",
+  "type": "object",
+  "required": ["schema", "profile", "role", "status"],
+  "properties": {
+    "schema": {"const": "juriscribe-dossier-semantic-materialization/v1"},
+    "profile": {"const": "JURISCRIBE_DOSSIER_SEMANTIC_MATERIALIZATION_V1"},
+    "role": {"enum": ["evidence_dossier", "source_register", "inference_register", "transformation_ledger"]},
+    "semantic_profile": {"type": "string"},
+    "semantic_projection_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "public_leaf_count": {"type": "integer", "minimum": 0},
+    "missing_public_leaf_count": {"type": "integer", "minimum": 0},
+    "missing_public_leaf_samples": {"type": "array", "items": {"type": "string"}},
+    "status": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE"]},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

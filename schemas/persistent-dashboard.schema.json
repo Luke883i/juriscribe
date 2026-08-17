@@ -13,7 +13,11 @@
     "html_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "size_bytes": {"type": "integer", "minimum": 0},
     "public_leaf_count": {"type": "integer", "minimum": 0},
-    "missing_public_leaf_count": {"type": "integer", "minimum": 0}
+    "missing_public_leaf_count": {"type": "integer", "minimum": 0},
+    "semantic_witness_count": {"type": "integer", "minimum": 0},
+    "missing_semantic_witness_count": {"type": "integer", "minimum": 0},
+    "registered_public_material_roles": {"type": "integer", "minimum": 0},
+    "missing_public_material_roles": {"type": "array", "items": {"type": "string"}}
   },
   "additionalProperties": true
 }
