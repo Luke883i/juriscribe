@@ -1,214 +1,209 @@
 # Juriscribe
 
-Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Opera in tre modalità canoniche e usa una superficie **artifact-first**: la complessità resta nei documenti e nella dashboard, non nella conversazione.
+Juriscribe è un **runtime per lavoro giuridico scientifico-editoriale auditabile**. Opera in tre modalità canoniche e usa una superficie **artifact-first**: il ragionamento verificabile, le fonti, il reticolo e le revisioni restano nello stato/negli artefatti; la chat resta breve.
 
 | Modalità | Quando usarla | Output principale |
 |---|---|---|
-| `CONTINUATION` | hai capitoli/segmenti precedenti e vuoi scrivere N+1 | `final_chapter` |
-| `GREENFIELD` | parti da concept, prompt, quesito o mandato e vuoi un nuovo testo/monografia | `final_legal_text` |
-| `REVIEW` | hai un testo completo e vuoi revisione scientifica, contenutistica e redazionale | `review_report` (+ eventuale `revised_legal_text`) |
+| `CONTINUATION` | hai capitoli/segmenti precedenti e vuoi scrivere N+1 | `final_chapter.docx` |
+| `GREENFIELD` | parti da concept, quesito o mandato | `final_legal_text.docx` |
+| `REVIEW` | vuoi revisione scientifica, contenutistica e redazionale | `review_report.docx` (+ eventuale `revised_legal_text.docx`) |
 
-In tutte le modalità Juriscribe usa mining epistemico, reticolo, fonti circostanziate, inferenze esplicite, review, saturazione, provenance e una baseline editoriale comune adattata al genere: struttura proporzionata, terminologia, autorità e controautorità, citazioni, bibliografia, perimetro temporale/giurisdizionale, registro, leggibilità e audience fit.
+In tutte le modalità Juriscribe usa mining epistemico, reticolo, fonti circostanziate, inferenze esplicite, review, saturazione, provenance e lo standard `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2`.
 
 ## Esperienza del giurista
 
-Dopo il bootstrap l'esperienza ordinaria deve restare semplice:
+Dopo il bootstrap l'esperienza ordinaria è:
 
 1. scegli `CONTINUATION`, `GREENFIELD` o `REVIEW`;
 2. fornisci i materiali;
-3. ricevi soltanto il setup minimo realmente necessario;
-4. accetti o modifichi i parametri;
-5. **attendi gli artefatti finali**, salvo una decisione umana materialmente bloccante che Juriscribe non possa inferire in modo sicuro.
+3. ricevi il setup minimo necessario;
+4. accetti o modifichi abstract, concetti chiave, lunghezza e altri parametri applicabili;
+5. **attendi gli artefatti finali**, salvo una decisione umana materialmente bloccante non inferibile in modo sicuro.
 
-Juriscribe non deve trasformare la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione e provenance appartengono al runtime e agli artefatti. La dashboard appartiene al giurista: dalla v0.9.4 è il dossier inferenziale integrato della sessione e dalla v0.9.5 è anche una **editorial workbench** autosufficiente, navigabile, ricercabile e stampabile.
+Juriscribe non trasforma la chat in un diario di lavorazione. Mining, ricerca, reticolo, review, rigenerazioni, simulazioni, saturazione, compressione e provenance appartengono al runtime e agli artefatti.
 
 ## Avvio in una sessione AI
 
 Fornisci `https://github.com/Luke883i/juriscribe` oppure un bundle locale e usa questo prompt:
 
 ```text
-Usa il repository/bundle Juriscribe che ti ho fornito come runtime della sessione.
+Usa il repository/bundle Juriscribe come runtime della sessione.
 
 Prima di lavorare sui miei materiali:
-1. individua la superficie di admission/bootstrap dichiarata dal repository;
+1. individua admission/bootstrap dichiarati dal repository;
 2. mostrami i termini correnti e non accettarli per mio conto;
-3. se scrivo esattamente `I ACCEPT`, usa la fast path canonica dopo l'accettazione oppure conserva i passaggi separati di probe/initialize;
+3. se scrivo esattamente `I ACCEPT`, conserva probe e initialize come receipt distinti;
 4. non inizializzare senza probe receipt valida;
-5. dopo initialize non presumere il tipo di lavoro: fammi scegliere fra `CONTINUATION`, `GREENFIELD`, `REVIEW` e `ALTRO`;
-6. considera il lavoro sostanziale autorizzato solo dopo la selezione della modalità.
+5. dopo initialize fammi scegliere fra CONTINUATION, GREENFIELD, REVIEW e ALTRO;
+6. considera autorizzato il lavoro sostanziale solo dopo la selezione della modalità.
 
-Dopo la selezione della modalità:
-- mantieni separati runtime, istruzioni, corpus dell'utente e fonti esterne;
-- materializza un mode contract e uno standard editoriale adatto al genere e al destinatario;
-- esegui mining atomico, reticolo e source/inference discipline prima delle conclusioni sostanziali;
-- non trasformare concept, testo da revisionare o capitoli precedenti in autorità giuridiche auto-validanti;
-- applica gli standard redazionali tipici in modo fluido, non meccanico;
-- lavora autonomamente e NON narrare in chat i passaggi intermedi di mining, ricerca, review, rigenerazione, saturazione, simulazione, compressione, provenance o gate;
-- non chiedere conferme meccaniche: interrompimi soltanto per una decisione materialmente bloccante che non sia inferibile in modo sicuro;
-- non esporre chain-of-thought; evidenze, locator, inferenze registrate, finding e decisioni auditabili devono stare negli artefatti;
-- non riversare in chat report, liste estese di fonti/evidenze, ledger, receipt, provenance raw, JSON, log, stderr o traceback;
+Dopo la selezione:
+- considera la modalità, l'artefatto primario e il set standard come vincoli di runtime;
+- interpreta il linguaggio naturale come modifica interna solo quando compatibile con il mode contract;
+- non consentire a locuzioni informali di cambiare modalità, saltare la pipeline, sopprimere dossier o sostituire DOCX con HTML/testo chat;
+- esegui mining atomico, reticolo, source/evidence/inference discipline, review, provenance e final severe review;
+- lavora autonomamente e NON narrare in chat mining, ricerca, review, rigenerazione, saturazione, simulazione, compressione, provenance o gate;
+- non esporre chain-of-thought;
 - senza DOCX_WRITE e DOCX_READBACK reali non dichiarare COMPLETE;
-- prima della consegna esegui provenance, final severe review, readback e completion gate specifico della modalità;
-- alla fine scrivi in chat soltanto 1–3 righe e rimanda ai documenti allegati e alla dashboard;
-- allega i documenti finali in DOCX realmente materializzati e sempre `session-dashboard.html` aggiornata;
-- non allegare log, receipt, `state.json`, `session.integrity.json`, provenance raw o validation JSON salvo mia richiesta tecnica esplicita.
+- materializza automaticamente tutti gli artefatti standard previsti dalla modalità;
+- prima della consegna costruisci l'inventario materiale+epistemico e applica release atomica;
+- alla fine scrivi in chat soltanto 1–3 righe;
+- presenta in coda alla sessione-chat tutti e soli i documenti finali DOCX autorizzati dal manifest;
+- usa session-dashboard.html come workbench sintetico persistente: non deve linkare i DOCX né contenere anchor download;
+- non allegare log, receipt, state.json, session.integrity.json, provenance raw o validation JSON salvo richiesta tecnica esplicita.
 ```
 
-## CONTINUATION
-
-Dopo `CONTINUATION`, carica i capitoli `1..N`, bibliografia e vincoli editoriali. Juriscribe costruisce il continuation frontier e genera N+1 solo dopo reticolo, setup e contratti.
-
-## GREENFIELD
-
-Dopo `GREENFIELD`, fornisci il concept o mandato. Juriscribe lo scompone in problemi, claim e questioni di ricerca; **il concept orienta, non prova**. Il setup chiarisce tipo di documento, pubblico, lunghezza, postura e livello di ricerca.
-
-## REVIEW
-
-Dopo `REVIEW`, carica il testo completo. Il default è `REPORT_ONLY`: una review può essere completa anche se conclude che il testo ha blocker o major finding. Se vuoi anche una riscrittura scegli `REPORT_AND_REVISED_TEXT`; in quel caso il testo revisionato deve essere riesaminato.
-
-## Standard editoriale comune
-
-Il profilo `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` è publisher-neutral. In ogni modalità considera almeno:
-
-- adeguatezza di struttura e gerarchia al genere;
-- chiarezza della funzione di sezioni/paragrafi e proporzione dell'architettura;
-- registro, ritmo e leggibilità per il pubblico dichiarato;
-- terminologia giuridica stabile;
-- claim materiali tracciabili a fonti/premesse;
-- autorità e controautorità;
-- tempo, giurisdizione e vigenza;
-- distinzione fra dato attestato, interpretazione e inferenza;
-- citazioni/pinpoint e bibliografia coerenti;
-- preservazione di qualificazioni, eccezioni e voce autoriale quando pertinente.
-
-Le metriche editoriali sono segnali di audit, non regole universali.
-
-## Pipeline comune
+## Pipeline comune v0.10.0
 
 ```text
 BOOTSTRAP + PROBE + INITIALIZE
 → MODE SELECTION
-→ INGEST (seed | concept | review target)
+→ NATURAL-LANGUAGE PIPELINE LOCK
+→ INGEST
 → ATOMIC MINING
-→ RETICULUM
+→ EPISTEMIC RETICULUM
 → MODE-AWARE SETUP
 → EDITORIAL STANDARD
 → DOD + MODE CONTRACT
-→ SOURCES / CLAIMS / INFERENCES
+→ SOURCES / CLAIMS / EVIDENCE / INFERENCES
 → MODE-SPECIFIC WORKFLOW
+→ REVIEW / SATURATION
+→ SIMULATIONS / COMPRESSION (quando applicabili)
 → PROVENANCE
 → FINAL SEVERE REVIEW
-→ M+10.000 VS DOD
-→ LEGAL-HUMANISTIC ARTIFACT PROJECTION
+→ RUNTIME-OWNED STANDARD ARTIFACT AUTOPILOT
 → REAL DOCX MATERIALIZATION + READBACK
-→ CURRENT INFERENTIAL HTML DASHBOARD
-→ DELIVERY MANIFEST
+→ MATERIAL + EPISTEMIC DELIVERY INVENTORY
+→ CURRENT SYNTHETIC HTML DASHBOARD
+→ ATOMIC CHAT-TAIL DELIVERY MANIFEST
 → COMPLETE
 ```
 
-`CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` non richiede che il testo sorgente diventi “PASS” per poter consegnare un report diagnostico.
+`CONTINUATION` conserva continuation frontier/coverage. `GREENFIELD` non inventa una continuità inesistente. `REVIEW` usa `REPORT_ONLY` come default; con `REPORT_AND_REVISED_TEXT` materializza anche il testo revisionato e lo governa come artefatto narrativo.
 
-## Artefatti giuridico-umanistico-editoriali v0.9.4+
+## Artefatti standard
 
-I quattro dossier comuni condividono la proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`.
+### Artefatti comuni DOCX
+
+- `evidence_dossier.docx`
+- `source_register.docx`
+- `inference_register.docx`
+- `transformation_ledger.docx`
+
+### Artefatti specifici
+
+- CONTINUATION: `final_chapter.docx`
+- GREENFIELD: `final_legal_text.docx`
+- REVIEW: `review_report.docx`, `review_findings_register.docx`, eventuale `revised_legal_text.docx`
+
+### Dashboard
+
+`session-dashboard.html` è il workbench sintetico persistente. **Non è un attachment DOCX e non è il canale di download dei documenti.** Riepiloga contenuto, funzione e stato degli artefatti e delle logiche epistemiche; i DOCX sono destinati alla coda della sessione-chat.
+
+## Quattro dossier giuridico-umanistico-editoriali
+
+I quattro dossier condividono la proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`.
 
 ### Evidence dossier
 
-Ricostruisce **proposizione → funzione giuridica → fonte/premessa → pinpoint → qualificazioni/contrasti → disposizione → collocazione finale**. Deve consentire a un revisore di capire perché una proposizione è sostenibile nella forma in cui appare.
+Ricostruisce **proposizione → funzione giuridica → fonte/premessa → pinpoint → qualificazioni/contrasti → disposizione → collocazione finale**.
 
 ### Source register
 
-Non è una bibliografia duplicata. Rende visibili carattere dell'autorità, autore/organo, giurisdizione e tempo, ruolo nel ragionamento, claim sostenuti, evidenza circostanziata e controautorità/riserve.
+Rende visibili autorità, autore/organo, giurisdizione e tempo, ruolo nel ragionamento, claim sostenuti, evidenza circostanziata e controautorità/riserve.
 
 ### Inference register
 
-Separa il dato attestato dal passaggio interpretativo. Per ogni inferenza materiale rende leggibili conclusione, premesse testuali, ponte, falsificatore, autorità/evidenze, qualificazioni, obiezioni, contrasti e disposizione finale.
+Separa il dato attestato dal passaggio interpretativo: conclusione, premesse, ponte inferenziale, falsificatore, autorità/evidenze, qualificazioni e obiezioni.
 
 ### Transformation ledger
 
-Racconta la storia causale del testo: finding, interventi, rigenerazioni, contenuti preservati/persi/introdotti, compressione lossless, azioni editoriali e consequence probes della final severe review.
+Ricostruisce la storia causale del testo: finding, interventi, rigenerazioni, contenuti preservati/persi/introdotti, compressione lossless, azioni editoriali e consequence probes.
 
-La specifica completa resta `docs/EDITORIAL_ARTIFACTS_V9_4.md`.
+Specifiche storiche preservate: `docs/EDITORIAL_ARTIFACTS_V9_4.md`.
 
-## Dashboard Workbench v0.9.5
+## Pipeline lock contro il deragliamento conversazionale
 
-`session-dashboard.html` usa il profilo `JURISCRIBE_EDITORIAL_WORKBENCH_V1`. La dashboard non diventa un nuovo motore inferenziale: continua a leggere la stessa proiezione semantica dei quattro dossier, ma la organizza come strumento di lavoro per giuristi e redazioni.
+Da v0.10.0 `JURISCRIBE_NATURAL_LANGUAGE_PIPELINE_LOCK_V1` congela modalità, artefatto primario e set standard. Le istruzioni naturali vengono trattate come:
 
-La superficie comprende:
+- vincoli o decisioni interne compatibili;
+- query di stato;
+- richiesta di nuovo lavoro/cambio modalità, da isolare;
+- richiesta ambigua, da risolvere prima di modificare stato materiale.
 
-- masthead con mandato, stato editoriale, modalità, genere e destinatari;
-- mappa sintetica dei quattro registri basata soltanto sui loro conteggi;
-- indice interno sticky e landmark nominati;
-- record semantici espandibili, aperti di default;
-- evidenze/premesse annidate in una gerarchia leggibile;
-- badge che ripresentano stati già materializzati, senza crearne di nuovi;
-- ricerca locale nel testo già presente nel DOM;
-- controlli `Espandi`, `Contrai` e `Stampa`;
-- layout responsive, focus visibile e skip link;
-- profilo `@media print` dedicato;
-- zero-state completo: anche prima del mining restano visibili struttura, finalità e quattro registri senza inventare contenuto.
+Non è consentito cambiare implicitamente modalità, disabilitare artefatti standard, saltare review/provenance o cambiare il formato documentale finale.
 
-L'HTML è **autosufficiente**: nessun CSS, font, analytics o JavaScript remoto è necessario al renderer. I normali collegamenti alle fonti giuridiche nel Source register restano invece parte del contenuto scientifico.
+## Materializzazione automatica degli artefatti
 
-La specifica di presentazione e la DoD sono in `docs/DASHBOARD_WORKBENCH_V9_5.md`.
+`JURISCRIBE_STANDARD_ARTIFACT_AUTOPILOT_V1` rende la generazione dei file responsabilità del runtime. Un assistente può dimenticare di invocare manualmente `record-artifact`, ma non può ottenere una sessione v0.10.0 completa con un set incompleto: il runtime materializza il set canonico oppure fallisce chiuso.
 
-## Contratto di consegna v0.9.4+
+Per `final_chapter`, il DOCX porta una tracciabilità inferenziale verificabile che lega richiesta, decisioni naturali materiali, unità epistemiche, claim, continuation plan, generation contract e candidato finale.
 
-La chat post-bootstrap è una **superficie di controllo**, non una superficie di report. Normalmente contiene solo richieste umane non inferibili, un next step essenziale o il rinvio finale agli allegati. Il limite ordinario è 1–3 righe.
+## Inventario meccanico e release atomica
 
-Tutti i documenti user-facing devono essere **DOCX reali**:
+Prima della consegna `JURISCRIBE_MECHANICAL_DELIVERY_COMPLIANCE_V1` controlla:
 
-- `final_chapter` / `final_legal_text` / `review_report` / eventuale `revised_legal_text`;
-- `evidence_dossier`;
-- `source_register`;
-- `inference_register`;
-- `transformation_ledger`;
-- `review_findings_register` quando applicabile.
+- mode contract e standard editoriale;
+- mining atomico e reticolo epistemico;
+- claim ledger ed evidence register;
+- fonti/source intelligence e inference structure;
+- generation contract/configuration e anti-plagio quando applicabili;
+- continuation plan/coverage;
+- review, simulazioni, compressione;
+- provenance e final severe review;
+- pipeline lock e autopilot;
+- validità materiale dei DOCX e prove semantiche dei dossier.
 
-Non basta che il path finisca in `.docx`: il file deve esistere, non essere vuoto, risultare un pacchetto OOXML/WordprocessingML leggibile e avere digest/size verificati al gate.
+La release è **atomica**. Se un prerequisito bloccante manca, il manifest produce `attachments=[]` e classifica i candidate documenti come `withheld_attachments`. Non esiste una consegna parziale dichiarata valida.
 
-`session_dashboard` è sempre HTML ed è allegata come `session-dashboard.html`. Il suo **corpo contiene soltanto il resoconto giuridico-umanistico-editoriale**: mandato, cornice editoriale e l'intero contenuto dei quattro dossier. Non mostra digest, integrity, path, capability, readback, log o traceback.
+Specifica: `docs/MECHANICAL_DELIVERY_COMPLIANCE_V10.md`.
 
-Il metadata invisibile `juriscribe-state-digest` resta nel `<head>` per conservare il controllo di freshness: una dashboard stale continua a non valere come dashboard finale.
+## Contratto di consegna
 
-I quattro dossier registrati dalla v0.9.4 sono inoltre sigillati rispetto alla propria proiezione semantica. Se il quadro inferenziale cambia, devono essere rimaterializzati prima del completion gate.
+Tutti i documenti user-facing devono essere **DOCX reali**. Non basta l'estensione: il file deve esistere, essere confinato nel workspace, essere un pacchetto OOXML/WordprocessingML leggibile, superare i limiti di sicurezza e avere readback `PASS`.
 
-I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger, traceback) restano interni e non devono essere allegati nella consegna ordinaria.
+I DOCX autorizzati sono descritti dal manifest con:
 
-Se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, Juriscribe resta non pronto: non degrada a Markdown/JSON né compensa incollando il contenuto in chat.
+- `delivery_class=ATTACH`
+- `placement=SESSION_CHAT_TAIL`
+- MIME Word OOXML
+- `content_disposition=attachment`
 
-Specifica corrente di delivery: `docs/FINAL_DELIVERY_V9_4.md`. La precedente `FINAL_DELIVERY_V9_2.md` resta come documento storico degli invarianti di materializzazione introdotti in quella release.
+`session-dashboard.html` resta `SURFACE`: non entra negli attachment e non contiene link `.docx` o anchor `download`.
 
-## Dashboard
+I record macchina (`state.json`, `session.integrity.json`, receipt, provenance raw, validation JSON, JSONL ledger, traceback) restano interni.
 
-`session-dashboard.html` è il **dossier inferenziale giuridico-umanistico-editoriale** e la workbench di lettura della sessione. La regola resta di parità, non di sommario:
+Le specifiche storiche `docs/FINAL_DELIVERY_V9_2.md` e `docs/FINAL_DELIVERY_V9_4.md` restano documenti degli invarianti introdotti nelle release precedenti.
 
-```text
-Dashboard = cornice umana
-          + Evidence dossier
-          + Source register
-          + Inference register
-          + Transformation ledger
-```
+## Dashboard persistente
 
-La dashboard non è una console tecnica. Il runtime conserva i controlli tecnici nei record interni e nei metadata invisibili necessari ai gate. Il renderer v0.9.5 aggiunge soltanto struttura di lettura derivata e strumenti locali che non modificano lo stato.
+La dashboard è aggiornata a ogni mutazione di runtime, sostituita atomicamente e verificata dopo il reload. La V4 conserva la linea editoriale V2/V3 e aggiunge il riepilogo di:
+
+- contratto conversazionale;
+- autopilot artefatti standard;
+- tracciabilità del prodotto;
+- inventario meccanico della consegna.
+
+Il metadata invisibile `juriscribe-state-digest` resta nel `<head>` per il controllo di freshness. Nel body non devono comparire path assoluti, digest tecnici, readback, capability, log o traceback.
 
 ## Integrità
 
-Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è ritirato: viene letto solo per migrare vecchi workspace. L'integrity manifest resta interno e non appartiene al pacchetto ordinario di allegati.
-
-## Audit e non-regressione
-
-`docs/AUDIT_MAIN_V9_4.md` documenta l'audit integrale che ha introdotto la proiezione semantica comune. La v0.9.5 resta additiva sulla superficie: non modifica reticolo, provenance, review receipts, simulation receipts, semantic seal o fixed-point.
+Il record canonico è `.juriscribe/<session>/session.integrity.json`. `node.h` è solo input di migrazione per workspace storici.
 
 ## Validazione e CI
 
-La CI conserva le baseline storiche: 400k v5, M+1000, continuation v6, mutazioni v7, reflection v8, tri-mode v9 e tutti i fixed-point. I regression test v0.9.4 conservano parità dossier/dashboard e semantic-drift detection; quelli v0.9.5 aggiungono zero-state, self-contained/offline, landmark/anchor, escape del materiale utente, ricerca/print surface e assenza di telemetria tecnica nel body.
+La CI v0.10.0 aggiunge:
+
+- 100 edge case Safari di delivery DOCX + M+100 no-novelty;
+- 100 scenari universali Safari su autopilot/pipeline lock/inventario + M+100 multi-browser/multi-assistant;
+- test di release atomica per evidence, reticulum, source coverage, autopilot drift e dashboard mancante.
+
+Restano obbligatorie senza modifica delle baseline: 400k v5, M+1000 architecture saturation, 10k continuation, 10k mutazioni v7, historiography M+100, 30k tri-mode, 10k dashboard evidence, 10k generation governance e tutti i fixed-point storici.
 
 ## Versioni
 
-- runtime: `0.9.5`
+- runtime: `0.10.0`
 - access contract: `1.7.0`
 - manifest: `juriscribe-manifest/v9`
 
-Documentazione corrente: `docs/MODES_V9.md`, `docs/EDITORIAL_STANDARD_V9.md`, `docs/RUNTIME_V9_TRI_MODE.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/DASHBOARD_WORKBENCH_V9_5.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md`, `docs/HISTORIOGRAPHIC_AUDIT_V9_2.md`, `docs/RUNTIME_HARDENING_V9_3.md`, `docs/AGENT_RUNTIME_RULES.md`, `docs/SESSION_MODEL.md`.
+Documentazione v0.10.0: `docs/UNIVERSAL_ARTIFACT_AUTOPILOT_V10.md`, `docs/MECHANICAL_DELIVERY_COMPLIANCE_V10.md`, `docs/AUDIT_UNIVERSAL_ARTIFACT_AUTOPILOT_V10.md`.

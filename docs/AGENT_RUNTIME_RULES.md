@@ -1,4 +1,4 @@
-# Juriscribe agent runtime rules v0.9.5 — post-bootstrap
+# Juriscribe agent runtime rules v0.10.0 — post-bootstrap
 
 Dopo bootstrap e initialize, chiedi/seleziona una modalità prima di lavorare sui materiali: `CONTINUATION`, `GREENFIELD`, `REVIEW`, lasciando sempre `ALTRO`.
 
@@ -6,20 +6,34 @@ Dopo bootstrap e initialize, chiedi/seleziona una modalità prima di lavorare su
 - mode contract e standard editoriale first-class;
 - mining atomico + reticolo prima delle conclusioni sostanziali;
 - setup minimo e adattato al genere;
-- claim/fonti circostanziati e inferenze forti registrate;
+- claim/fonti circostanziati, evidence register e inferenze forti registrate;
 - review scientifica, contenutistica e redazionale evidence-based;
 - provenance e final severe review;
-- M+10.000 vs DoD;
+- M+10.000 vs DoD dove previsto;
 - artifact set mode-specific con readback;
 - nessuna esposizione di chain-of-thought latente.
 
 ## Bootstrap hardening e fast path
-L'accettazione umana resta separata e non inferibile. Dopo un messaggio umano esattamente `I ACCEPT`, l'host può velocizzare il primo avvio usando la fast path canonica `bootstrap-after-acceptance`, che esegue nello stesso turno `probe -> probe receipt -> initialize`, purché le tre transizioni restino distinte e auditabili e `initialize` non esegua mai un probe implicito. La modalità resta una decisione umana separata dopo initialize.
+L'accettazione umana resta separata e non inferibile. Dopo un messaggio umano esattamente `I ACCEPT`, l'host può usare `bootstrap-after-acceptance`, purché `probe -> probe receipt -> initialize` restino transizioni distinte e auditabili. La probe receipt è `single-use`; le capability sigillate non possono essere ampliate durante initialize. Gli ID sessione automatici sono non deterministici e un workspace occupato non viene sovrascritto.
 
-Le receipt hanno nonce; una probe receipt è single-use per inizializzare una sessione. Le capability sigillate dal probe non possono essere mutate o ampliate durante initialize. Gli ID sessione automatici sono non deterministici e un workspace già occupato non viene mai sovrascritto.
+## Pipeline lock v0.10.0 — vincolo non negoziabile
+Subito dopo `select_mode`, usa `JURISCRIBE_NATURAL_LANGUAGE_PIPELINE_LOCK_V1` per congelare:
+- modalità;
+- artefatto primario;
+- set degli artefatti standard;
+- mode-selection binding.
+
+L'input libero resta consentito, ma una locuzione naturale **non** autorizza implicitamente a:
+- cambiare modalità;
+- cambiare artefatto primario;
+- saltare mining, reticolo, review, provenance, final review o gate;
+- sopprimere evidence/source/inference/transformation dossier;
+- sostituire DOCX con HTML, PDF, Markdown o solo testo chat.
+
+Classifica richieste materiali come vincolo/decisione interna, cambio modalità/nuovo lavoro, ambiguità, query di stato o out-of-scope. Un cambio modalità/nuovo lavoro richiede nuova selezione esplicita o nuova sessione. Un'ambiguità materiale resta bloccante fino a risoluzione.
 
 ## CONTINUATION
-Preserva continuation frontier/coverage, coerenza inter-capitolo e non duplicazione.
+Preserva continuation frontier/coverage, coerenza inter-capitolo e non duplicazione. Il `final_chapter` deve portare una trace pubblicamente auditabile: richiesta → interpretazioni materiali → unità epistemiche/claim → continuation plan → generation contract → candidate finale → DOCX.
 
 ## GREENFIELD
 Non inventare seed o continuità. Il concept genera scope e research questions ma non vale come autorità.
@@ -30,67 +44,85 @@ In `REPORT_ONLY`, finding aperti nel target sono output, non blocker del runtime
 ## Editoriale
 Applica `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` con adattamento a genere, destinatari e house style. Non trasformare metriche in regole universali.
 
-## Artefatti semantici v0.9.4+
-I quattro dossier comuni devono essere costruiti dalla proiezione canonica `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`:
+## Artefatti semantici
+I quattro dossier comuni devono derivare da `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`:
+- `evidence_dossier`: proposizione, funzione, evidenze/premesse, pinpoint, qualificazioni/contrasti, disposizione, collocazione;
+- `source_register`: autorità, autore/organo, giurisdizione/tempo, uso effettivo, evidenza circostanziata, riserve/controautorità;
+- `inference_register`: conclusione, premesse, ponte, falsificatore, autorità/evidenze, qualificazioni/obiezioni/contrasti;
+- `transformation_ledger`: finding, interventi, rigenerazioni, preservazione/perdita/novità, compressione, azioni editoriali e consequence probes.
 
-- `evidence_dossier`: proposizione, funzione giuridica, evidenze/premesse, pinpoint, qualificazioni/contrasti, disposizione e collocazione;
-- `source_register`: carattere dell'autorità, autore/organo, giurisdizione/tempo, funzione, uso effettivo, evidenza circostanziata, riserve/controautorità e bibliografia;
-- `inference_register`: conclusione, premesse testuali, ponte, falsificatore, autorità/evidenze, qualificazioni/obiezioni/contrasti e disposizione;
-- `transformation_ledger`: finding, ragioni degli interventi, rigenerazioni, preservazione/perdita/novità, compressione, azioni editoriali e consequence probes.
+Non duplicare la semantica nei renderer: usa `juriscribe.editorial_artifacts.build_editorial_artifact_views`.
 
-Non duplicare questa logica in renderer diversi: usa `juriscribe.editorial_artifacts.build_editorial_artifact_views` come fonte semantica comune. Non aggiungere contenuti interpretativi che non siano già materializzati nello stato auditato.
+## Runtime-owned standard artifact autopilot
+Per nuove sessioni v0.10.0 la creazione degli artefatti standard è responsabilità del runtime, non dell'assistente. Dopo final severe review PASS, `JURISCRIBE_STANDARD_ARTIFACT_AUTOPILOT_V1` deve materializzare automaticamente tutti i ruoli documentali restituiti da `required_artifact_roles(mode, setup)`.
+
+Se manca il testo candidato sigillato, una proiezione canonica o una capability DOCX, non improvvisare un surrogato: lascia la sessione non pronta.
+
+## Inventario meccanico di conformità della consegna
+Prima di esporre attachment, costruisci `JURISCRIBE_MECHANICAL_DELIVERY_COMPLIANCE_V1`.
+
+L'inventario deve coprire almeno:
+- mode contract;
+- standard editoriale;
+- atomic mining;
+- reticolo epistemico;
+- claim ledger;
+- evidence register;
+- source intelligence/bibliografia;
+- inference structure;
+- generation contract/configuration;
+- continuation plan/coverage;
+- scientific-editorial review;
+- quality/anti-plagio;
+- simulazioni/compressione;
+- provenance;
+- final severe review;
+- pipeline lock;
+- autopilot.
+
+Ogni artefatto finale dichiara le proprie dipendenze. Se un nodo bloccante applicabile è FAIL o mancante, la release è atomica: `attachments=[]` e i candidate documenti restano `withheld`. Non presentare una consegna parziale come compliant.
 
 ## Dashboard inferenziale — vincolo non negoziabile
-`session-dashboard.html` deve essere il dossier inferenziale integrato, non una console tecnica. Il `<body>` deve contenere **ogni informazione giuridico-umanistico-editoriale** presente nelle quattro proiezioni canoniche, oltre a mandato, modalità, genere, destinatari e principi editoriali applicati.
+`session-dashboard.html` è il workbench sintetico persistente, non una console tecnica e **non è il canale di download dei DOCX**.
 
-Dalla v0.9.5 la presentazione usa `JURISCRIBE_EDITORIAL_WORKBENCH_V1`:
-- masthead editoriale con mandato e cornice;
-- mappa dei quattro registri ottenuta soltanto da conteggi derivati;
-- indice interno e landmark nominati;
-- record semantici espandibili, aperti di default;
-- ricerca locale sul testo già presente nel DOM;
-- controlli espandi/contrai e profilo di stampa;
-- layout responsive e focus visibile;
-- HTML autosufficiente, senza CSS, font, analytics o JavaScript remoti.
+Il body deve rendere leggibili i contenuti giuridico-umanistico-editoriali, l'atlante degli artefatti, il contratto conversazionale, l'autopilot, la trace del prodotto e l'inventario di delivery. Non deve contenere link `.docx` né anchor `download` per gli artefatti finali.
 
-La ricerca e gli strumenti di lettura non devono generare, trasformare o riassumere nuovo contenuto giuridico. Il browser presenta la proiezione: non diventa un secondo motore inferenziale.
+Il browser presenta la proiezione: non diventa un secondo motore inferenziale.
 
-Nel corpo della dashboard non mostrare:
-- hash o digest;
+Nel corpo non mostrare:
+- hash/digest;
 - `session.integrity.json`;
 - path di filesystem;
 - capability host;
 - readback/media type;
 - log, receipt, stderr, traceback/stack trace;
-- conteggi di record interni o altri dettagli di implementazione.
+- candidate text store o fingerprint.
 
-Il solo `juriscribe-state-digest` invisibile nel `<head>` resta consentito perché necessario al gate di freshness consolidato. Non renderlo visibile al lettore.
+Il solo `juriscribe-state-digest` invisibile nel `<head>` resta consentito per il gate di freshness. Una dashboard stale non soddisfa il gate.
 
-## Superficie AI artifact-first — vincolo non negoziabile
-La complessità deve restare nel runtime, nei DOCX e nella dashboard, **non nella conversazione con l'utente**. Regola sintetica: **non narrare** il processo interno; materializzalo.
+## Superficie AI artifact-first
+La complessità deve restare nel runtime, nei DOCX e nella dashboard, **non nella conversazione**. Regola sintetica: **non narrare** il processo interno; materializzalo.
 
 Dopo modalità, materiali e setup minimo:
 - prosegui autonomamente senza narrare mining, reticolo, ricerca, fonti, review, rigenerazioni, saturazione, simulazioni, compressione, provenance o gate;
-- non chiedere conferme meccaniche; interrompi solo per una decisione umana materialmente bloccante e realmente non inferibile;
+- non chiedere conferme meccaniche; interrompi solo per una **decisione umana** materialmente bloccante e realmente non inferibile;
 - ogni messaggio ordinario post-bootstrap deve essere breve, normalmente entro **1–3 righe**;
-- usa la chat soltanto per esito sintetico, prossimo passo essenziale o decisione umana necessaria;
-- non riversare in chat report, finding completi, liste estese di fonti/evidenze, ledger, receipt, provenance raw, JSON macchina, log, stderr, traceback/stack trace o dettagli diagnostici;
-- in caso di errore tecnico, mostra soltanto un messaggio redatto e non sensibile; conserva il dettaglio nel ledger interno e **non trasformare la dashboard in un contenitore tecnico**;
-- una superficie machine-readable/verbosa richiede doppio opt-in tecnico: `JURISCRIBE_VERBOSE_JSON=1` e flag `--technical-output`.
+- non riversare in chat report, finding completi, ledger, receipt, JSON macchina, log, stderr o traceback/stack trace;
+- in caso di errore tecnico mostra un messaggio redatto; conserva il dettaglio internamente e **non trasformare la dashboard in un contenitore tecnico**;
+- output macchina verboso richiede `JURISCRIBE_VERBOSE_JSON=1` e `--technical-output`.
 
 ## Delivery e materializzazione
 Alla chiusura:
-- scrivi in chat soltanto 1–3 righe con esito e rinvio agli allegati;
-- allega tutti i documenti finali user-facing in **DOCX** realmente materializzati;
-- allega sempre `session-dashboard.html` come dashboard HTML corrente;
-- non allegare `state.json`, `session.integrity.json`, receipt, validation JSON, JSONL ledger, provenance raw o altri record macchina salvo richiesta tecnica esplicita;
-- non sostituire un DOCX richiesto con Markdown, TXT, JSON o testo incollato in chat;
-- un suffisso `.docx` non basta: il file deve esistere, non essere vuoto, essere un pacchetto OOXML/WordprocessingML riconoscibile ed essere rileggibile entro limiti di decompressione/size sicuri;
-- i deliverable finali devono essere materializzati **dentro** `<workspace>/artifacts`; path esterni e symlink non soddisfano il gate;
-- la dashboard deve restare state-bound tramite metadata invisibile; una dashboard stale non soddisfa il gate;
-- i quattro dossier v0.9.4+ devono essere materializzati dalla proiezione corrente e, se sigillati, non possono essere stale rispetto al quadro inferenziale;
-- se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, non dichiarare `COMPLETE`.
+- scrivi in chat soltanto 1–3 righe con esito;
+- presenta tutti e soli i documenti finali **DOCX** autorizzati dal manifest in `SESSION_CHAT_TAIL`;
+- `session-dashboard.html` resta superficie HTML sintetica della sessione: non deve essere classificata come attachment documentale e non deve linkare i DOCX;
+- **non allegare** `state.json`, `session.integrity.json`, receipt, validation JSON, JSONL ledger, provenance raw o altri record macchina salvo richiesta tecnica esplicita;
+- non sostituire un DOCX con Markdown, TXT, JSON o testo incollato in chat;
+- un suffisso `.docx` non basta: verifica OOXML/WordprocessingML, readback, limiti di decompressione/size, confinement e symlink policy;
+- i quattro dossier devono essere materializzati dalla proiezione corrente e non possono essere stale;
+- se `DOCX_WRITE` o `DOCX_READBACK` non sono `AVAILABLE`, non dichiarare `COMPLETE`;
+- se l'inventario meccanico non autorizza la release, non esporre attachment parziali.
 
-La persistenza di `state.json` e `session.integrity.json` usa replace atomico e ogni `load()` sostanziale valida l'integrità prima di restituire lo stato. Il manifest di consegna canonico resta costruito da `juriscribe.delivery.build_delivery_manifest`; il semantic-drift gate è `juriscribe.semantic_delivery.semantic_dossier_gate`.
+Il manifest di consegna canonico resta costruito da `juriscribe.delivery.build_delivery_manifest`; la coda chat è governata da `juriscribe.chat_delivery.build_chat_delivery_manifest`; il gate materiale+epistemico è `juriscribe.delivery_compliance.delivery_compliance_gate`.
 
-Vedi `docs/DASHBOARD_WORKBENCH_V9_5.md`, `docs/EDITORIAL_ARTIFACTS_V9_4.md`, `docs/FINAL_DELIVERY_V9_4.md`, `docs/AUDIT_MAIN_V9_4.md` e `docs/RUNTIME_HARDENING_V9_3.md`.
+Vedi `docs/UNIVERSAL_ARTIFACT_AUTOPILOT_V10.md`, `docs/MECHANICAL_DELIVERY_COMPLIANCE_V10.md`, `docs/AUDIT_UNIVERSAL_ARTIFACT_AUTOPILOT_V10.md`, oltre alle specifiche storiche v0.9.x.
