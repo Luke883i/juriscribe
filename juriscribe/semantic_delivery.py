@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from . import delivery as _delivery
-from .dossier_materialization import dossier_semantic_materialization_gate, verify_dossier_semantic_materialization
+from .dossier_materialization import PROFILE as MATERIALIZATION_PROFILE, dossier_semantic_materialization_gate, verify_dossier_semantic_materialization
 from .editorial_artifacts import DOSSIER_ROLES, PROFILE_ID, semantic_projection_digest
 from .evidence_traceability import evidence_traceability_gate
 from .interaction import interaction_card
@@ -21,7 +21,7 @@ def _semantic_record(state, record):
 
 
 def record_artifact(state, record):
-    """Bind canonical dossier files to the same projection used by the dashboard."""
+    """Bind newly registered canonical dossier files to the same projection used by the dashboard."""
     prepared = _semantic_record(state, record)
     role = str(prepared.get("role", ""))
     if role in DOSSIER_ROLES:
@@ -29,6 +29,7 @@ def record_artifact(state, record):
         proof = verify_dossier_semantic_materialization(state, normalized)
         if proof.get("status") != "PASS":
             raise ValueError("canonical dossier semantic materialization failed: " + "; ".join(proof.get("errors") or []))
+        prepared["semantic_materialization_profile"] = MATERIALIZATION_PROFILE
         prepared["semantic_materialization"] = proof
     return _delivery.record_artifact(state, prepared)
 

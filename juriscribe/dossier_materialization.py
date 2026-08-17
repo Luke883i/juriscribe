@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import zipfile
 from pathlib import Path
 from typing import Any, Iterable
@@ -51,11 +50,7 @@ def dossier_semantic_leaves(state: Any, role: str) -> list[str]:
 
 
 def render_dossier_text(state: Any, role: str) -> str:
-    """Deterministic human-readable serialization of the canonical dossier projection.
-
-    This is intentionally plain text: any DOCX writer may use it as source material,
-    while the verifier below remains independent from a particular DOCX layout.
-    """
+    """Serialize the canonical semantic dossier into deterministic human-readable text."""
     projection = dossier_projection(state, role)
     lines: list[str] = []
 
@@ -146,6 +141,10 @@ def dossier_semantic_materialization_gate(state: Any) -> tuple[bool, list[str]]:
         if not record:
             continue
         proof = record.get("semantic_materialization") or {}
+        required = str(record.get("semantic_materialization_profile") or "") == PROFILE
+        if not proof and not required:
+            # Migration rule: dossiers registered before v0.9.9 are not retroactively invalidated.
+            continue
         if proof.get("status") != "PASS":
             errors.append(f"canonical dossier semantic materialization is not PASS: {role}")
             continue

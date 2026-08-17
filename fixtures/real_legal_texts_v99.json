@@ -1,0 +1,119 @@
+{
+  "schema": "juriscribe-real-legal-corpus/v1",
+  "verified_at": "2026-08-17",
+  "purpose": "Frozen official legal-text excerpts for deterministic offline E2E validation; sources were manually verified against official institutional publications before inclusion.",
+  "records": [
+    {
+      "id": "IT-CONST-1",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 1",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/principi-fondamentali/articolo-1",
+      "text": "L'Italia è una Repubblica democratica, fondata sul lavoro. La sovranità appartiene al popolo, che la esercita nelle forme e nei limiti della Costituzione."
+    },
+    {
+      "id": "IT-CONST-2",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 2",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/principi-fondamentali/articolo-2",
+      "text": "La Repubblica riconosce e garantisce i diritti inviolabili dell'uomo, sia come singolo, sia nelle formazioni sociali ove si svolge la sua personalità, e richiede l'adempimento dei doveri inderogabili di solidarietà politica, economica e sociale."
+    },
+    {
+      "id": "IT-CONST-3",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 3",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/principi-fondamentali/articolo-3",
+      "text": "Tutti i cittadini hanno pari dignità sociale e sono eguali davanti alla legge, senza distinzione di sesso, di razza, di lingua, di religione, di opinioni politiche, di condizioni personali e sociali. È compito della Repubblica rimuovere gli ostacoli di ordine economico e sociale, che, limitando di fatto la libertà e l'eguaglianza dei cittadini, impediscono il pieno sviluppo della persona umana e l'effettiva partecipazione di tutti i lavoratori all'organizzazione politica, economica e sociale del Paese."
+    },
+    {
+      "id": "IT-CONST-4",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 4",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/principi-fondamentali/articolo-4",
+      "text": "La Repubblica riconosce a tutti i cittadini il diritto al lavoro e promuove le condizioni che rendano effettivo questo diritto. Ogni cittadino ha il dovere di svolgere, secondo le proprie possibilità e la propria scelta, un'attività o una funzione che concorra al progresso materiale o spirituale della società."
+    },
+    {
+      "id": "IT-CONST-9",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 9",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/principi-fondamentali/articolo-9",
+      "text": "La Repubblica promuove lo sviluppo della cultura e la ricerca scientifica e tecnica. Tutela il paesaggio e il patrimonio storico e artistico della Nazione. Tutela l'ambiente, la biodiversità e gli ecosistemi, anche nell'interesse delle future generazioni. La legge dello Stato disciplina i modi e le forme di tutela degli animali."
+    },
+    {
+      "id": "IT-CONST-21",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 21, commi 1-4",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/parte-i/titolo-i/articolo-21",
+      "text": "Tutti hanno diritto di manifestare liberamente il proprio pensiero con la parola, lo scritto e ogni altro mezzo di diffusione. La stampa non può essere soggetta ad autorizzazioni o censure. Si può procedere a sequestro soltanto per atto motivato dell'autorità giudiziaria nel caso di delitti, per i quali la legge sulla stampa espressamente lo autorizzi, o nel caso di violazione delle norme che la legge stessa prescriva per l'indicazione dei responsabili. In tali casi, quando vi sia assoluta urgenza e non sia possibile il tempestivo intervento dell'autorità giudiziaria, il sequestro della stampa periodica può essere eseguito da ufficiali di polizia giudiziaria, che devono immediatamente fare denunzia all'autorità giudiziaria."
+    },
+    {
+      "id": "IT-CONST-24",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 24",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/parte-i/titolo-i/articolo-24",
+      "text": "Tutti possono agire in giudizio per la tutela dei propri diritti e interessi legittimi. La difesa è diritto inviolabile in ogni stato e grado del procedimento. Sono assicurati ai non abbienti, con appositi istituti, i mezzi per agire e difendersi davanti ad ogni giurisdizione. La legge determina le condizioni e i modi per la riparazione degli errori giudiziari."
+    },
+    {
+      "id": "IT-CONST-48",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 48",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/parte-i/titolo-iv/articolo-48",
+      "text": "Sono elettori tutti i cittadini, uomini e donne, che hanno raggiunto la maggiore età. Il voto è personale ed eguale, libero e segreto. Il suo esercizio è dovere civico. La legge stabilisce requisiti e modalità per l'esercizio del diritto di voto dei cittadini residenti all'estero e ne assicura l'effettività. Il diritto di voto non può essere limitato se non per incapacità civile o per effetto di sentenza penale irrevocabile o nei casi di indegnità morale indicati dalla legge."
+    },
+    {
+      "id": "IT-CONST-97",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 97",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-iii/sezione-ii/articolo-97",
+      "text": "Le pubbliche amministrazioni, in coerenza con l'ordinamento dell'Unione europea, assicurano l'equilibrio dei bilanci e la sostenibilità del debito pubblico. I pubblici uffici sono organizzati secondo disposizioni di legge, in modo che siano assicurati il buon andamento e l'imparzialità dell'amministrazione. Nell'ordinamento degli uffici sono determinate le sfere di competenza, le attribuzioni e le responsabilità proprie dei funzionari. Agli impieghi nelle pubbliche amministrazioni si accede mediante concorso, salvo i casi stabiliti dalla legge."
+    },
+    {
+      "id": "IT-CONST-111",
+      "authority": "Senato della Repubblica",
+      "instrument": "Costituzione della Repubblica italiana",
+      "locator": "art. 111, commi 1-3",
+      "source_url": "https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-iv/sezione-ii",
+      "text": "La giurisdizione si attua mediante il giusto processo regolato dalla legge. Ogni processo si svolge nel contraddittorio tra le parti, in condizioni di parità, davanti a giudice terzo e imparziale. La legge ne assicura la ragionevole durata. Nel processo penale, la legge assicura che la persona accusata di un reato sia, nel più breve tempo possibile, informata riservatamente della natura e dei motivi dell'accusa elevata a suo carico e disponga del tempo e delle condizioni necessari per preparare la sua difesa."
+    },
+    {
+      "id": "EU-CHARTER-41",
+      "authority": "Unione europea — EUR-Lex",
+      "instrument": "Carta dei diritti fondamentali dell'Unione europea",
+      "locator": "art. 41",
+      "source_url": "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:12016P041",
+      "text": "Ogni persona ha diritto a che le questioni che la riguardano siano trattate in modo imparziale ed equo ed entro un termine ragionevole dalle istituzioni, organi e organismi dell'Unione. Tale diritto comprende in particolare il diritto di ogni persona di essere ascoltata prima che nei suoi confronti venga adottato un provvedimento individuale che le rechi pregiudizio, il diritto di accedere al fascicolo che la riguarda nel rispetto dei legittimi interessi della riservatezza e del segreto professionale e commerciale, e l'obbligo per l'amministrazione di motivare le proprie decisioni."
+    },
+    {
+      "id": "EU-CHARTER-47",
+      "authority": "Unione europea — EUR-Lex",
+      "instrument": "Carta dei diritti fondamentali dell'Unione europea",
+      "locator": "art. 47",
+      "source_url": "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:12016P047",
+      "text": "Ogni persona i cui diritti e le cui libertà garantiti dal diritto dell'Unione siano stati violati ha diritto a un ricorso effettivo dinanzi a un giudice. Ogni persona ha diritto a che la sua causa sia esaminata equamente, pubblicamente ed entro un termine ragionevole da un giudice indipendente e imparziale, precostituito per legge. Ogni persona ha la facoltà di farsi consigliare, difendere e rappresentare. A coloro che non dispongono di mezzi sufficienti è concesso il patrocinio a spese dello Stato, qualora ciò sia necessario per assicurare un accesso effettivo alla giustizia."
+    },
+    {
+      "id": "ECHR-6-8",
+      "authority": "Consiglio d'Europa — Corte europea dei diritti dell'uomo",
+      "instrument": "Convenzione europea dei diritti dell'uomo",
+      "locator": "artt. 6 §1 e 8",
+      "source_url": "https://www.echr.coe.int/documents/d/echr/convention_ita",
+      "text": "Ogni persona ha diritto a che la sua causa sia esaminata equamente, pubblicamente ed entro un termine ragionevole da un tribunale indipendente e imparziale, costituito per legge, il quale sia chiamato a pronunciarsi sulle controversie sui suoi diritti e doveri di carattere civile o sulla fondatezza di ogni accusa penale formulata nei suoi confronti. Ogni persona ha diritto al rispetto della propria vita privata e familiare, del proprio domicilio e della propria corrispondenza. Non può esservi ingerenza di una autorità pubblica nell'esercizio di tale diritto a meno che tale ingerenza sia prevista dalla legge e costituisca una misura necessaria in una società democratica per le finalità previste dalla Convenzione."
+    },
+    {
+      "id": "GDPR-22",
+      "authority": "Unione europea — EUR-Lex",
+      "instrument": "Regolamento (UE) 2016/679",
+      "locator": "art. 22",
+      "source_url": "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32016R0679",
+      "text": "L'interessato ha il diritto di non essere sottoposto a una decisione basata unicamente sul trattamento automatizzato, compresa la profilazione, che produca effetti giuridici che lo riguardano o che incida in modo analogo significativamente sulla sua persona. Il paragrafo 1 non si applica nel caso in cui la decisione sia necessaria per la conclusione o l'esecuzione di un contratto, sia autorizzata dal diritto dell'Unione o dello Stato membro che precisa misure adeguate a tutela dei diritti, delle libertà e dei legittimi interessi dell'interessato, oppure si basi sul consenso esplicito dell'interessato. Nei casi previsti, il titolare del trattamento attua misure appropriate per tutelare i diritti, le libertà e i legittimi interessi dell'interessato, almeno il diritto di ottenere l'intervento umano, di esprimere la propria opinione e di contestare la decisione."
+    }
+  ]
+}
