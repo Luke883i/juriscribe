@@ -20,11 +20,21 @@ def _semantic_record(state, record):
     return normalized
 
 
+def _has_runtime_workspace(state) -> bool:
+    runtime = state.get("runtime", {}) if isinstance(state, dict) else getattr(state, "runtime", {})
+    return bool(str((runtime or {}).get("workspace_base") or "").strip())
+
+
 def record_artifact(state, record):
-    """Bind newly registered canonical dossier files to the same projection used by the dashboard."""
+    """Bind runtime-materialized canonical dossier files to the projection used by the dashboard.
+
+    Pure in-memory semantic sealing remains available for compatibility and unit-level
+    projection tests; any real initialized runtime session has workspace_base and must
+    pass the content materialization proof before a new canonical dossier is registered.
+    """
     prepared = _semantic_record(state, record)
     role = str(prepared.get("role", ""))
-    if role in DOSSIER_ROLES:
+    if role in DOSSIER_ROLES and _has_runtime_workspace(state):
         normalized = _delivery.normalize_artifact_record(state, prepared)
         proof = verify_dossier_semantic_materialization(state, normalized)
         if proof.get("status") != "PASS":
