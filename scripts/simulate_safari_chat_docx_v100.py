@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import shutil
+import sys
 import tempfile
 import traceback
 import zipfile
@@ -11,6 +12,10 @@ from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
 from xml.sax.saxutils import escape as xml_escape
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from juriscribe.chat_delivery import (
     CHAT_PLACEMENT,
