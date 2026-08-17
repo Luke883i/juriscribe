@@ -4,7 +4,6 @@ import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
-from juriscribe.chat_delivery import DOCX_MIME
 from juriscribe.conversation_contract import initialize_pipeline_lock
 from juriscribe.delivery import build_delivery_manifest, delivery_gate, normalize_artifact_record
 from juriscribe.modes import GREENFIELD, required_artifact_roles
@@ -32,19 +31,18 @@ class DeliveryBoundaryLayeringV100Tests(unittest.TestCase):
                 artifacts=[], completion={}, node_integrity={}, interaction={},
             )
             initialize_pipeline_lock(state)
-            for role in sorted(required_artifact_roles(GREENFIELD, {})):
-                if role == "session_dashboard":
-                    path = root / "artifacts" / "session-dashboard.html"
-                    path.parent.mkdir(parents=True, exist_ok=True)
-                    # This test focuses on boundary layering; use a digest-bound minimal dashboard.
-                    from juriscribe.dashboard_v9 import dashboard_state_digest
-                    digest = dashboard_state_digest(state)
-                    path.write_text(f'<html><head><meta name="juriscribe-state-digest" content="{digest}"></head><body>Juriscribe</body></html>', encoding="utf-8")
-                else:
-                    path = root / "artifacts" / f"{role}.docx"
-                    self._write_docx(path, role)
-                record = normalize_artifact_record(state, {"id": role, "role": role, "path": str(path), "readback": "PASS"})
-                state.artifacts.append(record)
+
+            for role in sorted(required_artifact_roles(GREENFIELD, {}) - {"session_dashboard"}):
+                path = root / "artifacts" / f"{role}.docx"
+                self._write_docx(path, role)
+                state.artifacts.append(normalize_artifact_record(state, {"id": role, "role": role, "path": str(path), "readback": "PASS"}))
+
+            dashboard_path = root / "artifacts" / "session-dashboard.html"
+            dashboard_record = normalize_artifact_record(state, {"id": "dashboard", "role": "session_dashboard", "path": str(dashboard_path), "readback": "PASS"})
+            state.artifacts.append(dashboard_record)
+            from juriscribe.dashboard_v9 import dashboard_state_digest
+            digest = dashboard_state_digest(state)
+            dashboard_path.write_text(f'<html><head><meta name="juriscribe-state-digest" content="{digest}"></head><body>Juriscribe</body></html>', encoding="utf-8")
 
             material_ok, material_errors = delivery_gate(state)
             self.assertTrue(material_ok, material_errors)
