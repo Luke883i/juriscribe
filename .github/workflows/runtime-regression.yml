@@ -123,9 +123,41 @@ jobs:
         shell: bash
         run: python scripts/check_universal_artifact_autopilot_contract.py
 
-  simulation-and-saturation:
+  safari-delivery-saturation:
     runs-on: ubuntu-latest
     needs: runtime-tests
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: 100 Safari chat-tail DOCX edges plus M+100 no-novelty
+        shell: bash
+        run: |
+          set +e
+          python scripts/simulate_safari_chat_docx_v100.py --cases 100 --no-novelty 100 --json-out /tmp/safari-chat-docx-v100.json > /tmp/safari-chat-docx-v100.log 2>&1
+          status=$?
+          cat /tmp/safari-chat-docx-v100.log
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/safari-chat-docx-v100.log').read_text(encoding='utf-8', errors='replace')[-5000:]
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print(f'::error title=Safari chat-tail DOCX 100+100 failure::{text}')
+          PY
+            exit "$status"
+          fi
+      - name: Retain Safari chat-tail saturation receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: safari-chat-docx-v100
+          path: /tmp/safari-chat-docx-v100.json
+          if-no-files-found: error
+          retention-days: 7
+
+  simulation-and-saturation:
+    runs-on: ubuntu-latest
+    needs: [runtime-tests, safari-delivery-saturation]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -169,8 +201,6 @@ jobs:
             /tmp/real-text-dashboard-v99.json
           if-no-files-found: error
           retention-days: 7
-      - name: 100 Safari chat-tail DOCX edges plus M+100 no-novelty
-        run: python scripts/simulate_safari_chat_docx_v100.py --cases 100 --no-novelty 100 --json-out /tmp/safari-chat-docx-v100.json
       - name: 100 Safari universal artifact scenarios plus M+100 no-novelty
         run: python scripts/simulate_universal_artifacts_v100.py --cases 100 --no-novelty 100 --out-root /tmp/universal-artifact-v100 --json-out /tmp/universal-artifact-v100.json
       - name: Retain universal artifact v0.10.0 receipts
@@ -178,7 +208,6 @@ jobs:
         with:
           name: universal-artifact-v100
           path: |
-            /tmp/safari-chat-docx-v100.json
             /tmp/universal-artifact-v100.json
             /tmp/universal-artifact-v100/**/artifacts/*
           if-no-files-found: error
