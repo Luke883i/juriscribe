@@ -72,7 +72,15 @@ def semantic_payload(text, source_id, scenario_id):
     if len(sentences) < 3:
         sentences += [" ".join(x.split()) for x in text.split("\n\n") if len(words(x)) >= 6 and " ".join(x.split()) not in sentences]
     if len(sentences) < 3: raise AssertionError("real packet yields fewer than three semantic units")
-    units = [{"id":f"{scenario_id}-U{i}","kind":kind,"text":sentences[i-1],"source_id":source_id,"source_locator":f"real-text-{i}","chapter":scenario_id,"material":True,"status":"VERIFIED"} for i,kind in enumerate(("DEFINITION","RULE","CLAIM"),1)]
+    units = []
+    for i, kind in enumerate(("DEFINITION", "RULE", "CLAIM"), 1):
+        unit = {"id":f"{scenario_id}-U{i}","kind":kind,"text":sentences[i-1],"source_id":source_id,"source_locator":f"real-text-{i}","chapter":scenario_id,"material":True,"status":"VERIFIED"}
+        if kind == "CLAIM":
+            # CONTINUATION requires an auditable development frontier. Marking the
+            # real claim for development lets the normal generation contract derive
+            # a valid continuation plan instead of bypassing the lifecycle gate.
+            unit["tags"] = ["develop"]
+        units.append(unit)
     relations = [{"source":units[0]["id"],"predicate":"DEFINES","target":units[1]["id"],"rationale":"real-text semantic setup"},{"source":units[1]["id"],"predicate":"SUPPORTS","target":units[2]["id"],"rationale":"real-text semantic setup"}]
     return units, relations, units[1]["text"]
 
@@ -140,6 +148,8 @@ def exercise(root, index, length_class, source_text, selected):
     state,c = persist(ws,state,"semantic-mining",marker); checks.append(c)
     apply_setup(state,{"length_words":[180,320]}); state,c = persist(ws,state,"accept-setup",marker); checks.append(c)
     freeze_dods(state); state,c = persist(ws,state,"freeze-dods",marker); checks.append(c)
+    if mode == "CONTINUATION" and (state.continuation or {}).get("plan", {}).get("status") != "PASS":
+        raise AssertionError(f"normal continuation-plan derivation failed {scenario_id}: {state.continuation}")
     config = configuration(state)
     if config.get("status") != "READY": raise AssertionError(f"configuration not READY {scenario_id}: {config}")
     generated = clean_candidate(config,scenario_id,mode)
