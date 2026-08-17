@@ -10,6 +10,8 @@ if str(ROOT) not in sys.path:
 
 
 def fail(message: str):
+    safe = str(message).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::error title=Universal artifact contract::{safe}")
     raise SystemExit("UNIVERSAL ARTIFACT AUTOPILOT CONTRACT FAIL: " + message)
 
 
