@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://juriscribe.local/schemas/standard-artifact-autopilot.schema.json",
+  "title": "Juriscribe standard artifact autopilot receipt",
+  "type": "object",
+  "required": ["schema", "profile", "mode", "status", "required_roles", "materialized_roles", "errors", "runtime_owned", "assistant_action_required", "browser_action_required"],
+  "properties": {
+    "schema": {"const": "juriscribe-standard-artifact-autopilot/v1"},
+    "profile": {"const": "JURISCRIBE_STANDARD_ARTIFACT_AUTOPILOT_V1"},
+    "mode": {"enum": ["", "CONTINUATION", "GREENFIELD", "REVIEW"]},
+    "status": {"enum": ["PASS", "FAIL", "DEFERRED", "NOT_APPLICABLE", "LEGACY_NOT_APPLICABLE"]},
+    "required_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "materialized_roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "runtime_owned": {"type": "boolean"},
+    "assistant_action_required": {"type": "boolean"},
+    "browser_action_required": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}
