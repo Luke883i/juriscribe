@@ -5,6 +5,7 @@ import json
 import re
 import shutil
 import tempfile
+import traceback
 import zipfile
 from collections import Counter
 from pathlib import Path
@@ -277,7 +278,13 @@ def main(argv=None) -> int:
     parser.add_argument("--out-root")
     parser.add_argument("--json-out")
     args = parser.parse_args(argv)
-    result = run(args.cases, args.no_novelty, args.out_root)
+    try:
+        result = run(args.cases, args.no_novelty, args.out_root)
+    except Exception as exc:
+        detail = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[-6000:]
+        safe = detail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::error title=Safari chat-tail DOCX saturation::{safe}")
+        raise
     payload = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
     if args.json_out:
         Path(args.json_out).write_text(payload + "\n", encoding="utf-8")
