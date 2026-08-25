@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import multimode as _legacy
+from . import generation_governance as _generation
+from . import multimode as _multimode
+from . import runtime_autopilot as _autopilot
 from .consolidation import (
     CANONICAL_ROLE, CANDIDATE_ROLE,
     build_lossless_inventory, build_reference_method_profile, build_joint_reticulum,
@@ -20,7 +22,7 @@ def _cc(state) -> dict[str, Any]:
 def select_mode(state, mode: str):
     mode = normalize_mode(mode)
     if mode != COMPRESSION_CONSOLIDATION:
-        return _legacy.select_mode(state, mode)
+        return _autopilot.select_mode(state, mode)
     if state.corpus or state.drafts:
         raise ValueError("mode must be selected before substantive corpus ingestion")
     state.mode = mode
@@ -43,7 +45,14 @@ def select_mode(state, mode: str):
 
 def ingest_and_mine(state, text, *, source_id, chapter=None, source_record=None, role=None):
     if normalize_mode(state.mode) != COMPRESSION_CONSOLIDATION:
-        return _legacy.ingest_and_mine(state, text, source_id=source_id, chapter=chapter, source_record=source_record, role=role)
+        return _generation.ingest_and_mine(
+            state,
+            text,
+            source_id=source_id,
+            chapter=chapter,
+            source_record=source_record,
+            role=role,
+        )
     role = str(role or CANDIDATE_ROLE).strip().lower()
     if role not in {CANONICAL_ROLE, CANDIDATE_ROLE}:
         raise ValueError("C&C role must be canonical_material or candidate_material")
@@ -76,7 +85,7 @@ def ingest_and_mine(state, text, *, source_id, chapter=None, source_record=None,
 
 def register_semantic_mining(state, units: list[dict[str, Any]], relations: list[dict[str, Any]]):
     if normalize_mode(state.mode) != COMPRESSION_CONSOLIDATION:
-        return _legacy.register_semantic_mining(state, units, relations)
+        return _generation.register_semantic_mining(state, units, relations)
     cc = _cc(state)
     inventories = list((cc.get("inventories") or {}).values())
     report = build_joint_reticulum(inventories, units, relations)
@@ -108,7 +117,7 @@ def register_semantic_mining(state, units: list[dict[str, Any]], relations: list
 
 def apply_setup(state, overrides=None):
     if normalize_mode(state.mode) != COMPRESSION_CONSOLIDATION:
-        return _legacy.apply_setup(state, overrides)
+        return _autopilot.apply_setup(state, overrides)
     if state.setup.get("status") != "USER_SETUP_REQUIRED":
         raise ValueError("setup proposal is not ready")
     accepted = dict(state.setup.get("recommended") or {})
@@ -147,7 +156,7 @@ def apply_setup(state, overrides=None):
 
 def freeze_dods(state, additional_dods=None):
     if normalize_mode(state.mode) != COMPRESSION_CONSOLIDATION:
-        return _legacy.freeze_dods(state, additional_dods)
+        return _autopilot.freeze_dods(state, additional_dods)
     if state.setup.get("status") != "ACCEPTED":
         raise ValueError("user setup must be accepted before DoD freeze")
     state.generation_contract = {
@@ -197,7 +206,7 @@ def register_refactoring_plan(state, *, gaps, operations):
 
 def record_simulation(state, receipt):
     if normalize_mode(state.mode) != COMPRESSION_CONSOLIDATION:
-        return _legacy.record_simulation(state, receipt)
+        return _multimode.record_simulation(state, receipt)
     cc = _cc(state)
     plan = cc.get("refactoring_contract") or {}
     ok, errors = validate_mutation_receipt(
