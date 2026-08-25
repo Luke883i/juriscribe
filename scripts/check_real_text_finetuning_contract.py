@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from juriscribe.admission import CONTRACT_VERSION
+
 
 def fail(message: str):
     raise SystemExit("REAL-TEXT FINETUNING CONTRACT FAIL: " + message)
@@ -31,8 +33,10 @@ def main():
     manifest = json.loads(text("MANIFEST.json"))
     if version_tuple(manifest.get("runtime_version", "0")) < (0, 9, 9):
         fail("runtime version must be at least 0.9.9")
-    if manifest.get("contract_version") != "1.7.0":
-        fail("admission contract changed without an admission-policy change")
+    if version_tuple(CONTRACT_VERSION) < (1, 7, 0):
+        fail("runtime contract predates the v1.7 real-text fine-tuning baseline")
+    if manifest.get("contract_version") != CONTRACT_VERSION:
+        fail("manifest contract version does not match the current admission runtime")
 
     cfg = manifest.get("real_text_finetuning") or {}
     for key in [
