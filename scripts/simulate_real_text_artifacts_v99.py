@@ -16,7 +16,7 @@ from juriscribe.dashboard_persistence import persist_dashboard_generation, verif
 from juriscribe.delivery import delivery_gate, verify_materialized_artifact
 from juriscribe.dossier_materialization import render_dossier_text
 from juriscribe.generation_configuration import generation_conformance
-from juriscribe.modes import MODES, REVIEW, mode_spec, required_artifact_roles
+from juriscribe.modes import LEGACY_MODES as MODES, REVIEW, mode_spec, required_artifact_roles
 from juriscribe.orchestrator import apply_setup, freeze_dods, ingest_and_mine, record_artifact, register_semantic_mining, seal_draft
 from juriscribe.pipeline_v9 import initialize, main as runtime_main, perform_probe
 from juriscribe.semantic_delivery import semantic_dossier_gate
