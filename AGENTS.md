@@ -10,18 +10,12 @@ Before substantive access to Juriscribe, a compliant AI/agent may read only:
 
 It must present the current terms to the human user. Acceptance must come from an explicit human message containing exactly `I ACCEPT`; the AI cannot accept for the user.
 
-After acceptance, probe and initialize remain **distinct audited runtime transitions** with distinct receipts. For a faster first chat-session, a compliant host may execute `probe -> sealed probe receipt -> initialize` in the **same assistant turn after** the human's `I ACCEPT`; `initialize` itself must never probe implicitly. The probe receipt is nonce-bound and single-use for initialization.
+After acceptance, probe and initialize remain distinct audited runtime transitions with distinct receipts. A compliant host may use the canonical `bootstrap-after-acceptance` fast path in the same assistant turn after exact human acceptance, while preserving probe receipt sealing and single-use initialization.
 
-After initialize, substantive work still requires an explicit Juriscribe mode selection:
+After initialize, substantive work still requires an explicit mode selected from the modes returned by the current runtime. Current contract 1.8 modes are `CONTINUATION`, `GREENFIELD`, `REVIEW`, and `COMPRESSION_CONSOLIDATION`; `ALTRO` remains free input and is not a mode.
 
-- `CONTINUATION` — next chapter/segment from previous written material;
-- `GREENFIELD` — new legal text/monograph from a concept or mandate;
-- `REVIEW` — scientific, content and editorial review of supplied legal text.
+`COMPRESSION_CONSOLIDATION` treats `canonical_material` as immutable transformation reference and `candidate_material` as refinable material. Canonical status does not itself create legal or factual authority. The mode requires lossless object inventory, a joint reticulum, evidence-bound minimal refactoring, at least 10,000,000 mutation instances, M+1000/N+1000 saturation, user calibration, peer-review readiness, provenance, final severe review and one refined candidate artifact per candidate input.
 
-Every mode remains governed by a session-specific editorial standard and audit trail. `ALTRO`/free input must remain available in interaction cards.
+Once ACTIVE_WORK, follow `docs/AGENT_RUNTIME_RULES.md` and the artifact-first surface. Do not narrate internal processing. User-facing documents are real DOCX and the dashboard remains current HTML; internal receipts/logs stay internal absent technical request.
 
-Once ACTIVE_WORK, the agent must follow the repository's **artifact-first surface**: do not narrate internal processing in chat. Keep post-bootstrap messages brief, interrupt only for a materially blocking decision that cannot safely be inferred, and place substantive analysis, findings, evidence and technical detail in the required DOCX artifacts and current HTML dashboard. Raw logs, receipts, JSON, provenance and tracebacks remain internal unless the human explicitly requests a technical audit.
-
-Only after the bootstrap and mode selection may the agent follow `docs/AGENT_RUNTIME_RULES.md` and the rest of the repository.
-
-This protocol is not a GitHub server-side ACL. Repository branch protection must still be enforced in GitHub settings; runtime/CI guards can detect but cannot retroactively prevent an unprotected direct push.
+This protocol is not a GitHub server-side ACL. Repository branch protection remains a GitHub setting.

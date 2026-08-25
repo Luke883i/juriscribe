@@ -1,8 +1,8 @@
 """Current CLI/API pipeline with a hardened artifact-first public surface.
 
-The substantive runtime remains in :mod:`pipeline_v9`. Public chat/CLI output is
-small by default. Raw machine JSON requires a two-part technical opt-in:
-``JURISCRIBE_VERBOSE_JSON=1`` *and* the explicit ``--technical-output`` flag.
+v0.11 delegates substantive work to :mod:`pipeline_v11`, while preserving the
+historical public surface for pre-existing commands. Raw machine JSON still
+requires the two-part technical opt-in.
 """
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ import sys
 import traceback
 from pathlib import Path
 
-from . import pipeline_v9 as _v9
-from .pipeline_v9 import *  # noqa: F401,F403
+from . import pipeline_v11 as _v9
+from .pipeline_v11 import *  # noqa: F401,F403
 
 MAX_PUBLIC_SUMMARY_CHARS = 280
 BOOTSTRAP_VERBOSE_COMMANDS = {"terms", "accept", "probe"}
@@ -90,9 +90,9 @@ def _compact_fast_bootstrap(text: str) -> str:
     try:
         payload = json.loads(text)
     except Exception:
-        return "Juriscribe inizializzato. Scegli CONTINUATION, GREENFIELD o REVIEW."
+        return "Juriscribe inizializzato. Scegli una modalità canonica."
     session_dir = _truncate(str(payload.get("session_dir") or ""), 500)
-    choices = " | ".join(str(x) for x in (payload.get("choices") or [])[:4])
+    choices = " | ".join(str(x) for x in (payload.get("choices") or []))
     return f"Juriscribe inizializzato: {session_dir}\n{choices}".strip()
 
 
@@ -107,44 +107,25 @@ def _record_hidden_failure(argv, exc: Exception) -> None:
     try:
         state = ws.load()
         command = _command(argv)
-        record = {
-            "kind": "RUNTIME_BLOCKER",
-            "status": "OPEN",
-            "command": command,
-            "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.",
-            "error_type": type(exc).__name__,
-        }
-        state.limits = [
-            item for item in (state.limits or [])
-            if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)
-        ] + [record]
-        ws.append_ledger("runtime-errors", {
-            **record,
-            "internal_message": str(exc),
-            "traceback": traceback.format_exc(),
-            "delivery_class": "INTERNAL",
-        })
+        record = {"kind": "RUNTIME_BLOCKER", "status": "OPEN", "command": command, "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.", "error_type": type(exc).__name__}
+        state.limits = [item for item in (state.limits or []) if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)] + [record]
+        ws.append_ledger("runtime-errors", {**record, "internal_message": str(exc), "traceback": traceback.format_exc(), "delivery_class": "INTERNAL"})
         _v9.persist_session(ws, state)
     except Exception:
         pass
 
 
 def _technical_output_requested(argv) -> bool:
-    return (
-        os.environ.get("JURISCRIBE_VERBOSE_JSON") == "1"
-        and TECHNICAL_FLAG in _argv(argv)
-    )
+    return os.environ.get("JURISCRIBE_VERBOSE_JSON") == "1" and TECHNICAL_FLAG in _argv(argv)
 
 
 def main(argv=None):
     clean = _clean_argv(argv)
     if _technical_output_requested(argv):
         return _v9.main(clean)
-
     command = _command(clean)
     if command in BOOTSTRAP_VERBOSE_COMMANDS:
         return _v9.main(clean)
-
     stdout = io.StringIO()
     stderr = io.StringIO()
     try:
@@ -154,7 +135,6 @@ def main(argv=None):
         _record_hidden_failure(clean, exc)
         print("Operazione non completata. Consulta la dashboard.")
         return 2
-
     raw = stdout.getvalue().strip()
     if command == "gate":
         print(_compact_gate(raw))
@@ -164,6 +144,8 @@ def main(argv=None):
         print(_compact_fast_bootstrap(raw))
     elif command in {"initialize", "dashboard"}:
         print(_truncate(raw, 600) or "OK.")
+    elif command == "consolidation-status":
+        print(_truncate(raw, 1200) or "OK.")
     elif rc == 0:
         print("OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali.")
     else:

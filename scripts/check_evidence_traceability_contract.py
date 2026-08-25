@@ -9,6 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from juriscribe import __version__
+from juriscribe.admission import CONTRACT_VERSION
 from juriscribe.evidence_traceability import PROFILE_ID, SCHEMA
 
 
@@ -37,8 +38,10 @@ def main() -> int:
 
     if _version_tuple(__version__) < (0, 9, 6) or manifest.get("runtime_version") != __version__:
         fail("runtime must preserve v0.9.6+ evidence traceability and match manifest")
-    if manifest.get("contract_version") != "1.7.0":
-        fail("access contract must remain 1.7.0 for additive epistemic releases")
+    if _version_tuple(CONTRACT_VERSION) < (1, 7, 0):
+        fail("runtime contract predates the v1.7 evidence-traceability baseline")
+    if manifest.get("contract_version") != CONTRACT_VERSION:
+        fail("manifest contract version does not match the current admission runtime")
 
     semantic = manifest.get("semantic_artifacts") or {}
     expected = {
