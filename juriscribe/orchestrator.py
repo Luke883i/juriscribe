@@ -1,16 +1,8 @@
 """Public orchestration facade.
 
-v0.9 keeps continuation-era primitives available for compatibility and routes the
-lifecycle through the tri-mode dispatcher. v0.9.1 applies the final-delivery
-boundary last; v0.9.2 hardens that boundary with real materialization and
-state-bound dashboard verification. v0.9.4 adds a legal-humanistic semantic
-projection boundary after delivery so dossier freshness cannot be bypassed.
-v0.9.6 extends that boundary with lossless artifact-evidence traceability. v0.9.7
-adds user-bound generation configuration, candidate and materialized-artifact
-anti-plagiarism proof, cyclic predelivery saturation and complete dashboard
-artifact coverage as the final runtime governance boundary. v0.10.0 adds a
-natural-language pipeline lock, runtime-owned standard artifact autopilot and a
-material+epistemic compliance inventory that authorizes only atomic delivery.
+v0.11 adds Compression & Consolidation as an isolated overlay while preserving the
+historical continuation/greenfield/review paths. The overlay is imported last so
+it can delegate legacy modes unchanged and own only C&C-specific transitions.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -37,16 +29,23 @@ from .runtime_autopilot import (
     seal_draft,
     select_mode,
 )
+from .runtime_v11 import (
+    apply_setup,
+    calibrate_refactoring,
+    consolidation_gate,
+    freeze_dods,
+    ingest_and_mine,
+    record_consolidation_saturation,
+    record_simulation,
+    register_refactoring_plan,
+    register_semantic_mining,
+    seal_refined_candidate,
+    select_mode,
+)
 # Contract-check markers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
+# compression_consolidation_mode_required=True lossless_inventory_required=True joint_reticulum_required=True
+# ten_million_mutations_required=True dual_saturation_required=True user_calibration_required=True
+# minimal_surgical_refactoring_required=True canonical_immutability_required=True refined_candidate_cardinality_required=True
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=False
-# dashboard_summary_surface_only=True chat_tail_docx_attachments_required=True
-# materialized_delivery_required=True dashboard_state_binding_required=True artifact_first_surface_required=True
-# legal_humanistic_projection_required=True semantic_dossier_freshness_required=True dashboard_inference_only=True
-# evidence_traceability_required=True dashboard_artifact_recall_required=False dashboard_compressed_outcome_required=True
-# generation_configuration_required=True anti_plagiarism_required=True predelivery_saturation_required=True
-# artifact_atlas_required=True dashboard_complete_artifact_description_required=True
-# materialized_narrative_antiplagiarism_required=True sealed_candidate_artifact_binding_required=True
-# natural_language_pipeline_lock_required=True implicit_mode_change_forbidden=True
-# standard_artifact_autopilot_required=True final_chapter_inference_trace_required=True
-# mechanical_delivery_compliance_required=True atomic_attachment_release_required=True
+# natural_language_pipeline_lock_required=True standard_artifact_autopilot_required=True
