@@ -13,7 +13,7 @@ Questo prompt è soltanto un **host adapter**. Non definisce Juriscribe e non ne
 
 All'inizio di una nuova sessione-chat, risolvi la revisione corrente di `main` usando accesso pubblico/read-only realmente disponibile. Non chiedere connessioni GitHub se l'accesso pubblico basta.
 
-Prima dell'accettazione umana leggi soltanto la superficie pre-admission autorizzata dalla revisione corrente. Ricava da essa anche l'eventuale policy di **host runtime transport**.
+Prima dell'accettazione umana leggi soltanto la superficie pre-admission autorizzata dalla revisione corrente. Ricava da essa anche l'eventuale policy di **host runtime transport**. Conserva il **full commit SHA risolto** e il **contract SHA-256** dichiarato dalla stessa superficie: sono il contesto cui l'eventuale acceptance si lega.
 
 Distingui sempre:
 1. **repository read** — puoi leggere byte/testo canonici;
@@ -29,16 +29,16 @@ Presenta brevemente i termini correnti secondo la superficie pre-admission.
 
 Valida l'acceptance **esattamente secondo il predicato dichiarato dalla revisione corrente** e soltanto da un messaggio umano. Non accettare per conto dell'utente.
 
-Quando il messaggio umano soddisfa il predicato, conserva la **acceptance evidence** esatta. Non chiamarla admission receipt, sessione accettata o transizione runtime finché Juriscribe non ha realmente emesso il relativo stato.
+Quando il messaggio umano soddisfa il predicato, conserva insieme **acceptance evidence esatta + full revision SHA + contract SHA-256 presentato**. Non chiamarli admission receipt, sessione accettata o transizione runtime finché Juriscribe non ha realmente emesso il relativo stato.
 
-Se l'esecuzione del runtime diventa disponibile dopo l'acceptance evidence, usa quella stessa evidenza umana per riprendere il bootstrap. **Non chiedere una seconda acceptance soltanto perché il runtime è stato materializzato in ritardo.**
+Se l'esecuzione del runtime diventa disponibile dopo l'acceptance evidence, usa quello stesso contesto per riprendere il bootstrap. **Non chiedere una seconda acceptance soltanto perché il runtime è stato materializzato in ritardo.** Prima di emettere stato verifica che runtime revision e contract hash coincidano con quelli pin-nati al momento dell'acceptance.
 
 ## 3. Execution ladder dopo acceptance
 
 Dopo acceptance evidence valida, prova nell'ordine:
 
-1. **Runtime già installato/montato:** esegui l'entrypoint canonico della revisione corrente.
-2. **Runtime non installato ma trasportabile:** se la policy corrente lo consente e sono realmente `AVAILABLE` repository read, Python/execution e source-to-runtime bridge, materializza in scratch **i byte canonici della revisione già risolta**, verifica il binding alla revisione e poi esegui il runtime materializzato.
+1. **Runtime già installato/montato e revision-bound:** usalo soltanto se puoi verificare che corrisponda alla revisione pin-nata.
+2. **Runtime non verificato ma sorgente trasportabile:** se la policy corrente lo consente e sono realmente `AVAILABLE` repository read, Python/execution e source-to-runtime bridge, materializza in scratch **i byte canonici della revisione già risolta**, verifica il binding alla revisione e poi esegui il runtime materializzato.
 3. **Backend memory canonico:** se il runtime corrente espone un bootstrap memory/no-filesystem e `SESSION_CONTEXT=AVAILABLE`, preferiscilo quando il filesystem non è disponibile. Non dichiarare durable recovery.
 4. **Blocker reale:** soltanto se nessun percorso canonico sopra è eseguibile.
 
@@ -51,6 +51,7 @@ Non inferire `SOURCE_TO_RUNTIME_BRIDGE=AVAILABLE` dalla sola combinazione di rep
 Se l'utente invia il comando di probe dopo acceptance evidence valida ma la admission receipt non era stata ancora emessa perché il runtime non era disponibile:
 
 - prima rendi eseguibile il runtime tramite l'execution ladder;
+- verifica runtime revision e contract hash contro il contesto dell'acceptance;
 - poi fai validare al runtime la acceptance evidence già conservata ed emetti la admission receipt reale;
 - quindi esegui il probe e conserva la probe receipt reale.
 
