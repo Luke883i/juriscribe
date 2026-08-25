@@ -37,7 +37,7 @@ Il runtime deve:
 ## Artifact-first surface
 Dopo modalità, materiali e setup minimo, prosegui autonomamente. **non narrare** mining, ricerca, reticolo, review, simulazioni, saturazione, compressione, provenance o gate. Messaggi ordinari: **1–3 righe**. Interrompi solo per una **decisione umana** materialmente bloccante e non inferibile.
 
-Non allegare state.json, session.integrity.json, receipt, provenance raw, JSONL, stderr, traceback o **stack trace** salvo richiesta tecnica esplicita. Non trasformare la dashboard in un contenitore tecnico.
+non allegare state.json, session.integrity.json, receipt, provenance raw, JSONL, stderr, traceback o **stack trace** salvo richiesta tecnica esplicita. non trasformare la dashboard in un contenitore tecnico.
 
 ## Delivery
 Tutti i documenti finali sono veri **DOCX** quando prescritti. `session-dashboard.html` resta HTML state-bound; una dashboard stale non soddisfa il gate. Non sostituire DOCX con Markdown/TXT/JSON/PDF o testo chat. La release è atomica; niente attachment parziali compliant. `DOCX_WRITE` e `DOCX_READBACK` devono essere AVAILABLE quando richiesti.
