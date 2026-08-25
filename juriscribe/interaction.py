@@ -1,11 +1,15 @@
 from __future__ import annotations
-import hashlib,json
+import hashlib, json
 from typing import Any
-SCHEMA="juriscribe-interaction-card/v2"; FREE_CHOICE="ALTRO"
-PHASE_CHOICES={"TERMS_PRESENTED":["I ACCEPT","I DECLINE",FREE_CHOICE],"PROBE_REQUIRED":["PROBE JURISCRIBE",FREE_CHOICE],"INITIALIZE_REQUIRED":["INITIALIZE JURISCRIBE",FREE_CHOICE],"MODE_SELECTION_REQUIRED":["CONTINUATION","GREENFIELD","REVIEW",FREE_CHOICE],"MODE_SELECTED":["STATO SESSIONE",FREE_CHOICE],"ACTIVE":["SCEGLI MODALITÀ","STATO SESSIONE",FREE_CHOICE],"USER_SETUP_REQUIRED":["ACCETTA CONSIGLIATI","MODIFICA",FREE_CHOICE],"HUMAN_DECISION_REQUIRED":["ACCETTA OPZIONE 1","ACCETTA OPZIONE 2","CHIEDI CHIARIMENTI",FREE_CHOICE],"COMPLETE":["APRI ARTEFATTI","RICHIEDI MODIFICHE","NUOVO LAVORO",FREE_CHOICE]}
+from .modes import mode_choices
+SCHEMA="juriscribe-interaction-card/v3"; FREE_CHOICE="ALTRO"
+
+def _phase_choices():
+    return {"TERMS_PRESENTED":["I ACCEPT","I DECLINE",FREE_CHOICE],"PROBE_REQUIRED":["PROBE JURISCRIBE",FREE_CHOICE],"INITIALIZE_REQUIRED":["INITIALIZE JURISCRIBE",FREE_CHOICE],"MODE_SELECTION_REQUIRED":[*mode_choices(),FREE_CHOICE],"MODE_SELECTED":["STATO SESSIONE",FREE_CHOICE],"ACTIVE":["SCEGLI MODALITÀ","STATO SESSIONE",FREE_CHOICE],"USER_SETUP_REQUIRED":["ACCETTA CONSIGLIATI","MODIFICA",FREE_CHOICE],"HUMAN_DECISION_REQUIRED":["ACCETTA OPZIONE 1","ACCETTA OPZIONE 2","CHIEDI CHIARIMENTI",FREE_CHOICE],"COMPLETE":["APRI ARTEFATTI","RICHIEDI MODIFICHE","NUOVO LAVORO",FREE_CHOICE]}
+
 def canonical_digest(value:Any)->str: return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode("utf-8")).hexdigest()
 def interaction_card(phase,*,headline="",summary="",choices=None,extra_choices=None,blocking=None):
-    phase=str(phase).upper(); selected=list(choices or PHASE_CHOICES.get(phase,[FREE_CHOICE]))
+    phase=str(phase).upper(); selected=list(choices or _phase_choices().get(phase,[FREE_CHOICE]))
     for item in extra_choices or []:
         if item not in selected: selected.append(item)
     if FREE_CHOICE not in selected: selected.append(FREE_CHOICE)
