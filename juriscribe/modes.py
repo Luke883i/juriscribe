@@ -4,19 +4,21 @@ import hashlib
 import json
 from typing import Any
 
-# Keep the historical schema id: v0.11 is an additive extension, not a breaking
-# serialization migration for the three pre-existing modes.
 SCHEMA = "juriscribe-mode-contract/v1"
 CONTINUATION = "CONTINUATION"
 GREENFIELD = "GREENFIELD"
 REVIEW = "REVIEW"
 COMPRESSION_CONSOLIDATION = "COMPRESSION_CONSOLIDATION"
-MODES = (CONTINUATION, GREENFIELD, REVIEW, COMPRESSION_CONSOLIDATION)
+LEGACY_MODES = (CONTINUATION, GREENFIELD, REVIEW)
+MODES = (*LEGACY_MODES, COMPRESSION_CONSOLIDATION)
 REVIEW_OUTPUTS = {"REPORT_ONLY", "REPORT_AND_REVISED_TEXT"}
 
 COMMON_FINAL_ARTIFACT_ROLES = {
-    "evidence_dossier", "source_register", "inference_register",
-    "transformation_ledger", "session_dashboard",
+    "evidence_dossier",
+    "source_register",
+    "inference_register",
+    "transformation_ledger",
+    "session_dashboard",
 }
 
 
@@ -30,9 +32,16 @@ def normalize_mode(mode: str | None) -> str:
     while "__" in value:
         value = value.replace("__", "_")
     aliases = {
-        "CONTINUE": CONTINUATION, "CONTINUAZIONE": CONTINUATION, "CHAPTER_CONTINUATION": CONTINUATION,
-        "EX_NOVO": GREENFIELD, "NEW": GREENFIELD, "NUOVO": GREENFIELD, "GREEN_FIELD": GREENFIELD,
-        "REVISION": REVIEW, "REVISIONE": REVIEW, "AUDIT": REVIEW,
+        "CONTINUE": CONTINUATION,
+        "CONTINUAZIONE": CONTINUATION,
+        "CHAPTER_CONTINUATION": CONTINUATION,
+        "EX_NOVO": GREENFIELD,
+        "NEW": GREENFIELD,
+        "NUOVO": GREENFIELD,
+        "GREEN_FIELD": GREENFIELD,
+        "REVISION": REVIEW,
+        "REVISIONE": REVIEW,
+        "AUDIT": REVIEW,
         "COMPRESSION_AND_CONSOLIDATION": COMPRESSION_CONSOLIDATION,
         "COMPRESSION_CONSOLIDATION": COMPRESSION_CONSOLIDATION,
         "CONSOLIDATION": COMPRESSION_CONSOLIDATION,
@@ -57,23 +66,14 @@ def review_output(setup: dict[str, Any] | None) -> str:
 def mode_spec(mode: str, setup: dict[str, Any] | None = None) -> dict[str, Any]:
     mode = normalize_mode(mode)
     if mode == CONTINUATION:
-        return {"mode": mode, "seed_required": True, "concept_required": False, "review_target_required": False, "generation_required": True, "continuation_required": True, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_chapter", "input_role": "preceding_chapter", "input_roles": ["preceding_chapter"]}
+        return {"mode": mode, "seed_required": True, "concept_required": False, "review_target_required": False, "generation_required": True, "continuation_required": True, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_chapter", "input_role": "preceding_chapter"}
     if mode == GREENFIELD:
-        return {"mode": mode, "seed_required": False, "concept_required": True, "review_target_required": False, "generation_required": True, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_legal_text", "input_role": "concept_source", "input_roles": ["concept_source"]}
+        return {"mode": mode, "seed_required": False, "concept_required": True, "review_target_required": False, "generation_required": True, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_legal_text", "input_role": "concept_source"}
     if mode == COMPRESSION_CONSOLIDATION:
-        return {
-            "mode": mode, "seed_required": False, "concept_required": False, "review_target_required": False,
-            "generation_required": False, "continuation_required": False, "revision_required": True,
-            "compression_required": True, "simulation_required": True, "quality_must_pass": True,
-            "source_coverage_must_close": True, "primary_artifact_role": "refactoring_report",
-            "input_role": "candidate_material", "input_roles": ["canonical_material", "candidate_material"],
-            "canonical_material_immutable": True, "candidate_material_required": True,
-            "mutation_cases_min": 10_000_000, "no_novelty_tail_min": 1000,
-            "no_better_compression_tail_min": 1000,
-        }
+        return {"mode": mode, "seed_required": False, "concept_required": False, "review_target_required": False, "generation_required": False, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "refactoring_report", "input_role": "candidate_material", "input_roles": ["canonical_material", "candidate_material"], "canonical_material_immutable": True, "candidate_material_required": True, "mutation_cases_min": 10_000_000, "no_novelty_tail_min": 1000, "no_better_compression_tail_min": 1000}
     output = review_output(setup)
     revised = output == "REPORT_AND_REVISED_TEXT"
-    return {"mode": REVIEW, "seed_required": False, "concept_required": False, "review_target_required": True, "generation_required": False, "continuation_required": False, "revision_required": revised, "compression_required": False, "simulation_required": False, "quality_must_pass": revised, "source_coverage_must_close": revised, "primary_artifact_role": "review_report", "secondary_artifact_role": "revised_legal_text" if revised else "", "input_role": "review_target", "input_roles": ["review_target"], "review_output": output}
+    return {"mode": REVIEW, "seed_required": False, "concept_required": False, "review_target_required": True, "generation_required": False, "continuation_required": False, "revision_required": revised, "compression_required": False, "simulation_required": False, "quality_must_pass": revised, "source_coverage_must_close": revised, "primary_artifact_role": "review_report", "secondary_artifact_role": "revised_legal_text" if revised else "", "input_role": "review_target", "review_output": output}
 
 
 def required_artifact_roles(mode: str, setup: dict[str, Any] | None = None) -> set[str]:
@@ -133,19 +133,25 @@ def build_mode_contract(mode: str, *, request: dict[str, Any], corpus: list[dict
     if spec["review_target_required"] and not target: errors.append("review mode requires a supplied review target")
     if mode == COMPRESSION_CONSOLIDATION and not any(c.get("role") == "candidate_material" for c in corpus): errors.append("compression/consolidation requires at least one candidate material")
     if spec["generation_required"] and (generation_contract or {}).get("status") != "READY": errors.append("generation contract required for writing mode")
-    payload = {"schema": SCHEMA, "mode": mode, "request_digest": canonical_digest(request), "corpus_digest": canonical_digest(corpus), "target_digest": target, "reticulum_digest": str(reticulum.get("digest", "")), "setup_digest": canonical_digest(setup.get("accepted", {})), "editorial_standard_digest": str(editorial_standard.get("digest", "")), "generation_contract_digest": str((generation_contract or {}).get("contract_digest", "")), "requirements": spec, "required_artifact_roles": sorted(required_artifact_roles(mode, setup)), "artifact_requirements": required_artifact_requirements(mode, setup, corpus), "status": "READY" if not errors else "FAIL", "errors": errors}
+    payload = {"schema": SCHEMA, "mode": mode, "request_digest": canonical_digest(request), "corpus_digest": canonical_digest(corpus), "target_digest": target, "reticulum_digest": str(reticulum.get("digest", "")), "setup_digest": canonical_digest(setup.get("accepted", {})), "editorial_standard_digest": str(editorial_standard.get("digest", "")), "generation_contract_digest": str((generation_contract or {}).get("contract_digest", "")), "requirements": spec, "required_artifact_roles": sorted(required_artifact_roles(mode, setup)), "status": "READY" if not errors else "FAIL", "errors": errors}
+    if mode == COMPRESSION_CONSOLIDATION:
+        payload["artifact_requirements"] = required_artifact_requirements(mode, setup, corpus)
     payload["digest"] = canonical_digest(payload)
     return payload
 
 
 def validate_mode_contract(contract: dict[str, Any] | None, *, mode: str, request: dict[str, Any], corpus: list[dict[str, Any]], reticulum: dict[str, Any], setup: dict[str, Any], editorial_standard: dict[str, Any], generation_contract: dict[str, Any] | None = None) -> tuple[bool, list[str]]:
-    if not contract:
-        return False, ["mode contract missing"]
+    if not contract: return False, ["mode contract missing"]
+    mode = normalize_mode(mode)
     expected = build_mode_contract(mode, request=request, corpus=corpus, reticulum=reticulum, setup=setup, editorial_standard=editorial_standard, generation_contract=generation_contract)
     errors = list(contract.get("errors", []))
     if contract.get("schema") != SCHEMA: errors.append("mode contract schema mismatch")
     if contract.get("status") != "READY": errors.append("mode contract not READY")
-    for key in ("mode", "request_digest", "corpus_digest", "target_digest", "reticulum_digest", "setup_digest", "editorial_standard_digest", "generation_contract_digest", "requirements", "required_artifact_roles", "artifact_requirements"):
+    keys = ["mode", "request_digest", "corpus_digest", "target_digest", "reticulum_digest", "setup_digest", "editorial_standard_digest", "generation_contract_digest", "requirements", "required_artifact_roles"]
+    if mode == COMPRESSION_CONSOLIDATION:
+        keys.append("artifact_requirements")
+    for key in keys:
         if contract.get(key) != expected.get(key): errors.append(f"mode contract {key} mismatch")
-    if contract.get("digest") != canonical_digest({k: v for k, v in contract.items() if k != "digest"}): errors.append("mode contract digest mismatch")
+    digest = canonical_digest({k: v for k, v in contract.items() if k != "digest"})
+    if contract.get("digest") != digest: errors.append("mode contract digest mismatch")
     return not errors, list(dict.fromkeys(errors))
