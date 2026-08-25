@@ -1,0 +1,45 @@
+name: Juriscribe PR unittest diagnostic
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-pr-unittest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnostic-unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Run full unittest discovery and retain status
+        id: tests
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tests -v > /tmp/juriscribe-unittest.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          cat /tmp/juriscribe-unittest.log
+          exit 0
+      - name: Upload unittest log
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: juriscribe-pr-unittest-log
+          path: /tmp/juriscribe-unittest.log
+          if-no-files-found: error
+          retention-days: 2
+      - name: Preserve test result
+        shell: bash
+        env:
+          STATUS: ${{ steps.tests.outputs.status }}
+        run: |
+          if [ "$STATUS" -ne 0 ]; then
+            exit "$STATUS"
+          fi
