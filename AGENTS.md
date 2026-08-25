@@ -10,7 +10,11 @@ Before substantive access to Juriscribe, a compliant AI/agent may read only:
 
 It must present the current terms to the human user. Acceptance must come from an explicit human message containing exactly `I ACCEPT`; the AI cannot accept for the user.
 
-After acceptance, probe and initialize remain distinct audited runtime transitions with distinct receipts. A compliant host may use the canonical `bootstrap-after-acceptance` fast path in the same assistant turn after exact human acceptance, while preserving probe receipt sealing and single-use initialization.
+After exact human acceptance, absence of a preinstalled Juriscribe package is not by itself a blocker. If the current `ADMISSION.json` host runtime transport policy permits it and the host has genuinely observed repository read, Python execution and a source-to-runtime bridge, the host may materialize the exact resolved revision into ephemeral scratch solely to execute the canonical runtime. This is runtime transport, not a second implementation. Repository readability alone is never runtime execution.
+
+If exact human acceptance evidence was observed before the runtime became executable, retain that human evidence and let the canonical runtime validate it and issue the real admission receipt once execution is available. Do not require a second `I ACCEPT` solely because materialization was delayed, and never synthesize receipt, nonce, digest, probe or initialize state in the host prompt.
+
+After acceptance, probe and initialize remain distinct audited runtime transitions with distinct receipts. A compliant host may use the canonical `bootstrap-after-acceptance` fast path in the same assistant turn after exact human acceptance, while preserving probe receipt sealing and single-use initialization. Hosts with `SESSION_CONTEXT=AVAILABLE` but no filesystem may use the canonical memory bootstrap entrypoint declared by `ADMISSION.json`; memory sessions do not claim durable recovery.
 
 After initialize, substantive work still requires an explicit mode selected from the modes returned by the current runtime. Current contract 1.8 modes are `CONTINUATION`, `GREENFIELD`, `REVIEW`, and `COMPRESSION_CONSOLIDATION`; `ALTRO` remains free input and is not a mode.
 

@@ -16,6 +16,7 @@ jobs:
           - {name: cc-human-journey, pattern: test_compression_consolidation_v11.py}
           - {name: v011-contract-binding, pattern: test_mode_contract_v11.py}
           - {name: portable-session, pattern: test_portable_session_v11.py}
+          - {name: local-host-bootstrap, pattern: test_host_bootstrap_v11.py}
           - {name: legacy-runtime-v7, pattern: test_runtime_v7.py}
           - {name: legacy-modes-v9, pattern: test_modes_v9.py}
           - {name: legacy-continuation-v6, pattern: test_continuation_v6.py}
