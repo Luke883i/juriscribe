@@ -28,6 +28,33 @@ jobs:
           echo "status=$status" >> "$GITHUB_OUTPUT"
           cat /tmp/juriscribe-unittest.log
           exit 0
+      - name: Probe first historical real-text scenario
+        id: realtext
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import tempfile
+          from pathlib import Path
+          from scripts.simulate_real_text_artifacts_v99 import compose_real_text, exercise, load_fixture
+
+          try:
+              records = load_fixture()
+              seen = set()
+              text, selected = compose_real_text(records, "SHORT", 990001, seen)
+              with tempfile.TemporaryDirectory() as tmp:
+                  exercise(Path(tmp), 0, "SHORT", text, selected)
+          except Exception as exc:
+              message = f"{type(exc).__name__}: {exc}"
+              message = " ".join(message.split())[:180]
+          else:
+              message = "PASS"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("error=" + message.replace("%", "%25") + "\n")
+          PY
+      - name: Real-text probe - ${{ steps.realtext.outputs.error }}
+        shell: bash
+        run: true
       - name: Upload unittest log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
