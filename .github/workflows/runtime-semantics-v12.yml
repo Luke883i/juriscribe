@@ -41,15 +41,18 @@ jobs:
       - name: Derived-proof and transport regressions
         run: python -m unittest tests.test_runtime_semantics_v12 -v
       - name: Build portable wheel without network isolation
+        if: matrix.python == '3.10'
         run: python -m pip wheel . --no-deps --no-build-isolation -w /tmp/wheels
       - name: Verify wheel contains bundled admission contract
+        if: matrix.python == '3.10'
         run: |
           python - <<'PY'
           import glob, zipfile
           wheels = glob.glob('/tmp/wheels/*.whl')
           assert len(wheels) == 1, wheels
           with zipfile.ZipFile(wheels[0]) as zf:
-              assert 'juriscribe/resources/ISENECA_ACCESS_CONTRACT.md' in set(zf.namelist())
+              names = set(zf.namelist())
+              assert 'juriscribe/resources/ISENECA_ACCESS_CONTRACT.md' in names
           print(wheels[0])
           PY
 
