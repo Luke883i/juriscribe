@@ -1,0 +1,48 @@
+name: Juriscribe C&C semantic stress
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-cc-stress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compression-consolidation-stress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile C&C runtime and stress harness
+        run: |
+          python -m py_compile \
+            juriscribe/consolidation.py \
+            juriscribe/runtime_v11.py \
+            juriscribe/consolidation_review.py \
+            juriscribe/consolidation_delivery.py \
+            scripts/simulate_compression_consolidation_v11.py \
+            tests/test_compression_consolidation_v11.py
+      - name: C&C lifecycle and stale-proof regressions
+        run: python -m unittest discover -s tests -p 'test_compression_consolidation_v11.py' -v
+      - name: 10M mutation, 1M saturation and 1M mode-routing campaign
+        run: |
+          python scripts/simulate_compression_consolidation_v11.py \
+            --cases 10000000 \
+            --saturation-cases 1000000 \
+            --routing-cases 1000000 \
+            --variants-per-target 10 \
+            --json-out /tmp/compression-consolidation-v11.json
+      - name: Retain C&C semantic stress receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: compression-consolidation-v11
+          path: /tmp/compression-consolidation-v11.json
+          if-no-files-found: error
+          retention-days: 7
