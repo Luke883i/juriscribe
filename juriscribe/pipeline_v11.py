@@ -1,8 +1,8 @@
-"""v0.11 CLI overlay for Compression & Consolidation.
+"""Current CLI overlay for Compression & Consolidation.
 
-Historical commands delegate to pipeline_v9 without import-time mutation. C&C adds
-only mode-specific commands. Dynamic mode discovery is scoped to the v0.11 fast
-bootstrap invocation so importing this module cannot alter legacy tests/runtimes.
+Historical commands delegate to pipeline_v9 without import-time mutation. The overlay
+adds mode-specific commands while runtime_v12 supplies proof-carrying semantics.
+Dynamic mode discovery remains scoped to fast bootstrap invocation.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from pathlib import Path
 from . import pipeline_v9 as _v9
 from .pipeline_v9 import *  # noqa: F401,F403
 from .modes import mode_choices
-from .runtime_v11 import calibrate_refactoring, consolidation_gate, record_consolidation_saturation, register_refactoring_plan, seal_refined_candidate
+from .runtime_v12 import calibrate_refactoring, consolidation_gate, record_consolidation_saturation, register_refactoring_plan, seal_refined_candidate
 
 CC_COMMANDS = {"consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "consolidation-status"}
 
@@ -51,7 +51,7 @@ def _cc_main(argv):
     p = sub.add_parser("consolidation-plan"); p.add_argument("session_dir"); p.add_argument("--json-file", required=True)
     p = sub.add_parser("consolidation-saturation"); p.add_argument("session_dir"); p.add_argument("--json-file", required=True)
     p = sub.add_parser("consolidation-calibrate"); p.add_argument("session_dir"); p.add_argument("--json-file", required=True)
-    p = sub.add_parser("consolidation-seal-refined"); p.add_argument("session_dir"); p.add_argument("--source-id", required=True); p.add_argument("--text-file", required=True); p.add_argument("--semantic-recall", type=float, default=1.0); p.add_argument("--relation-recall", type=float, default=1.0)
+    p = sub.add_parser("consolidation-seal-refined"); p.add_argument("session_dir"); p.add_argument("--source-id", required=True); p.add_argument("--text-file", required=True); p.add_argument("--projection-json", required=True)
     p = sub.add_parser("consolidation-status"); p.add_argument("session_dir")
     args = parser.parse_args(argv)
     ws = _workspace(args.session_dir)
@@ -63,7 +63,12 @@ def _cc_main(argv):
     elif args.command == "consolidation-calibrate":
         data = _payload(args.json_file); out = calibrate_refactoring(state, data.get("decisions", data if isinstance(data, list) else []))
     elif args.command == "consolidation-seal-refined":
-        out = seal_refined_candidate(state, source_id=args.source_id, text=Path(args.text_file).read_text(encoding="utf-8"), semantic_recall=args.semantic_recall, relation_recall=args.relation_recall)
+        out = seal_refined_candidate(
+            state,
+            source_id=args.source_id,
+            text=Path(args.text_file).read_text(encoding="utf-8"),
+            semantic_projection=_payload(args.projection_json),
+        )
     else:
         ok, errors = consolidation_gate(state); out = {"status": "PASS" if ok else "FAIL", "errors": errors, "phase": state.phase}
     if args.command != "consolidation-status":

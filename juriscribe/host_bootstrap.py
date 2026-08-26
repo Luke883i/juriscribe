@@ -13,9 +13,21 @@ TRANSPORT_SCHEMA = "juriscribe-host-runtime-transport/v1"
 CAPABILITY_STATES = frozenset({"AVAILABLE", "UNAVAILABLE", "UNVERIFIED"})
 _REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
 
+BOOTSTRAP_SOURCE_PATHS = (
+    "juriscribe/__init__.py",
+    "juriscribe/admission.py",
+    "juriscribe/bootstrap.py",
+    "juriscribe/host_bootstrap.py",
+    "juriscribe/interaction.py",
+    "juriscribe/modes.py",
+    "juriscribe/node_header.py",
+    "juriscribe/portable_session.py",
+    "juriscribe/session.py",
+    "juriscribe/session_integrity.py",
+)
+
 
 def normalize_host_capabilities(capabilities: dict[str, str] | None) -> dict[str, str]:
-    """Normalize representation only; never promote availability."""
     if not capabilities:
         raise ValueError("host capabilities missing")
     normalized: dict[str, str] = {}
@@ -31,7 +43,6 @@ def normalize_host_capabilities(capabilities: dict[str, str] | None) -> dict[str
 
 
 def validate_runtime_binding(resolved_revision: str, runtime_revision: str) -> str:
-    """Require the executing runtime to be the exact resolved 40-hex revision."""
     expected = str(resolved_revision).strip()
     actual = str(runtime_revision).strip()
     if not _REVISION_RE.fullmatch(expected):
@@ -44,7 +55,6 @@ def validate_runtime_binding(resolved_revision: str, runtime_revision: str) -> s
 
 
 def validate_acceptance_context(contract_text: str, presented_contract_sha256: str) -> str:
-    """Bind delayed bootstrap to the exact contract text presented before acceptance."""
     expected = contract_digest(contract_text)
     observed = str(presented_contract_sha256).strip().lower()
     if observed != expected:
@@ -58,13 +68,7 @@ def plan_runtime_transport(
     resolved_revision: str,
     runtime_revision: str | None = None,
 ) -> dict[str, Any]:
-    """Return a fail-closed transport decision for the pinned repository revision.
-
-    Repository readability is deliberately insufficient. An already importable
-    runtime is preferred only when its revision is independently bound to the
-    resolved revision. Otherwise exact pinned-source materialization requires a
-    separately observed source-to-runtime bridge and Python execution.
-    """
+    """Choose the smallest revision-bound transport that can execute bootstrap."""
     caps = normalize_host_capabilities(capabilities)
     expected = str(resolved_revision).strip()
     if not _REVISION_RE.fullmatch(expected):
@@ -87,10 +91,17 @@ def plan_runtime_transport(
     if installed_bound:
         decision = "USE_INSTALLED_RUNTIME"
         missing: list[str] = []
+        scope = "INSTALLED_BOUND"
+        source_paths: list[str] = []
+        deferred_full_runtime = False
     else:
         required = ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE")
         missing = [name for name in required if caps.get(name) != "AVAILABLE"]
         decision = "MATERIALIZE_PINNED_RUNTIME_SOURCE" if not missing else "BLOCKED"
+        use_minimal = not missing and caps.get("SESSION_CONTEXT") == "AVAILABLE"
+        scope = "BOOTSTRAP_MINIMAL" if use_minimal else ("FULL_RUNTIME" if not missing else "NONE")
+        source_paths = list(BOOTSTRAP_SOURCE_PATHS) if use_minimal else []
+        deferred_full_runtime = bool(use_minimal)
 
     return {
         "schema": TRANSPORT_SCHEMA,
@@ -100,6 +111,10 @@ def plan_runtime_transport(
         "installed_runtime_binding": installed_reason,
         "revision_binding_required": True,
         "receipt_simulation_allowed": False,
+        "materialization_scope": scope,
+        "required_source_paths": source_paths,
+        "deferred_full_runtime": deferred_full_runtime,
+        "bootstrap_round_trip_policy": "SINGLE_HOST_TURN_AFTER_ACCEPTANCE",
     }
 
 
@@ -113,12 +128,6 @@ def issue_probe_from_acceptance(
     presented_contract_sha256: str,
     contract_text: str | None = None,
 ) -> dict[str, Any]:
-    """Resume canonical bootstrap from retained exact human acceptance evidence.
-
-    The host supplies the pinned revision and contract hash it actually presented.
-    The executing canonical runtime must prove the same revision and contract before
-    issuing the admission and probe receipts. No host-side receipt synthesis occurs.
-    """
     contract_text = contract_text or load_contract_text()
     revision = validate_runtime_binding(resolved_revision, runtime_revision)
     csha = validate_acceptance_context(contract_text, presented_contract_sha256)
@@ -179,7 +188,6 @@ def bootstrap_memory_from_acceptance(
     contract_text: str | None = None,
     session_id: str | None = None,
 ) -> MemoryBootstrap:
-    """Canonical no-filesystem fast path for session-context-capable local hosts."""
     contract_text = contract_text or load_contract_text()
     handshake = issue_probe_from_acceptance(
         user_message=user_message,
