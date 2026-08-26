@@ -1,0 +1,72 @@
+name: Juriscribe runtime semantics v0.12
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-runtime-semantics-v12-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  proof-carrying-semantics:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile current semantic runtime
+        run: |
+          python -m py_compile \
+            juriscribe/semantic_proof.py \
+            juriscribe/stress_evidence.py \
+            juriscribe/runtime_v12.py \
+            juriscribe/host_bootstrap.py \
+            juriscribe/modes.py \
+            juriscribe/pipeline_v11.py \
+            scripts/check_runtime_semantics_contract.py \
+            scripts/simulate_runtime_semantics_v12.py \
+            tests/test_runtime_semantics_v12.py
+      - name: Runtime semantic contract
+        run: python scripts/check_runtime_semantics_contract.py
+      - name: Derived-proof and transport regressions
+        run: python -m unittest tests.test_runtime_semantics_v12 -v
+      - name: Build portable wheel without network isolation
+        run: python -m pip wheel . --no-deps --no-build-isolation -w /tmp/wheels
+      - name: Verify wheel contains bundled admission contract
+        run: |
+          python - <<'PY'
+          import glob, zipfile
+          wheels = glob.glob('/tmp/wheels/*.whl')
+          assert len(wheels) == 1, wheels
+          with zipfile.ZipFile(wheels[0]) as zf:
+              assert 'juriscribe/resources/ISENECA_ACCESS_CONTRACT.md' in set(zf.namelist())
+          print(wheels[0])
+          PY
+
+  semantic-mutation-stress:
+    runs-on: ubuntu-latest
+    needs: proof-carrying-semantics
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: 100k deterministic proof mutations
+        run: python scripts/simulate_runtime_semantics_v12.py --cases 100000 --json-out /tmp/runtime-semantics-v12.json
+      - name: Retain semantic stress evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runtime-semantics-v12
+          path: /tmp/runtime-semantics-v12.json
+          if-no-files-found: error
+          retention-days: 7
