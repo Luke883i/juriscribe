@@ -1,0 +1,67 @@
+name: Juriscribe C&C editorial reticulum v2
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-cc-editorial-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  executable-editorial-reticulum:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile editorial reticulum runtime
+        run: |
+          python -m py_compile \
+            juriscribe/editorial_reticulum.py \
+            juriscribe/editorial_stress.py \
+            juriscribe/semantic_proof_v2.py \
+            juriscribe/runtime_cc_v2.py \
+            juriscribe/pipeline_v11.py \
+            juriscribe/orchestrator.py \
+            juriscribe/consolidation_completion.py \
+            scripts/check_editorial_reticulum_contract.py \
+            scripts/simulate_editorial_reticulum_v2.py \
+            tests/test_editorial_reticulum_v2.py
+      - name: Editorial reticulum contract
+        run: python scripts/check_editorial_reticulum_contract.py
+      - name: Authorized and adversarial editorial reticulum regressions
+        run: python -m unittest tests.test_editorial_reticulum_v2 -v
+      - name: Preserve v0.12 proof-carrying regressions
+        run: python -m unittest tests.test_runtime_semantics_v12 -v
+
+  seeded-editorial-mutation-stress:
+    runs-on: ubuntu-latest
+    needs: executable-editorial-reticulum
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: First 10M seeded editorial campaign
+        run: python scripts/simulate_editorial_reticulum_v2.py --cases 10000000 --seed-offset 0 --json-out /tmp/cc-editorial-v2-a.json
+      - name: Second 10M independently shifted seeded campaign
+        run: python scripts/simulate_editorial_reticulum_v2.py --cases 10000000 --seed-offset 1000003 --json-out /tmp/cc-editorial-v2-b.json
+      - name: Retain executable-reticulum stress evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cc-editorial-reticulum-v2
+          path: |
+            /tmp/cc-editorial-v2-a.json
+            /tmp/cc-editorial-v2-b.json
+          if-no-files-found: error
+          retention-days: 7

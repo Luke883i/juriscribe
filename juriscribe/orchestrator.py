@@ -1,8 +1,8 @@
 """Public orchestration facade.
 
-The current runtime adds Compression & Consolidation as an isolated overlay while
-preserving historical continuation/greenfield/review paths. Current overlays are
-imported last so proof-carrying semantics own the active C&C boundary.
+Compression & Consolidation is layered last. The current C&C v2 overlay adds an
+executable editorial reticulum while preserving the v0.12 proof and all historical
+continuation/greenfield/review paths.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -14,7 +14,7 @@ from .artifact_governance import apply_setup, freeze_dods, record_artifact, seal
 from .governance_delivery import evaluate_completion
 from .runtime_autopilot import apply_setup, freeze_dods, record_artifact, record_natural_language_interpretation, resolve_natural_language_interpretation, seal_draft, select_mode
 from . import consolidation_atlas as _consolidation_atlas
-from .runtime_v12 import apply_setup, calibrate_refactoring, consolidation_gate, freeze_dods, ingest_and_mine, record_consolidation_saturation, record_simulation, register_refactoring_plan, register_semantic_mining, seal_refined_candidate, select_mode
+from .runtime_cc_v2 import apply_setup, calibrate_refactoring, consolidation_gate, freeze_dods, ingest_and_mine, record_consolidation_saturation, record_simulation, register_refactoring_plan, register_semantic_mining, seal_refined_candidate, select_mode
 from .runtime_v11_review import record_final_review, record_provenance, record_review_cycle
 from .consolidation_completion import evaluate_completion
 # Contract-check markers retained from all historical runtime layers:
@@ -36,3 +36,5 @@ from .consolidation_completion import evaluate_completion
 # peer_review_readiness_required=True consolidation_provenance_required=True consolidation_final_review_required=True
 # atomic_consolidation_delivery_required=True dynamic_mode_discovery_required=True
 # proof_carrying_semantics_required=True structural_substantive_claim_separation_required=True
+# executable_editorial_reticulum_required=True seeded_editorial_mutation_stress_required=True
+# authorized_merge_split_reorder_required=True a_level_editorial_readiness_not_journal_acceptance=True
