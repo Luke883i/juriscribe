@@ -2,7 +2,7 @@ from __future__ import annotations
 from . import governance_delivery as _legacy
 from .consolidation_delivery import materialize_consolidation_artifacts, consolidation_artifact_gate
 from .modes import COMPRESSION_CONSOLIDATION, normalize_mode
-from .runtime_v11 import consolidation_gate
+from .runtime_v12 import consolidation_gate
 
 def _manifest(state):
     attachments=[]

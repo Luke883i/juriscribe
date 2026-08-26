@@ -4,8 +4,8 @@ from dataclasses import asdict,dataclass
 from datetime import datetime,timezone
 from pathlib import Path
 
-CONTRACT_VERSION="1.8.0"
-LEGACY_ISSUE_VERSIONS={"1.7.0","1.6.0","1.5.0"}
+CONTRACT_VERSION="1.9.0"
+LEGACY_ISSUE_VERSIONS={"1.8.0","1.7.0","1.6.0","1.5.0"}
 ACCEPT_PHRASE="I ACCEPT"
 REPOSITORY="Luke883i/juriscribe"
 PRE_ADMISSION_ALLOWLIST=("AGENTS.md","ISENECA_ACCESS_CONTRACT.md","ADMISSION.json")
@@ -50,6 +50,11 @@ def require_receipt(receipt,contract_text):
     if not ok: raise PermissionError("repository admission denied: "+"; ".join(errors))
     return receipt or {}
 def load_contract_text(repo_root=None):
-    root=Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
-    return (root/"ISENECA_ACCESS_CONTRACT.md").read_text(encoding="utf-8")
+    if repo_root is not None:
+        return (Path(repo_root)/"ISENECA_ACCESS_CONTRACT.md").read_text(encoding="utf-8")
+    source=(Path(__file__).resolve().parents[1]/"ISENECA_ACCESS_CONTRACT.md")
+    if source.exists():
+        return source.read_text(encoding="utf-8")
+    from importlib.resources import files
+    return files("juriscribe.resources").joinpath("ISENECA_ACCESS_CONTRACT.md").read_text(encoding="utf-8")
 def load_receipt(path): return json.loads(Path(path).read_text(encoding="utf-8"))

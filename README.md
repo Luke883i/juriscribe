@@ -1,29 +1,41 @@
 # Juriscribe
 
-Juriscribe is an autonomous, repository-governed runtime for auditable legal/scientific/editorial work. The canonical entrypoint is `python -m juriscribe`; an optional local GPT may act as a host adapter, but it is not a second Juriscribe implementation.
+Juriscribe is an autonomous, repository-governed runtime for auditable legal/scientific/editorial work. The canonical entrypoint is `python -m juriscribe`; the repository is also packageable through `pyproject.toml` and exposes the `juriscribe` console script. An optional local GPT may act as a host adapter, but it is not a second Juriscribe implementation.
 
 ## Bootstrap
 
 Discovery is non-authorizing. Read the pre-admission surface, present the current terms, and wait for exact human `I ACCEPT`. After acceptance, `PROBE JURISCRIBE` and `INITIALIZE JURISCRIBE` remain distinct transitions; the runtime may use `bootstrap-after-acceptance` to execute them in one host turn while keeping separate receipts. Mode selection remains explicit.
+
+For source-transport hosts, `ADMISSION.json` now declares a pinned minimal bootstrap import closure. When `SESSION_CONTEXT=AVAILABLE`, the host may materialize only that closure, complete admission/probe/initialize, render mode choices, and defer the rest of the pinned runtime until substantive work. This is a transport optimization only: revision binding, contract binding, single-use receipts and sealed capabilities are unchanged.
 
 ## Canonical modes
 
 - `CONTINUATION` — continue prior written material.
 - `GREENFIELD` — create a new legal text from a concept or mandate.
 - `REVIEW` — scientific/content/editorial review; supports `REPORT_ONLY` and `REPORT_AND_REVISED_TEXT`.
-- `COMPRESSION_CONSOLIDATION` — ingest immutable canonical references plus refinable candidates, build a lossless joint reticulum, search for a minimal surgical refactoring, run 10,000,000 mutation instances plus M+1000/N+1000 saturation, calibrate with the user, and produce a refactoring report plus one refined candidate per candidate input.
+- `COMPRESSION & CONSOLIDATION` — ingest immutable canonical references plus refinable candidates, build a lossless joint reticulum, search for a minimal surgical refactoring, exercise mutation/stress classes, saturate search, calibrate with the user, derive structural semantic-preservation proof from the refined text, and produce a refactoring report plus one refined candidate per candidate input.
 
-`ALTRO` remains free input, not another mode. Current mode choices are derived from the runtime, not copied into host prompts.
+`ALTRO` remains free input, not another mode. Current mode choices are derived from the runtime, not copied into host prompts. The historical serialized spelling with an underscore is accepted only as a compatibility input and normalizes to `COMPRESSION & CONSOLIDATION`.
+
+## Proof-carrying semantics
+
+Current C&C seals no longer accept caller-supplied `semantic_recall=1.0` / `relation_recall=1.0` as proof. The runtime recomputes a structural preservation proof bound to the current candidate source, source inventory, refactoring plan, reticulum, canonical inventory set, refined text digest and explicit refined semantic projection. Material unit IDs and required relations must be preserved; every refined output object must have a text-bound semantic witness; unsupported new material units/relations fail closed.
+
+This is deliberately a **structural semantic-preservation claim**, not an assertion that Juriscribe independently proved legal truth, substantive equivalence or entailment. Scientific/editorial review, source verification and human professional judgment remain separate gates.
+
+## Stress evidence
+
+C&C retains the minimum 10,000,000 mutation-instance volume, but the instance count is explicitly a soak-volume measure rather than a claim of 10,000,000 unique semantic scenarios. Current receipts expose executed equivalence classes, class counts, mismatch status and a digest. Mutation classes and proof mutations are tested separately so repeated volume cannot masquerade as semantic diversity.
 
 ## C&C semantics
 
-A `canonical_material` is accepted as an immutable transformation reference for the session. That designation does not make it a verified legal authority. A `candidate_material` may be changed only on evidenced gaps and must retain semantic and required-relation recall of 1.0. `READY_FOR_PEER_REVIEW` means ready to be submitted to peer review; it does not claim peer review occurred.
+A `canonical_material` is accepted as an immutable transformation reference for the session. That designation does not make it a verified legal authority. A `candidate_material` may be changed only on evidenced gaps and must retain structural material-unit and required-relation recall of 1.0 under the runtime-derived proof. `READY_FOR_PEER_REVIEW` means ready to be submitted to peer review; it does not claim peer review occurred.
 
 ## Editorial and epistemic core
 
 All modes use `JURISCRIBE_LEGAL_EDITORIAL_CORE_V2` and the humanistic artifact projection `JURISCRIBE_LEGAL_HUMANISTIC_EDITORIAL_V1`. Juriscribe keeps claims, sources, inference structure, transformation provenance and review evidence distinct. No fabricated authority, no silent mode changes, no hidden artifact suppression.
 
-Historical specifications such as `FINAL_DELIVERY_V9_2` and `FINAL_DELIVERY_V9_4` remain compatibility/audit references; v0.11 adds the C&C overlay without weakening their delivery invariants.
+Historical specifications such as `FINAL_DELIVERY_V9_2` and `FINAL_DELIVERY_V9_4` remain compatibility/audit references. `MANIFEST.json.active_surface` identifies the small current surface; hosts should not traverse historical audit material during ordinary bootstrap or active work.
 
 ## Artifacts and delivery
 
@@ -35,12 +47,18 @@ The dashboard is a persistent inference-oriented workbench and does not replace 
 
 After bootstrap the conversation is a control surface. **NON narrare** mining, research, reticulum construction, review, simulations, saturation, compression, provenance or internal gates. Continue autonomously until a materially blocking human decision is necessary. Keep ordinary post-bootstrap chat to 1–3 lines.
 
+## Packaging
+
+The runtime remains stdlib-only. `pyproject.toml` packages the Python runtime and an immutable copy of the current access contract as package data. Source checkout uses the root contract; installed execution falls back to the bundled byte-equivalent contract resource. CI verifies parity.
+
 ## Validation
 
 ```bash
 python -m unittest discover -s tests -v
 python -m compileall -q juriscribe scripts tests
 python scripts/check_contract.py
+python -m unittest tests.test_runtime_semantics_v12 -v
+python scripts/simulate_runtime_semantics_v12.py --cases 100000
 ```
 
 The repository also preserves its historical regression, saturation, Safari/browser delivery and external-evaluation boundaries.
