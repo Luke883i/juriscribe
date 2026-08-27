@@ -2,7 +2,12 @@
 
 v0.11 delegates substantive work to :mod:`pipeline_v11`, while preserving the
 historical public surface for pre-existing commands. Raw machine JSON still
-requires the two-part technical opt-in.
+requires the two-part technical opt-in. The ordinary post-bootstrap surface is a
+projection-only three-line chat shell derived from persisted runtime state.
+
+When no persisted session can be loaded (tests, bootstrap fallbacks, external
+callers), the historical compact/redacted facade remains authoritative. The shell
+therefore strengthens the public surface without weakening the v0.9.2 boundary.
 """
 from __future__ import annotations
 
@@ -15,6 +20,7 @@ import traceback
 from pathlib import Path
 
 from . import pipeline_v11 as _v9
+from .chat_shell import render_chat_shell
 from .pipeline_v11 import *  # noqa: F401,F403
 
 MAX_PUBLIC_SUMMARY_CHARS = 280
@@ -96,6 +102,28 @@ def _compact_fast_bootstrap(text: str) -> str:
     return f"Juriscribe inizializzato: {session_dir}\n{choices}".strip()
 
 
+def _session_from_output(command: str, raw: str, argv) -> str | None:
+    if command == "bootstrap-after-acceptance":
+        try:
+            return str(json.loads(raw).get("session_dir") or "") or None
+        except Exception:
+            return None
+    if command == "initialize":
+        return str(raw or "").strip() or None
+    return _session_dir(argv)
+
+
+def _render_persisted_shell(session_dir: str | None) -> str | None:
+    if not session_dir:
+        return None
+    path = Path(session_dir)
+    ws = _v9.Workspace(path.parent, path.name)
+    if not ws.state_path.exists():
+        return None
+    state = ws.load()
+    return render_chat_shell(state)
+
+
 def _record_hidden_failure(argv, exc: Exception) -> None:
     session_dir = _session_dir(argv)
     if not session_dir:
@@ -107,9 +135,23 @@ def _record_hidden_failure(argv, exc: Exception) -> None:
     try:
         state = ws.load()
         command = _command(argv)
-        record = {"kind": "RUNTIME_BLOCKER", "status": "OPEN", "command": command, "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.", "error_type": type(exc).__name__}
-        state.limits = [item for item in (state.limits or []) if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)] + [record]
-        ws.append_ledger("runtime-errors", {**record, "internal_message": str(exc), "traceback": traceback.format_exc(), "delivery_class": "INTERNAL"})
+        record = {
+            "kind": "RUNTIME_BLOCKER",
+            "status": "OPEN",
+            "command": command,
+            "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.",
+            "error_type": type(exc).__name__,
+        }
+        state.limits = [
+            item for item in (state.limits or [])
+            if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)
+        ] + [record]
+        ws.append_ledger("runtime-errors", {
+            **record,
+            "internal_message": str(exc),
+            "traceback": traceback.format_exc(),
+            "delivery_class": "INTERNAL",
+        })
         _v9.persist_session(ws, state)
     except Exception:
         pass
@@ -117,6 +159,23 @@ def _record_hidden_failure(argv, exc: Exception) -> None:
 
 def _technical_output_requested(argv) -> bool:
     return os.environ.get("JURISCRIBE_VERBOSE_JSON") == "1" and TECHNICAL_FLAG in _argv(argv)
+
+
+def _legacy_public_fallback(command: str, raw: str, rc: int) -> str:
+    """Preserve the hardened pre-shell surface when canonical state is unavailable."""
+    if command == "gate":
+        return _compact_gate(raw)
+    if command == "interaction-card":
+        return _compact_interaction(raw)
+    if command == "bootstrap-after-acceptance":
+        return _compact_fast_bootstrap(raw)
+    if command in {"initialize", "dashboard"}:
+        return _truncate(raw, 600) or "OK."
+    if command == "consolidation-status":
+        return _truncate(raw, 1200) or "OK."
+    if rc == 0:
+        return "OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali."
+    return "Richiede attenzione. Consulta la dashboard."
 
 
 def main(argv=None):
@@ -136,20 +195,13 @@ def main(argv=None):
         print("Operazione non completata. Consulta la dashboard.")
         return 2
     raw = stdout.getvalue().strip()
-    if command == "gate":
-        print(_compact_gate(raw))
-    elif command == "interaction-card":
-        print(_compact_interaction(raw))
-    elif command == "bootstrap-after-acceptance":
-        print(_compact_fast_bootstrap(raw))
-    elif command in {"initialize", "dashboard"}:
-        print(_truncate(raw, 600) or "OK.")
-    elif command == "consolidation-status":
-        print(_truncate(raw, 1200) or "OK.")
-    elif rc == 0:
-        print("OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali.")
-    else:
-        print("Richiede attenzione. Consulta la dashboard.")
+    session_dir = _session_from_output(command, raw, clean)
+    try:
+        shell = _render_persisted_shell(session_dir)
+    except Exception as exc:
+        _record_hidden_failure(clean, exc)
+        shell = None
+    print(shell if shell else _legacy_public_fallback(command, raw, rc))
     return rc
 
 

@@ -1,0 +1,35 @@
+name: Juriscribe multimode runtime kernel
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-mode-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mode-runtime-10m:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile common mode runtime
+        run: python -m py_compile juriscribe/mode_runtime.py juriscribe/runtime_v13.py juriscribe/orchestrator.py scripts/simulate_mode_runtime_v13.py tests/test_mode_runtime_v13.py
+      - name: Focused common-mode runtime tests
+        run: python -m unittest tests.test_mode_runtime_v13 -v
+      - name: Ten-million actual mode-runtime validator invocations
+        run: python scripts/simulate_mode_runtime_v13.py --cases 10000000 --json-out /tmp/mode-runtime-v13.json
+      - name: Retain mode-runtime stress receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mode-runtime-v13
+          path: /tmp/mode-runtime-v13.json
+          if-no-files-found: error
+          retention-days: 7
