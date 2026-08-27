@@ -4,6 +4,10 @@ v0.11 delegates substantive work to :mod:`pipeline_v11`, while preserving the
 historical public surface for pre-existing commands. Raw machine JSON still
 requires the two-part technical opt-in. The ordinary post-bootstrap surface is a
 projection-only three-line chat shell derived from persisted runtime state.
+
+When no persisted session can be loaded (tests, bootstrap fallbacks, external
+callers), the historical compact/redacted facade remains authoritative. The shell
+therefore strengthens the public surface without weakening the v0.9.2 boundary.
 """
 from __future__ import annotations
 
@@ -60,6 +64,42 @@ def _truncate(value: str, limit: int = MAX_PUBLIC_SUMMARY_CHARS) -> str:
     if len(text) <= limit:
         return text
     return text[: max(0, limit - 1)].rstrip() + "…"
+
+
+def _compact_interaction(text: str) -> str:
+    try:
+        payload = json.loads(text)
+    except Exception:
+        return "Consulta la dashboard."
+    summary = _truncate(str(payload.get("summary") or ""))
+    choices = [str(item) for item in (payload.get("choices") or [])][:4]
+    if choices:
+        return f"{summary}\n{' | '.join(choices)}".strip()
+    return summary or "Consulta la dashboard."
+
+
+def _compact_gate(text: str) -> str:
+    try:
+        payload = json.loads(text)
+    except Exception:
+        return "Consulta la dashboard."
+    manifest = payload.get("delivery_manifest") or {}
+    attachments = manifest.get("attachments") or []
+    if payload.get("eligible") and manifest.get("status") == "PASS":
+        if manifest.get("attachment_placement") == "SESSION_CHAT_TAIL" and all(item.get("format") == "DOCX" for item in attachments):
+            return f"Completato. I {len(attachments)} artefatti DOCX scaricabili sono allegati in coda alla sessione-chat; la dashboard ne riepiloga i contenuti senza linkarli."
+        return "Completato, ma il contratto pubblico di allegazione DOCX non risulta materializzato."
+    return "Non pronto. Consulta la dashboard; restano blocker di lavorazione."
+
+
+def _compact_fast_bootstrap(text: str) -> str:
+    try:
+        payload = json.loads(text)
+    except Exception:
+        return "Juriscribe inizializzato. Scegli una modalità canonica."
+    session_dir = _truncate(str(payload.get("session_dir") or ""), 500)
+    choices = " | ".join(str(x) for x in (payload.get("choices") or []))
+    return f"Juriscribe inizializzato: {session_dir}\n{choices}".strip()
 
 
 def _session_from_output(command: str, raw: str, argv) -> str | None:
@@ -121,6 +161,23 @@ def _technical_output_requested(argv) -> bool:
     return os.environ.get("JURISCRIBE_VERBOSE_JSON") == "1" and TECHNICAL_FLAG in _argv(argv)
 
 
+def _legacy_public_fallback(command: str, raw: str, rc: int) -> str:
+    """Preserve the hardened pre-shell surface when canonical state is unavailable."""
+    if command == "gate":
+        return _compact_gate(raw)
+    if command == "interaction-card":
+        return _compact_interaction(raw)
+    if command == "bootstrap-after-acceptance":
+        return _compact_fast_bootstrap(raw)
+    if command in {"initialize", "dashboard"}:
+        return _truncate(raw, 600) or "OK."
+    if command == "consolidation-status":
+        return _truncate(raw, 1200) or "OK."
+    if rc == 0:
+        return "OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali."
+    return "Richiede attenzione. Consulta la dashboard."
+
+
 def main(argv=None):
     clean = _clean_argv(argv)
     if _technical_output_requested(argv):
@@ -144,12 +201,7 @@ def main(argv=None):
     except Exception as exc:
         _record_hidden_failure(clean, exc)
         shell = None
-    if shell:
-        print(shell)
-    elif rc == 0:
-        print(_truncate(raw, 600) or "OK.")
-    else:
-        print("Richiede attenzione. Consulta la dashboard.")
+    print(shell if shell else _legacy_public_fallback(command, raw, rc))
     return rc
 
 
