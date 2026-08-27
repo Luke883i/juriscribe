@@ -100,7 +100,7 @@ def resolve_input_role(mode: str, role: str | None = None) -> str:
     return selected
 
 
-def validate_mode_corpus(mode: str, corpus: list[dict[str, Any]] | None, *, require_minimum: bool = Falsi = False) -> tuple[bool, list[str]]:
+def validate_mode_corpus(mode: str, corpus: list[dict[str, Any]] | None, *, require_minimum: bool = False) -> tuple[bool, list[str]]:
     profile = mode_runtime_profile(mode)
     entries = list(corpus or [])
     errors: list[str] = []
@@ -137,8 +137,7 @@ def assert_input_transition(state: Any, *, source_id: str, role: str | None = No
     corpus = list(_get(state, "corpus", []) or [])
     ok, errors = validate_mode_corpus(mode, corpus, require_minimum=False)
     if not ok:
-        raise ValueError("invalid current mode corpus: " + ";
-".join(errors))
+        raise ValueError("invalid current mode corpus: " + "; ".join(errors))
     profile = mode_runtime_profile(mode)
     for item in corpus:
         if str(item.get("source_id") or "").strip() != source_id:
@@ -210,6 +209,12 @@ def invalidate_downstream(state: Any, *, boundary: str, reason: str) -> Any:
     _set(state, "compression", {})
     _set(state, "claim_ledger", [])
     _set(state, "artifact_evidence", [])
+    _set(state, "contradictions", [])
+    _set(state, "editorial_actions", [])
+    reflection = dict(_get(state, "reflection", {}) or {})
+    if reflection:
+        reflection.update({"iterations": 0, "no_novelty_streak": 0, "saturated": False})
+        _set(state, "reflection", reflection)
     _reset_source_coverage(state)
     _reset_metrics(state)
     _set(state, "completion", {"eligible": False, "reason": str(reason)})
