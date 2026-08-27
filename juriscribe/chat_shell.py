@@ -1,16 +1,16 @@
 """Projection-only three-line control shell for Juriscribe v1.
 
-Every render answers, without acquiring authority:
-1. WHERE am I?
-2. What is DONE, what is NEXT, and HOW does it happen?
-3. What can I DO, including an on-demand recovery snapshot?
+Every render answers WHERE / DONE / NEXT / HOW / DO. The projection also carries
+all session-chat downloadable DOCX descriptors for the host adapter; the text
+surface remains bounded to three lines.
 """
 from __future__ import annotations
 
 import re
 from typing import Any
 
-from .continuity import MATERIALIZATION_CONTINUE_PHRASE, RECOVERY_ACTION, project_iteration
+from .chat_delivery import build_session_chat_docx_manifest
+from .continuity import RECOVERY_ACTION, project_iteration
 from .interaction import FREE_CHOICE, SCHEMA as INTERACTION_SCHEMA, mode_entry_card, phase_choices
 from .modes import normalize_mode
 
@@ -20,14 +20,17 @@ MAX_LINES = 3
 MAX_LINE_CHARS = 220
 ANSI_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 USER_PHASES = frozenset({
-    "TERMS_PRESENTED", "PROBE_REQUIRED", "PROBED", "INITIALIZE_REQUIRED",
-    "MODE_SELECTION_REQUIRED", "MODE_SELECTED", "USER_SETUP_REQUIRED",
-    "HUMAN_DECISION_REQUIRED", "COMPLETE",
+    "TERMS_PRESENTED",
+    "PROBE_REQUIRED",
+    "PROBED",
+    "INITIALIZE_REQUIRED",
+    "MODE_SELECTION_REQUIRED",
+    "MODE_SELECTED",
+    "USER_SETUP_REQUIRED",
+    "HUMAN_DECISION_REQUIRED",
+    "COMPLETE",
 })
 INPUT_PHASES = USER_PHASES - {"COMPLETE"}
-
-# Per-field budgets make the informational contract stronger than whole-line truncation:
-# DONE/NEXT/HOW and core controls can never disappear because another field is verbose.
 DONE_BUDGET = 58
 NEXT_BUDGET = 58
 HOW_BUDGET = 72
@@ -44,10 +47,6 @@ def _text(value: Any, limit: int = MAX_LINE_CHARS) -> str:
 
 def _get(state: Any, name: str, default=None):
     return state.get(name, default) if isinstance(state, dict) else getattr(state, name, default)
-
-
-def _phase(state: Any) -> str:
-    return _text(_get(state, "phase", "UNKNOWN"), 64).upper() or "UNKNOWN"
 
 
 def _mode(state: Any) -> str:
@@ -109,12 +108,18 @@ def _choices(card: dict[str, Any]) -> list[str]:
     return selected[:3]
 
 
+def project_chat_artifacts(state: Any) -> dict[str, Any]:
+    """Projection-only host payload for all retained session DOCX downloads."""
+    return build_session_chat_docx_manifest(state)
+
+
 def project_chat_shell(state: Any) -> dict[str, Any]:
     iteration = project_iteration(state)
     where = iteration["where"]
     phase = where["phase"]
     mode = _mode(state)
     card = _card(state, phase, mode)
+    artifact_manifest = project_chat_artifacts(state)
     return {
         "schema": SCHEMA,
         "authority": AUTHORITY,
@@ -129,23 +134,28 @@ def project_chat_shell(state: Any) -> dict[str, Any]:
         "choices": _choices(card),
         "utilities": [RECOVERY_ACTION, "STATO", "ARTEFATTI", "AIUTO", FREE_CHOICE],
         "recovery_ready": iteration["recovery"]["resume_ready"],
+        "artifact_manifest_status": artifact_manifest.get("status"),
+        "artifact_count": int(artifact_manifest.get("artifact_count") or 0),
+        "downloadable_artifacts": list(artifact_manifest.get("artifacts") or []),
+        "artifact_projection_errors": list(artifact_manifest.get("errors") or []),
     }
 
 
 def render_chat_shell(state: Any) -> str:
-    p = project_chat_shell(state)
+    projection = project_chat_shell(state)
     line1 = _text(
-        f"JURISCRIBE> WHERE phase={_text(p['phase'], 42)} | mode={_text(p['mode'] or '-', 34)} | "
-        f"stage={_text(p['stage'], 22)} | {p['status']} | cp={p['checkpoint_id'][3:11]}"
+        f"JURISCRIBE> WHERE phase={_text(projection['phase'], 42)} | mode={_text(projection['mode'] or '-', 34)} | "
+        f"stage={_text(projection['stage'], 22)} | {projection['status']} | cp={projection['checkpoint_id'][3:11]}"
     )
     line2 = (
-        f"DONE> {_text(p['done'], DONE_BUDGET)} | "
-        f"NEXT> {_text(p['next'], NEXT_BUDGET)} | "
-        f"HOW> {_text(p['how'], HOW_BUDGET)}"
+        f"DONE> {_text(projection['done'], DONE_BUDGET)} | "
+        f"NEXT> {_text(projection['next'], NEXT_BUDGET)} | "
+        f"HOW> {_text(projection['how'], HOW_BUDGET)}"
     )
-    recovery = "[R] RECUPERO" if p["recovery_ready"] else "[R] RECUPERO(!)"
-    core = f"DO> {recovery}  [S] STATO  [A] ARTEFATTI  [?] AIUTO  […] ALTRO"
-    options = [f"[{index}] {label}" for index, label in enumerate(p["choices"], 1)]
+    recovery = "[R] RECUPERO" if projection["recovery_ready"] else "[R] RECUPERO(!)"
+    artifact_control = f"[A] ARTEFATTI({projection['artifact_count']})"
+    core = f"DO> {recovery}  [S] STATO  {artifact_control}  [?] AIUTO  […] ALTRO"
+    options = [f"[{index}] {label}" for index, label in enumerate(projection["choices"], 1)]
     line3 = core if not options else _text(core + "  |  " + "  ".join(options))
     return "\n".join((line1, line2, line3))
 
@@ -171,6 +181,8 @@ def validate_rendered_shell(text: str) -> tuple[bool, list[str]]:
         errors.append("chat shell recovery action missing")
     if len(lines) < 3 or "[S] STATO" not in lines[2]:
         errors.append("chat shell status action missing")
+    if len(lines) < 3 or "[A] ARTEFATTI(" not in lines[2]:
+        errors.append("chat shell downloadable-artifact control missing")
     if len(lines) < 3 or "[…] ALTRO" not in lines[2]:
         errors.append("chat shell free-input path missing")
     return not errors, errors

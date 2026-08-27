@@ -1,0 +1,37 @@
+{
+  "schema": "juriscribe-runtime-v1-contract/v1",
+  "profile": "JURISCRIBE_RUNTIME_V1",
+  "runtime_version": "1.0.0",
+  "contract_version": "2.0.0",
+  "authority_partition_nodes": 6,
+  "authority_nodes": [
+    "MODE_REGISTRY",
+    "EXPLICIT_ROUTER",
+    "COMMON_STALENESS",
+    "SPECIALIST_PROOF",
+    "MATERIALIZATION",
+    "PROJECTION"
+  ],
+  "no_new_authority_node": true,
+  "exact_runtime_input_archive": true,
+  "scientific_checkpoint_host_independent": true,
+  "recovery_bundle_schema": "juriscribe-recovery-bundle/v1",
+  "fresh_host_probe_required": true,
+  "recovery_export_on_demand": true,
+  "recovery_capable_completion": true,
+  "iteration_contract": ["WHERE", "DONE", "NEXT", "HOW", "DO"],
+  "cross_mode_materialization_pending": true,
+  "materialization_continue_phrase": "Continue until the end of artefact materialization",
+  "chat_session_docx_delivery": {
+    "profile": "JURISCRIBE_CHAT_DOCX_DELIVERY_V1",
+    "scope": "EVERY_RETAINED_MATERIALIZED_DOCX_INTERMEDIATE_AND_FINAL",
+    "downloadable_in_session_chat": true,
+    "final_delivery_class_independent": true,
+    "dashboard_is_not_a_substitute": true,
+    "projection_must_not_hide_intermediate_docx": true,
+    "unregistered_workspace_docx_must_be_surfaced_and_flagged": true,
+    "completion_fails_closed_on_chat_projection_error": true,
+    "scientific_authority": false
+  },
+  "stress_cases_min": 10000
+}
