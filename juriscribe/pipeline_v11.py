@@ -1,19 +1,28 @@
-"""Current CLI overlay for Compression & Consolidation.
+"""Current CLI composition for specialist C&C commands and historical commands.
 
-Historical commands delegate to pipeline_v9 without import-time mutation. The overlay
-adds mode-specific commands while runtime_cc_v2 supplies proof-carrying executable
-editorial semantics. Dynamic mode discovery remains scoped to fast bootstrap invocation.
+Historical commands delegate to pipeline_v9. C&C specialist commands resolve via
+the same explicit runtime router used by the public orchestrator. Fast-bootstrap
+mode choices are normalized at the transport boundary without monkey-patching the
+legacy module.
 """
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
 from pathlib import Path
 
 from . import pipeline_v9 as _v9
 from .pipeline_v9 import *  # noqa: F401,F403
 from .modes import mode_choices
-from .runtime_cc_v2 import calibrate_refactoring, consolidation_gate, record_consolidation_saturation, register_refactoring_plan, seal_refined_candidate
+from .runtime_router import resolve_operation
+
+calibrate_refactoring = resolve_operation("calibrate_refactoring")
+consolidation_gate = resolve_operation("consolidation_gate")
+record_consolidation_saturation = resolve_operation("record_consolidation_saturation")
+register_refactoring_plan = resolve_operation("register_refactoring_plan")
+seal_refined_candidate = resolve_operation("seal_refined_candidate")
 
 CC_COMMANDS = {"consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "consolidation-status"}
 
@@ -27,22 +36,24 @@ def _payload(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def _dynamic_fast_bootstrap(original, *args, **kwargs):
-    result = original(*args, **kwargs)
-    result["choices"] = [*mode_choices(), "ALTRO"]
-    return result
-
-
 def _legacy_main(args):
     command = next((str(x) for x in args if not str(x).startswith("-")), "")
     if command != "bootstrap-after-acceptance":
         return _v9.main(args)
-    original = _v9.bootstrap_after_acceptance
-    _v9.bootstrap_after_acceptance = lambda *a, **kw: _dynamic_fast_bootstrap(original, *a, **kw)
+    # pipeline_v9 is compatibility code and still serializes a historical tri-mode
+    # choice list. Normalize only the returned transport payload from the canonical
+    # registry; do not mutate the legacy module or invent a second mode source.
+    stdout = io.StringIO()
+    with contextlib.redirect_stdout(stdout):
+        rc = _v9.main(args)
+    raw = stdout.getvalue().strip()
     try:
-        return _v9.main(args)
-    finally:
-        _v9.bootstrap_after_acceptance = original
+        result = json.loads(raw)
+        result["choices"] = [*mode_choices(), "ALTRO"]
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    except Exception:
+        print(raw)
+    return rc
 
 
 def _cc_main(argv):

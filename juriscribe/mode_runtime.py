@@ -9,61 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from .modes import (
-    COMPRESSION_AND_CONSOLIDATION,
-    CONTINUATION,
-    GREENFIELD,
-    REVIEW,
-    normalize_mode,
-)
+from .modes import mode_runtime_spec, normalize_mode
 
 PROFILE = "JURISCRIBE_COMMON_MODE_RUNTIME_V1"
 MATERIAL_INPUT_CHANGED = "MATERIAL_INPUT_CHANGED"
 SEMANTIC_MODEL_CHANGED = "SEMANTIC_MODEL_CHANGED"
-
-_POLICIES: dict[str, dict[str, Any]] = {
-    CONTINUATION: {
-        "engine_family": "CONTINUATION_GENERATION",
-        "default_role": "preceding_chapter",
-        "roles": {"preceding_chapter": {"min": 1, "max": None}},
-        "specific_stages": ("CONTINUATION_FRONTIER", "GENERATION", "REVIEW_REGENERATION", "SIMULATION", "COMPRESSION"),
-    },
-    GREENFIELD: {
-        "engine_family": "GREENFIELD_GENERATION",
-        "default_role": "concept_source",
-        "roles": {"concept_source": {"min": 1, "max": 1}},
-        "specific_stages": ("GENERATION", "REVIEW_REGENERATION", "SIMULATION", "COMPRESSION"),
-    },
-    REVIEW: {
-        "engine_family": "DIAGNOSTIC_OR_REVISION_REVIEW",
-        "default_role": "review_target",
-        "roles": {"review_target": {"min": 1, "max": 1}},
-        "specific_stages": ("DIAGNOSTIC_REVIEW", "OPTIONAL_REVISION", "RE_REVIEW"),
-    },
-    COMPRESSION_AND_CONSOLIDATION: {
-        "engine_family": "PROOF_CARRYING_REFACTORING",
-        "default_role": "candidate_material",
-        "roles": {
-            "canonical_material": {"min": 1, "max": None},
-            "candidate_material": {"min": 1, "max": None},
-        },
-        "specific_stages": (
-            "LOSSLESS_INVENTORY", "JOINT_RETICULUM", "REFACTORING_PLAN",
-            "MUTATION_EVIDENCE", "DUAL_SATURATION", "REFINED_CANDIDATES",
-            "PEER_REVIEW_READINESS",
-        ),
-    },
-}
-
-_COMMON_STAGES = (
-    "INPUT_BINDING",
-    "SEMANTIC_RETICULUM",
-    "USER_CONFIGURATION",
-    "DOD_CONTRACT",
-    "PROVENANCE",
-    "FINAL_REVIEW",
-    "MATERIALIZATION",
-)
 
 
 def _get(state: Any, name: str, default=None):
@@ -78,17 +28,7 @@ def _set(state: Any, name: str, value: Any) -> None:
 
 
 def mode_runtime_profile(mode: str) -> dict[str, Any]:
-    normalized = normalize_mode(mode)
-    policy = _POLICIES[normalized]
-    return {
-        "profile": PROFILE,
-        "mode": normalized,
-        "engine_family": policy["engine_family"],
-        "common_stages": list(_COMMON_STAGES),
-        "specific_stages": list(policy["specific_stages"]),
-        "default_role": policy["default_role"],
-        "roles": {key: dict(value) for key, value in policy["roles"].items()},
-    }
+    return {"profile": PROFILE, **mode_runtime_spec(mode)}
 
 
 def resolve_input_role(mode: str, role: str | None = None) -> str:
@@ -177,12 +117,12 @@ def _reset_metrics(state: Any) -> None:
 
 
 def invalidate_downstream(state: Any, *, boundary: str, reason: str) -> Any:
-    """Invalidate evidence below a changed material/semantic foundation.
+    """Invalidate common evidence below a changed material/semantic foundation.
 
-    This is an evidence-staleness operation, not a mode reset. Request, mode,
-    admission, corpus/source records, explicit bibliography and C&C source
-    inventories stay intact. Specialist engines may additionally clear their own
-    proof stores.
+    This function is the single owner of *shared* staleness semantics. Specialist
+    engines may clear specialist-only proof stores, but must not weaken this cone.
+    Request, mode, admission, corpus/source records, explicit bibliography and C&C
+    source inventories remain intact.
     """
     if boundary not in {MATERIAL_INPUT_CHANGED, SEMANTIC_MODEL_CHANGED}:
         raise ValueError("unknown invalidation boundary")

@@ -4,14 +4,7 @@ import hashlib
 import json
 from typing import Any
 
-from .modes import (
-    COMPRESSION_AND_CONSOLIDATION,
-    CONTINUATION,
-    GREENFIELD,
-    REVIEW,
-    mode_choices,
-    normalize_mode,
-)
+from .modes import mode_choices, mode_entry_projection
 
 SCHEMA = "juriscribe-interaction-card/v2"
 FREE_CHOICE = "ALTRO"
@@ -67,29 +60,15 @@ def interaction_card(phase, *, headline="", summary="", choices=None, extra_choi
 def mode_entry_card(mode: str) -> dict[str, Any]:
     """Return the canonical user-entry projection for a selected mode.
 
-    The card is a conversational projection only. Mode semantics remain owned by
-    :mod:`juriscribe.modes` and the runtime mode contract.
+    Copy and choices are derived from :mod:`juriscribe.modes`; this module owns
+    only the interaction-card envelope, never a second mode taxonomy.
     """
-    normalized = normalize_mode(mode)
-    summary, choices = {
-        CONTINUATION: (
-            "Modalità CONTINUATION selezionata. Carica i capitoli precedenti.",
-            ["CARICA CAPITOLI PRECEDENTI", FREE_CHOICE],
-        ),
-        GREENFIELD: (
-            "Modalità GREENFIELD selezionata. Fornisci il concept o mandato di partenza.",
-            ["FORNISCI CONCEPT", FREE_CHOICE],
-        ),
-        REVIEW: (
-            "Modalità REVIEW selezionata. Carica il testo da revisionare.",
-            ["CARICA TESTO DA REVISIONARE", FREE_CHOICE],
-        ),
-        COMPRESSION_AND_CONSOLIDATION: (
-            "Modalità COMPRESSION & CONSOLIDATION selezionata. Carica materiali CANONICAL immutabili e CANDIDATE rifattorizzabili.",
-            ["CARICA CANONICAL", "CARICA CANDIDATE", FREE_CHOICE],
-        ),
-    }[normalized]
-    return interaction_card("MODE_SELECTED", summary=summary, choices=choices)
+    projection = mode_entry_projection(mode)
+    return interaction_card(
+        "MODE_SELECTED",
+        summary=projection["summary"],
+        choices=projection["choices"],
+    )
 
 
 def validate_interaction_card(card):
