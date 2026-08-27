@@ -2,7 +2,8 @@
 
 Compression & Consolidation is layered last. The current C&C v2 overlay adds an
 executable editorial reticulum while preserving the v0.12 proof and all historical
-continuation/greenfield/review paths.
+continuation/greenfield/review paths. The common multimode kernel is then layered
+above all specialist engines to enforce shared input and staleness invariants.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
@@ -17,6 +18,7 @@ from . import consolidation_atlas as _consolidation_atlas
 from .runtime_cc_v2 import apply_setup, calibrate_refactoring, consolidation_gate, freeze_dods, ingest_and_mine, record_consolidation_saturation, record_simulation, register_refactoring_plan, register_semantic_mining, seal_refined_candidate, select_mode
 from .runtime_v11_review import record_final_review, record_provenance, record_review_cycle
 from .consolidation_completion import evaluate_completion
+from .runtime_v13 import freeze_dods, ingest_and_mine, register_semantic_mining, select_mode
 # Contract-check markers retained from all historical runtime layers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=False
