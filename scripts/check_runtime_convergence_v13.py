@@ -28,7 +28,7 @@ def main() -> int:
 
     if __version__ != "0.13.0" or manifest.get("runtime_version") != __version__:
         fail("runtime/manifest version mismatch")
-    if not re.search(r'^version = "0\\.13\\.0"$', pyproject, re.M):
+    if not re.search(r'^version = "0\.13\.0"$', pyproject, re.M):
         fail("pyproject version is not 0.13.0")
     if tuple(MODE_REGISTRY) != tuple(MODES) or mode_choices() != list(MODES):
         fail("canonical mode registry diverges from serialized mode order")
