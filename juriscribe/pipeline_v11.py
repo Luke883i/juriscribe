@@ -1,8 +1,8 @@
 """Current CLI overlay for Compression & Consolidation.
 
 Historical commands delegate to pipeline_v9 without import-time mutation. The overlay
-adds mode-specific commands while runtime_v12 supplies proof-carrying semantics.
-Dynamic mode discovery remains scoped to fast bootstrap invocation.
+adds mode-specific commands while runtime_cc_v2 supplies proof-carrying executable
+editorial semantics. Dynamic mode discovery remains scoped to fast bootstrap invocation.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from pathlib import Path
 from . import pipeline_v9 as _v9
 from .pipeline_v9 import *  # noqa: F401,F403
 from .modes import mode_choices
-from .runtime_v12 import calibrate_refactoring, consolidation_gate, record_consolidation_saturation, register_refactoring_plan, seal_refined_candidate
+from .runtime_cc_v2 import calibrate_refactoring, consolidation_gate, record_consolidation_saturation, register_refactoring_plan, seal_refined_candidate
 
 CC_COMMANDS = {"consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "consolidation-status"}
 
