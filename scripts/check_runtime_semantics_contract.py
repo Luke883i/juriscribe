@@ -11,6 +11,7 @@ from juriscribe.semantic_proof import CLAIM_SCOPE,PROFILE as SEMANTIC_PROOF_PROF
 from juriscribe.stress_evidence import INSTANCE_CLAIM_SCOPE
 
 def fail(message): raise SystemExit('RUNTIME SEMANTICS CONTRACT FAIL: '+message)
+def _version(value): return tuple(int(part) for part in str(value).split('.'))
 def main():
     admission=json.loads((ROOT/'ADMISSION.json').read_text(encoding='utf-8'))
     manifest=json.loads((ROOT/'MANIFEST.json').read_text(encoding='utf-8'))
@@ -20,7 +21,7 @@ def main():
     runtime=(ROOT/'juriscribe'/'runtime_v12.py').read_text(encoding='utf-8')
     host=(ROOT/'juriscribe'/'host_bootstrap.py').read_text(encoding='utf-8')
     schema=json.loads((ROOT/'schemas'/'mode-contract.schema.json').read_text(encoding='utf-8'))
-    if __version__!='0.12.0' or manifest.get('runtime_version')!=__version__: fail('runtime version mismatch')
+    if _version(__version__)<(0,12,0) or manifest.get('runtime_version')!=__version__: fail('runtime version mismatch or v0.12 semantics regressed')
     if CONTRACT_VERSION!='1.9.0' or admission.get('contract_version')!=CONTRACT_VERSION or manifest.get('contract_version')!=CONTRACT_VERSION: fail('contract version mismatch')
     if packaged!=contract: fail('packaged contract differs from canonical root contract')
     if admission.get('contract_sha256')!=contract_digest(contract): fail('ADMISSION contract digest stale')

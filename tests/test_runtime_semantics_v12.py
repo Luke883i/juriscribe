@@ -117,7 +117,7 @@ class RuntimeSemanticsV12Tests(unittest.TestCase):
         manifest = json.loads((ROOT / "MANIFEST.json").read_text(encoding="utf-8"))
         self.assertEqual(root_contract, packaged)
         self.assertEqual(CONTRACT_VERSION, "1.9.0")
-        self.assertEqual(__version__, "0.12.0")
+        self.assertGreaterEqual(tuple(map(int, __version__.split("."))), (0, 12, 0))
         self.assertEqual(admission["contract_sha256"], contract_digest(root_contract))
         self.assertEqual(manifest["runtime_version"], __version__)
 

@@ -15,6 +15,91 @@ LEGACY_MODES = (CONTINUATION, GREENFIELD, REVIEW)
 MODES = (*LEGACY_MODES, COMPRESSION_AND_CONSOLIDATION)
 REVIEW_OUTPUTS = {"REPORT_ONLY", "REPORT_AND_REVISED_TEXT"}
 
+COMMON_RUNTIME_STAGES = (
+    "INPUT_BINDING",
+    "SEMANTIC_RETICULUM",
+    "USER_CONFIGURATION",
+    "DOD_CONTRACT",
+    "PROVENANCE",
+    "FINAL_REVIEW",
+    "MATERIALIZATION",
+)
+
+# One canonical registry for every mode-level invariant that must be shared by
+# runtime admission of material, specialist routing and conversational projection.
+# Substantive proof semantics remain in their specialist engines.
+MODE_REGISTRY: dict[str, dict[str, Any]] = {
+    CONTINUATION: {
+        "engine_family": "CONTINUATION_GENERATION",
+        "default_role": "preceding_chapter",
+        "roles": {"preceding_chapter": {"min": 1, "max": None}},
+        "specific_stages": (
+            "CONTINUATION_FRONTIER",
+            "GENERATION",
+            "REVIEW_REGENERATION",
+            "SIMULATION",
+            "COMPRESSION",
+        ),
+        "entry": {
+            "summary": "Modalità CONTINUATION selezionata. Carica i capitoli precedenti.",
+            "choices": ["CARICA CAPITOLI PRECEDENTI", "ALTRO"],
+        },
+    },
+    GREENFIELD: {
+        "engine_family": "GREENFIELD_GENERATION",
+        "default_role": "concept_source",
+        "roles": {"concept_source": {"min": 1, "max": 1}},
+        "specific_stages": (
+            "GENERATION",
+            "REVIEW_REGENERATION",
+            "SIMULATION",
+            "COMPRESSION",
+        ),
+        "entry": {
+            "summary": "Modalità GREENFIELD selezionata. Fornisci il concept o mandato di partenza.",
+            "choices": ["FORNISCI CONCEPT", "ALTRO"],
+        },
+    },
+    REVIEW: {
+        "engine_family": "DIAGNOSTIC_OR_REVISION_REVIEW",
+        "default_role": "review_target",
+        "roles": {"review_target": {"min": 1, "max": 1}},
+        "specific_stages": (
+            "DIAGNOSTIC_REVIEW",
+            "OPTIONAL_REVISION",
+            "RE_REVIEW",
+        ),
+        "entry": {
+            "summary": "Modalità REVIEW selezionata. Carica il testo da revisionare.",
+            "choices": ["CARICA TESTO DA REVISIONARE", "ALTRO"],
+        },
+    },
+    COMPRESSION_AND_CONSOLIDATION: {
+        "engine_family": "PROOF_CARRYING_REFACTORING",
+        "default_role": "candidate_material",
+        "roles": {
+            "canonical_material": {"min": 1, "max": None},
+            "candidate_material": {"min": 1, "max": None},
+        },
+        "specific_stages": (
+            "LOSSLESS_INVENTORY",
+            "JOINT_RETICULUM",
+            "REFACTORING_PLAN",
+            "MUTATION_EVIDENCE",
+            "DUAL_SATURATION",
+            "REFINED_CANDIDATES",
+            "PEER_REVIEW_READINESS",
+        ),
+        "entry": {
+            "summary": (
+                "Modalità COMPRESSION & CONSOLIDATION selezionata. Carica materiali "
+                "CANONICAL immutabili e CANDIDATE rifattorizzabili."
+            ),
+            "choices": ["CARICA CANONICAL", "CARICA CANDIDATE", "ALTRO"],
+        },
+    },
+}
+
 COMMON_FINAL_ARTIFACT_ROLES = {
     "evidence_dossier",
     "source_register",
@@ -63,6 +148,29 @@ def mode_choices() -> list[str]:
     return list(MODES)
 
 
+def mode_runtime_spec(mode: str) -> dict[str, Any]:
+    normalized = normalize_mode(mode)
+    policy = MODE_REGISTRY[normalized]
+    return {
+        "mode": normalized,
+        "engine_family": policy["engine_family"],
+        "common_stages": list(COMMON_RUNTIME_STAGES),
+        "specific_stages": list(policy["specific_stages"]),
+        "default_role": policy["default_role"],
+        "roles": {key: dict(value) for key, value in policy["roles"].items()},
+    }
+
+
+def mode_entry_projection(mode: str) -> dict[str, Any]:
+    normalized = normalize_mode(mode)
+    entry = MODE_REGISTRY[normalized]["entry"]
+    return {
+        "mode": normalized,
+        "summary": str(entry["summary"]),
+        "choices": list(entry["choices"]),
+    }
+
+
 def review_output(setup: dict[str, Any] | None) -> str:
     accepted = (setup or {}).get("accepted", setup or {})
     value = str(accepted.get("review_output", "REPORT_ONLY")).upper()
@@ -71,15 +179,16 @@ def review_output(setup: dict[str, Any] | None) -> str:
 
 def mode_spec(mode: str, setup: dict[str, Any] | None = None) -> dict[str, Any]:
     mode = normalize_mode(mode)
+    runtime = mode_runtime_spec(mode)
     if mode == CONTINUATION:
-        return {"mode": mode, "seed_required": True, "concept_required": False, "review_target_required": False, "generation_required": True, "continuation_required": True, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_chapter", "input_role": "preceding_chapter"}
+        return {"mode": mode, "seed_required": True, "concept_required": False, "review_target_required": False, "generation_required": True, "continuation_required": True, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_chapter", "input_role": runtime["default_role"]}
     if mode == GREENFIELD:
-        return {"mode": mode, "seed_required": False, "concept_required": True, "review_target_required": False, "generation_required": True, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_legal_text", "input_role": "concept_source"}
+        return {"mode": mode, "seed_required": False, "concept_required": True, "review_target_required": False, "generation_required": True, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "final_legal_text", "input_role": runtime["default_role"]}
     if mode == COMPRESSION_AND_CONSOLIDATION:
-        return {"mode": mode, "seed_required": False, "concept_required": False, "review_target_required": False, "generation_required": False, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "refactoring_report", "input_role": "candidate_material", "input_roles": ["canonical_material", "candidate_material"], "canonical_material_immutable": True, "candidate_material_required": True, "mutation_cases_min": 10_000_000, "no_novelty_tail_min": 1000, "no_better_compression_tail_min": 1000}
+        return {"mode": mode, "seed_required": False, "concept_required": False, "review_target_required": False, "generation_required": False, "continuation_required": False, "revision_required": True, "compression_required": True, "simulation_required": True, "quality_must_pass": True, "source_coverage_must_close": True, "primary_artifact_role": "refactoring_report", "input_role": runtime["default_role"], "input_roles": list(runtime["roles"]), "canonical_material_immutable": True, "candidate_material_required": True, "mutation_cases_min": 10_000_000, "no_novelty_tail_min": 1000, "no_better_compression_tail_min": 1000}
     output = review_output(setup)
     revised = output == "REPORT_AND_REVISED_TEXT"
-    return {"mode": REVIEW, "seed_required": False, "concept_required": False, "review_target_required": True, "generation_required": False, "continuation_required": False, "revision_required": revised, "compression_required": False, "simulation_required": False, "quality_must_pass": revised, "source_coverage_must_close": revised, "primary_artifact_role": "review_report", "secondary_artifact_role": "revised_legal_text" if revised else "", "input_role": "review_target", "review_output": output}
+    return {"mode": REVIEW, "seed_required": False, "concept_required": False, "review_target_required": True, "generation_required": False, "continuation_required": False, "revision_required": revised, "compression_required": False, "simulation_required": False, "quality_must_pass": revised, "source_coverage_must_close": revised, "primary_artifact_role": "review_report", "secondary_artifact_role": "revised_legal_text" if revised else "", "input_role": runtime["default_role"], "review_output": output}
 
 
 def required_artifact_roles(mode: str, setup: dict[str, Any] | None = None) -> set[str]:

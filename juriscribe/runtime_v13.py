@@ -1,16 +1,15 @@
-"""Common multimode runtime kernel layered over the current specialist engines.
+"""Common multimode runtime kernel over the current specialist engines.
 
-The v13 overlay adds only cross-mode invariants: mode-specific input firewalls,
-shared downstream staleness invalidation and canonical mode-entry interaction.
-All substantive generation/review/C&C proof semantics continue to delegate to the
-current runtime_cc_v2 stack.
+The module owns only cross-mode invariants: mode-specific input firewalls, shared
+downstream staleness invalidation and canonical mode-entry interaction. Substantive
+generation/review/C&C proof semantics remain delegated to runtime_cc_v2 and are
+published through the explicit runtime router.
 """
 from __future__ import annotations
 
 from typing import Any
 
 from . import runtime_cc_v2 as _runtime
-from .runtime_cc_v2 import *  # noqa: F401,F403
 from .interaction import mode_entry_card
 from .mode_runtime import (
     MATERIAL_INPUT_CHANGED,

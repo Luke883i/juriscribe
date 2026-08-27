@@ -1,24 +1,43 @@
-"""Public orchestration facade.
+"""Public orchestration facade with explicit runtime composition.
 
-Compression & Consolidation is layered last. The current C&C v2 overlay adds an
-executable editorial reticulum while preserving the v0.12 proof and all historical
-continuation/greenfield/review paths. The common multimode kernel is then layered
-above all specialist engines to enforce shared input and staleness invariants.
+Historical specialist engines remain authoritative for their proof semantics, but
+public operation ownership is declared in :mod:`juriscribe.runtime_router` rather
+than emerging from repeated same-name imports.
 """
 from .orchestrator_base import *  # noqa: F401,F403
-from .finalization import evaluate_completion, record_artifact, record_compression, record_final_review, record_provenance, seal_draft
-from .multimode import apply_setup, audit_candidate_chapter, audit_legal_text, evaluate_completion, freeze_dods, ingest_and_mine, record_artifact, record_compression, record_continuation_coverage, record_final_review, record_provenance, record_regeneration, record_review_cycle, record_review_saturation, record_simulation, register_continuation_plan, register_semantic_mining, seal_draft, select_mode
-from .delivery import evaluate_completion, record_artifact
-from .semantic_delivery import evaluate_completion, record_artifact
-from .generation_governance import audit_candidate_chapter, audit_legal_text, ingest_and_mine, record_final_review, record_provenance, register_plagiarism_reference, register_semantic_mining
-from .artifact_governance import apply_setup, freeze_dods, record_artifact, seal_draft
-from .governance_delivery import evaluate_completion
-from .runtime_autopilot import apply_setup, freeze_dods, record_artifact, record_natural_language_interpretation, resolve_natural_language_interpretation, seal_draft, select_mode
-from . import consolidation_atlas as _consolidation_atlas
-from .runtime_cc_v2 import apply_setup, calibrate_refactoring, consolidation_gate, freeze_dods, ingest_and_mine, record_consolidation_saturation, record_simulation, register_refactoring_plan, register_semantic_mining, seal_refined_candidate, select_mode
-from .runtime_v11_review import record_final_review, record_provenance, record_review_cycle
-from .consolidation_completion import evaluate_completion
-from .runtime_v13 import freeze_dods, ingest_and_mine, register_semantic_mining, select_mode
+from .runtime_router import resolve_operation, routing_manifest
+
+apply_setup = resolve_operation("apply_setup")
+audit_candidate_chapter = resolve_operation("audit_candidate_chapter")
+audit_legal_text = resolve_operation("audit_legal_text")
+evaluate_completion = resolve_operation("evaluate_completion")
+freeze_dods = resolve_operation("freeze_dods")
+ingest_and_mine = resolve_operation("ingest_and_mine")
+record_artifact = resolve_operation("record_artifact")
+record_compression = resolve_operation("record_compression")
+record_continuation_coverage = resolve_operation("record_continuation_coverage")
+record_final_review = resolve_operation("record_final_review")
+record_natural_language_interpretation = resolve_operation("record_natural_language_interpretation")
+record_provenance = resolve_operation("record_provenance")
+record_regeneration = resolve_operation("record_regeneration")
+record_review_cycle = resolve_operation("record_review_cycle")
+record_review_saturation = resolve_operation("record_review_saturation")
+record_simulation = resolve_operation("record_simulation")
+register_continuation_plan = resolve_operation("register_continuation_plan")
+register_plagiarism_reference = resolve_operation("register_plagiarism_reference")
+register_semantic_mining = resolve_operation("register_semantic_mining")
+resolve_natural_language_interpretation = resolve_operation("resolve_natural_language_interpretation")
+seal_draft = resolve_operation("seal_draft")
+select_mode = resolve_operation("select_mode")
+
+calibrate_refactoring = resolve_operation("calibrate_refactoring")
+consolidation_gate = resolve_operation("consolidation_gate")
+record_consolidation_saturation = resolve_operation("record_consolidation_saturation")
+register_refactoring_plan = resolve_operation("register_refactoring_plan")
+seal_refined_candidate = resolve_operation("seal_refined_candidate")
+
+RUNTIME_ROUTING_MANIFEST = routing_manifest()
+
 # Contract-check markers retained from all historical runtime layers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=False
@@ -40,3 +59,4 @@ from .runtime_v13 import freeze_dods, ingest_and_mine, register_semantic_mining,
 # proof_carrying_semantics_required=True structural_substantive_claim_separation_required=True
 # executable_editorial_reticulum_required=True seeded_editorial_mutation_stress_required=True
 # authorized_merge_split_reorder_required=True a_level_editorial_readiness_not_journal_acceptance=True
+# explicit_runtime_routing_required=True common_mode_registry_required=True

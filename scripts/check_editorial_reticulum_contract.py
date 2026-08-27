@@ -10,6 +10,7 @@ if str(ROOT) not in sys.path:
 
 from juriscribe.editorial_reticulum import CLAIM_SCOPE, PROFILE, QUALITY_TARGET
 from juriscribe.editorial_stress import INSTANCE_CLAIM_SCOPE, MIN_DEEP_CHECKS, MIN_INSTANCES, MIN_SEEDS
+from juriscribe.runtime_router import route_owner
 from juriscribe.semantic_proof_v2 import PROFILE as SEMANTIC_PROOF_V2_PROFILE
 
 
@@ -67,13 +68,32 @@ def main() -> int:
         if path not in active:
             fail("active runtime surface missing " + path)
 
+    # v0.13 changes composition topology, not C&C proof ownership. Verify the
+    # semantic owner through the explicit router instead of requiring direct
+    # imports whose removal is itself a runtime-convergence invariant.
+    expected_route_owners = {
+        "calibrate_refactoring": "juriscribe.runtime_cc_v2.calibrate_refactoring",
+        "consolidation_gate": "juriscribe.runtime_cc_v2.consolidation_gate",
+        "record_consolidation_saturation": "juriscribe.runtime_cc_v2.record_consolidation_saturation",
+        "register_refactoring_plan": "juriscribe.runtime_cc_v2.register_refactoring_plan",
+        "seal_refined_candidate": "juriscribe.runtime_cc_v2.seal_refined_candidate",
+    }
+    for operation, expected_owner in expected_route_owners.items():
+        if route_owner(operation) != expected_owner:
+            fail(f"C&C route owner drift: {operation}")
+
     pipeline = (ROOT / "juriscribe" / "pipeline_v11.py").read_text(encoding="utf-8")
     orchestrator = (ROOT / "juriscribe" / "orchestrator.py").read_text(encoding="utf-8")
     completion = (ROOT / "juriscribe" / "consolidation_completion.py").read_text(encoding="utf-8")
-    if "from .runtime_cc_v2 import" not in pipeline:
-        fail("public C&C CLI does not use runtime_cc_v2")
-    if "from .runtime_cc_v2 import" not in orchestrator:
-        fail("orchestrator does not expose runtime_cc_v2 last")
+    if "from .runtime_router import resolve_operation" not in pipeline:
+        fail("public C&C CLI does not use explicit runtime router")
+    for operation in expected_route_owners:
+        if f'resolve_operation("{operation}")' not in pipeline:
+            fail(f"public C&C CLI route missing: {operation}")
+    if "from .runtime_router import resolve_operation" not in orchestrator:
+        fail("orchestrator does not use explicit runtime router")
+    if "from .runtime_cc_v2 import" in orchestrator or "from .runtime_cc_v2 import" in pipeline:
+        fail("public composition bypasses router with direct runtime_cc_v2 import")
     if "from .runtime_cc_v2 import consolidation_gate" not in completion:
         fail("completion gate does not use runtime_cc_v2")
 

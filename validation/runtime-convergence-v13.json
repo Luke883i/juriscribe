@@ -1,0 +1,58 @@
+{
+  "actual_validator_invocations": 10000000,
+  "cases": 10000000,
+  "claim_scope": "EXECUTED_CROSS_LAYER_ARCHITECTURE_VALIDATIONS_NOT_PHYSICAL_HOST_LEGAL_OR_LLM_SESSIONS",
+  "deep_signature_checks": 64,
+  "deep_signature_failures": [],
+  "elapsed_seconds": 8.098,
+  "failures": 0,
+  "families": {
+    "bootstrap_mode_drift": 624727,
+    "capability_promotion": 624866,
+    "cc_missing_role_class": 626214,
+    "control_layout_escape": 624988,
+    "duplicate_source_identity": 625253,
+    "material_staleness_escape": 625107,
+    "persistence_generation_regression": 624561,
+    "projection_authority_escalation": 624856,
+    "registry_entry_drift": 626298,
+    "router_owner_drift": 624672,
+    "semantic_staleness_escape": 624887,
+    "singleton_overflow": 625849,
+    "source_role_drift": 624701,
+    "stale_card_interruption": 623822,
+    "unknown_route": 624078,
+    "wrong_input_role": 625121
+  },
+  "layers": {
+    "ADMISSION_BOOTSTRAP": 1249682,
+    "COMMON_RUNTIME": 1250970,
+    "EVIDENCE_DELIVERY_MODEL": 1248709,
+    "HOST_CAPABILITY_MODEL": 1249593,
+    "MODE_REGISTRY": 1251467,
+    "SESSION_PERSISTENCE_MODEL": 1250550,
+    "SPECIALIST_ROUTING": 1249185,
+    "UIUX_PROJECTION": 1249844
+  },
+  "saturation": {
+    "M": 64,
+    "N": 21,
+    "authority_partition": [
+      "MODE_REGISTRY",
+      "EXPLICIT_ROUTER",
+      "COMMON_STALENESS",
+      "SPECIALIST_PROOF",
+      "MATERIALIZATION",
+      "PROJECTION"
+    ],
+    "m_plus_1000_no_novelty": true,
+    "m_tail_novelty": 0,
+    "n_attempts_degraded": 21,
+    "n_plus_1000_no_better_compression": true,
+    "n_tail_known_attempts": 1000
+  },
+  "scenario_digest": "db9e543bd033d3588ce01d896d492cc50aa6b4c9b292195648f603339c0a7446",
+  "schema": "juriscribe-runtime-convergence-stress/v1",
+  "seed": 7227976535808407722,
+  "status": "PASS"
+}
