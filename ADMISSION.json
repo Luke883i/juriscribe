@@ -1,9 +1,9 @@
 {
-  "schema": "juriscribe-admission/v7",
+  "schema": "juriscribe-admission/v8",
   "repository": "Luke883i/juriscribe",
-  "contract_version": "1.9.0",
+  "contract_version": "2.0.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
-  "contract_sha256": "684311d3898f7d348415a55b4486657d59e7b2bcf2f8a498f5b3a369b79c4607",
+  "contract_sha256": "cf283cac8e5c11a1694983302abf9d15070393506c77046d504d9c4bc8396f55",
   "acceptance_phrase": "I ACCEPT",
   "human_actor_required": true,
   "evidence_type": "explicit_user_message",
@@ -39,6 +39,18 @@
   "compression_consolidation_structural_semantic_proof_required": true,
   "compression_consolidation_caller_supplied_recall_forbidden": true,
   "mutation_instance_count_is_soak_not_unique_semantic_cases": true,
+  "scientific_checkpoint_required": true,
+  "exact_runtime_input_continuity_required": true,
+  "recovery_bundle_on_demand": true,
+  "fresh_probe_on_recovery_resume": true,
+  "recovery_export_does_not_mutate_scientific_checkpoint": true,
+  "iteration_projection_required_fields": ["WHERE", "DONE", "NEXT", "HOW", "DO"],
+  "session_chat_every_materialized_docx_required": true,
+  "session_chat_intermediate_docx_download_required": true,
+  "session_chat_final_delivery_class_independent": true,
+  "session_chat_dashboard_not_download_substitute": true,
+  "session_chat_unregistered_docx_surfaced_and_fail_closed": true,
+  "session_chat_docx_projection_gate_required_for_complete": true,
   "host_runtime_transport": {
     "schema": "juriscribe-host-runtime-transport/v1",
     "installed_runtime_preferred": true,
@@ -64,6 +76,9 @@
     "receipt_simulation_forbidden": true,
     "source_materialization_is_runtime_transport_not_reimplementation": true
   },
-  "runtime_receipt_required_for": ["probe", "initialize", "select-mode", "mine", "semantic-mining", "bibliography", "accept-setup", "freeze-dods", "continuation-plan", "continuation-coverage", "research-plan", "validate-claims", "seal-draft", "review-cycle", "record-regeneration", "review-saturation", "audit-text", "record-simulation", "record-compression", "record-provenance", "final-review", "record-artifact", "consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "gate", "dashboard", "interaction-card", "integrity"],
-  "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access"
+  "runtime_receipt_required_for": ["probe", "initialize", "select-mode", "mine", "semantic-mining", "bibliography", "accept-setup", "freeze-dods", "continuation-plan", "continuation-coverage", "research-plan", "validate-claims", "seal-draft", "review-cycle", "record-regeneration", "review-saturation", "audit-text", "record-simulation", "record-compression", "record-provenance", "final-review", "record-artifact", "consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "recovery-bundle", "recovery-resume", "gate", "dashboard", "interaction-card", "integrity"],
+  "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access",
+  "materialization_pending_state_required": true,
+  "materialization_continue_phrase": "Continue until the end of artefact materialization",
+  "materialization_continue_cross_mode": true
 }

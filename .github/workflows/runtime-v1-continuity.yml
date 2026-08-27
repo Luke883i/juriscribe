@@ -1,0 +1,53 @@
+name: Juriscribe runtime v1 continuity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-runtime-v1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  continuity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile runtime
+        run: python -m compileall -q juriscribe scripts tests
+      - name: Historical contract guard
+        run: python scripts/check_contract.py
+      - name: Preserve v0.13 convergence topology
+        run: python scripts/check_runtime_convergence_v13.py
+      - name: Runtime v1 contract
+        run: python scripts/check_runtime_v1.py
+      - name: Full regression suite
+        run: python -m unittest discover -s tests -v
+      - name: Focused v1 E2E
+        run: python -m unittest tests.test_runtime_v1 -v
+      - name: Ten-thousand continuity mutations
+        run: python scripts/stress_v1_continuity.py --cases 10000 --seed 202608271504 --out /tmp/runtime-v1.json
+      - name: Verify stress receipt
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/runtime-v1.json',encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['actual_validator_invocations']==10_000
+          assert not p['deep_failures']
+          assert len(p['authority_nodes'])==6
+          assert p['recovery_authority_nodes_added']==0
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runtime-v1-continuity
+          path: /tmp/runtime-v1.json
+          if-no-files-found: error
+          retention-days: 7
