@@ -99,6 +99,26 @@ def main() -> int:
         if docx.get(key) != value:
             fail("chat DOCX contract invariant mismatch: " + key)
 
+    required_admission_docx = {
+        "session_chat_every_materialized_docx_required": True,
+        "session_chat_intermediate_docx_download_required": True,
+        "session_chat_final_delivery_class_independent": True,
+        "session_chat_dashboard_not_download_substitute": True,
+        "session_chat_unregistered_docx_surfaced_and_fail_closed": True,
+        "session_chat_docx_projection_gate_required_for_complete": True,
+    }
+    for key, value in required_admission_docx.items():
+        if admission.get(key) != value:
+            fail("ADMISSION chat DOCX invariant mismatch: " + key)
+    for token in (
+        "## 25. Materializzazione DOCX e disponibilità nella sessione-chat",
+        "indipendentemente dal fatto che sia intermedio o finale",
+        "marcato `UNREGISTERED`",
+        "impedisce `COMPLETE`",
+    ):
+        if token not in contract:
+            fail("canonical access contract omits session-chat DOCX rule: " + token)
+
     surface = set((manifest.get("active_surface") or {}).get("runtime") or [])
     for path in (
         "docs/RUNTIME_V1.md",
