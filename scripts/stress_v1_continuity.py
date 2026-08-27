@@ -16,6 +16,7 @@ def state(mode):
     return s
 
 def finalized(s):
+    s['phase']='FINAL_REVIEWED' if s['mode']=='COMPRESSION & CONSOLIDATION' else 'FINAL_SEVERE_REVIEW_PASS'
     if s['mode']=='COMPRESSION & CONSOLIDATION': s['strategy']['consolidation'].update({'peer_review_readiness':{'status':'PASS'},'provenance':{'status':'PASS'},'final_review':{'status':'PASS'}})
     else: s['provenance']={'status':'PASS'}; s['final_review']={'status':'PASS'}
 
@@ -27,7 +28,9 @@ def deep(family,mode):
         import juriscribe.continuity as c
         old=c._materialization_requirements; c._materialization_requirements=lambda _:[{'role':'expected','instance_key':'expected','required':True}]
         try:
-            if family=='materialization_premature': return project_iteration(s)['where']['status']!=MATERIALIZATION_PENDING
+            if family=='materialization_premature':
+                s['provenance']={'status':'PASS'}; s['final_review']={'status':'PASS'}
+                return project_iteration(s)['where']['status']!=MATERIALIZATION_PENDING
             finalized(s); p=project_iteration(s)
             if family=='materialization_pending': return p['where']['status']==MATERIALIZATION_PENDING and p['next']['stage']=='MATERIALIZATION'
             return MATERIALIZATION_CONTINUE_PHRASE in p['next']['how']

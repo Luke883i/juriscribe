@@ -15,6 +15,7 @@ def state(mode="GREENFIELD"):
     return s
 
 def finalize(s):
+    s["phase"]="FINAL_REVIEWED" if s["mode"]=="COMPRESSION & CONSOLIDATION" else "FINAL_SEVERE_REVIEW_PASS"
     if s["mode"]=="COMPRESSION & CONSOLIDATION": s["strategy"]["consolidation"].update({"peer_review_readiness":{"status":"PASS"},"provenance":{"status":"PASS"},"final_review":{"status":"PASS"}})
     else: s["provenance"]={"status":"PASS"}; s["final_review"]={"status":"PASS"}
 
@@ -38,6 +39,14 @@ class RuntimeV1Tests(unittest.TestCase):
                     self.assertEqual(MATERIALIZATION_PENDING,p["where"]["status"]); self.assertEqual("MATERIALIZATION",p["next"]["stage"]); self.assertIn(MATERIALIZATION_CONTINUE_PHRASE,p["next"]["how"])
                     shell=render_chat_shell(s); ok,errors=validate_rendered_shell(shell); self.assertTrue(ok,errors); self.assertIn(MATERIALIZATION_CONTINUE_PHRASE,shell.splitlines()[1])
                     s["artifacts"]=[{"role":"expected","instance_key":"expected","path":"expected.docx","readback":"PASS"}]; self.assertNotEqual(MATERIALIZATION_PENDING,project_iteration(s)["where"]["status"])
+        finally: c._materialization_requirements=old
+
+    def test_materialization_does_not_interrupt_before_true_finalization_phase(self):
+        import juriscribe.continuity as c
+        old=c._materialization_requirements; c._materialization_requirements=lambda _:[{"role":"expected","instance_key":"expected","required":True}]
+        try:
+            s=state("CONTINUATION"); s["provenance"]={"status":"PASS"}; s["final_review"]={"status":"PASS"}; s["phase"]="ACTIVE_WORK"
+            self.assertNotEqual(MATERIALIZATION_PENDING,project_iteration(s)["where"]["status"])
         finally: c._materialization_requirements=old
 
     def test_recovery_bundle_roundtrip_is_readback_verified(self):
