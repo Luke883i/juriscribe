@@ -2,7 +2,8 @@
 
 v0.11 delegates substantive work to :mod:`pipeline_v11`, while preserving the
 historical public surface for pre-existing commands. Raw machine JSON still
-requires the two-part technical opt-in.
+requires the two-part technical opt-in. The ordinary post-bootstrap surface is a
+projection-only three-line chat shell derived from persisted runtime state.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import traceback
 from pathlib import Path
 
 from . import pipeline_v11 as _v9
+from .chat_shell import render_chat_shell
 from .pipeline_v11 import *  # noqa: F401,F403
 
 MAX_PUBLIC_SUMMARY_CHARS = 280
@@ -60,40 +62,26 @@ def _truncate(value: str, limit: int = MAX_PUBLIC_SUMMARY_CHARS) -> str:
     return text[: max(0, limit - 1)].rstrip() + "…"
 
 
-def _compact_interaction(text: str) -> str:
-    try:
-        payload = json.loads(text)
-    except Exception:
-        return "Consulta la dashboard."
-    summary = _truncate(str(payload.get("summary") or ""))
-    choices = [str(item) for item in (payload.get("choices") or [])][:4]
-    if choices:
-        return f"{summary}\n{' | '.join(choices)}".strip()
-    return summary or "Consulta la dashboard."
+def _session_from_output(command: str, raw: str, argv) -> str | None:
+    if command == "bootstrap-after-acceptance":
+        try:
+            return str(json.loads(raw).get("session_dir") or "") or None
+        except Exception:
+            return None
+    if command == "initialize":
+        return str(raw or "").strip() or None
+    return _session_dir(argv)
 
 
-def _compact_gate(text: str) -> str:
-    try:
-        payload = json.loads(text)
-    except Exception:
-        return "Consulta la dashboard."
-    manifest = payload.get("delivery_manifest") or {}
-    attachments = manifest.get("attachments") or []
-    if payload.get("eligible") and manifest.get("status") == "PASS":
-        if manifest.get("attachment_placement") == "SESSION_CHAT_TAIL" and all(item.get("format") == "DOCX" for item in attachments):
-            return f"Completato. I {len(attachments)} artefatti DOCX scaricabili sono allegati in coda alla sessione-chat; la dashboard ne riepiloga i contenuti senza linkarli."
-        return "Completato, ma il contratto pubblico di allegazione DOCX non risulta materializzato."
-    return "Non pronto. Consulta la dashboard; restano blocker di lavorazione."
-
-
-def _compact_fast_bootstrap(text: str) -> str:
-    try:
-        payload = json.loads(text)
-    except Exception:
-        return "Juriscribe inizializzato. Scegli una modalità canonica."
-    session_dir = _truncate(str(payload.get("session_dir") or ""), 500)
-    choices = " | ".join(str(x) for x in (payload.get("choices") or []))
-    return f"Juriscribe inizializzato: {session_dir}\n{choices}".strip()
+def _render_persisted_shell(session_dir: str | None) -> str | None:
+    if not session_dir:
+        return None
+    path = Path(session_dir)
+    ws = _v9.Workspace(path.parent, path.name)
+    if not ws.state_path.exists():
+        return None
+    state = ws.load()
+    return render_chat_shell(state)
 
 
 def _record_hidden_failure(argv, exc: Exception) -> None:
@@ -107,9 +95,23 @@ def _record_hidden_failure(argv, exc: Exception) -> None:
     try:
         state = ws.load()
         command = _command(argv)
-        record = {"kind": "RUNTIME_BLOCKER", "status": "OPEN", "command": command, "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.", "error_type": type(exc).__name__}
-        state.limits = [item for item in (state.limits or []) if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)] + [record]
-        ws.append_ledger("runtime-errors", {**record, "internal_message": str(exc), "traceback": traceback.format_exc(), "delivery_class": "INTERNAL"})
+        record = {
+            "kind": "RUNTIME_BLOCKER",
+            "status": "OPEN",
+            "command": command,
+            "summary": "Errore tecnico interno; dettaglio disponibile solo nel ledger tecnico su richiesta esplicita.",
+            "error_type": type(exc).__name__,
+        }
+        state.limits = [
+            item for item in (state.limits or [])
+            if not (str(item.get("kind", "")).upper() == "RUNTIME_BLOCKER" and item.get("command") == command)
+        ] + [record]
+        ws.append_ledger("runtime-errors", {
+            **record,
+            "internal_message": str(exc),
+            "traceback": traceback.format_exc(),
+            "delivery_class": "INTERNAL",
+        })
         _v9.persist_session(ws, state)
     except Exception:
         pass
@@ -136,18 +138,16 @@ def main(argv=None):
         print("Operazione non completata. Consulta la dashboard.")
         return 2
     raw = stdout.getvalue().strip()
-    if command == "gate":
-        print(_compact_gate(raw))
-    elif command == "interaction-card":
-        print(_compact_interaction(raw))
-    elif command == "bootstrap-after-acceptance":
-        print(_compact_fast_bootstrap(raw))
-    elif command in {"initialize", "dashboard"}:
-        print(_truncate(raw, 600) or "OK.")
-    elif command == "consolidation-status":
-        print(_truncate(raw, 1200) or "OK.")
+    session_dir = _session_from_output(command, raw, clean)
+    try:
+        shell = _render_persisted_shell(session_dir)
+    except Exception as exc:
+        _record_hidden_failure(clean, exc)
+        shell = None
+    if shell:
+        print(shell)
     elif rc == 0:
-        print("OK. Contenuti aggiornati; i DOCX finali saranno allegati in coda alla sessione-chat e la dashboard resterà un riepilogo sintetico senza link documentali.")
+        print(_truncate(raw, 600) or "OK.")
     else:
         print("Richiede attenzione. Consulta la dashboard.")
     return rc
