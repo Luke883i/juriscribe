@@ -1,8 +1,8 @@
 """Public orchestration facade with explicit runtime composition.
 
-Historical specialist engines remain authoritative for their proof semantics, but
-public operation ownership is declared in :mod:`juriscribe.runtime_router` rather
-than emerging from repeated same-name imports.
+Historical specialist engines remain authoritative for their proof semantics. v1
+adds recovery export only as an explicit MATERIALIZATION route; recovery resume
+continues to reuse bootstrap/session persistence rather than becoming proof authority.
 """
 from .orchestrator_base import *  # noqa: F401,F403
 from .runtime_router import resolve_operation, routing_manifest
@@ -10,6 +10,7 @@ from .runtime_router import resolve_operation, routing_manifest
 apply_setup = resolve_operation("apply_setup")
 audit_candidate_chapter = resolve_operation("audit_candidate_chapter")
 audit_legal_text = resolve_operation("audit_legal_text")
+create_recovery_bundle = resolve_operation("create_recovery_bundle")
 evaluate_completion = resolve_operation("evaluate_completion")
 freeze_dods = resolve_operation("freeze_dods")
 ingest_and_mine = resolve_operation("ingest_and_mine")
@@ -60,3 +61,5 @@ RUNTIME_ROUTING_MANIFEST = routing_manifest()
 # executable_editorial_reticulum_required=True seeded_editorial_mutation_stress_required=True
 # authorized_merge_split_reorder_required=True a_level_editorial_readiness_not_journal_acceptance=True
 # explicit_runtime_routing_required=True common_mode_registry_required=True
+# scientific_checkpoint_required=True portable_recovery_bundle_required=True
+# recovery_fresh_probe_required=True iteration_where_done_next_how_do_required=True

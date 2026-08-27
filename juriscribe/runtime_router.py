@@ -1,8 +1,7 @@
-"""Explicit public runtime composition for Juriscribe.
+"""Explicit public runtime composition for Juriscribe v1 candidate.
 
-The router replaces import-order authority with a small declarative map. It does
-not reimplement any substantive engine; it resolves each public operation to the
-same specialist/common owner that was effective on main before this refactor.
+Recovery export is routed as MATERIALIZATION. Resume/import remains a bootstrap and
+persisted-session concern and therefore is not an ordinary orchestration route.
 """
 from __future__ import annotations
 
@@ -11,13 +10,11 @@ from typing import Callable
 
 SCHEMA = "juriscribe-runtime-router/v1"
 
-# operation -> (module, attribute). These owners reproduce the effective public
-# resolution of the historical overlay stack, but make that resolution explicit,
-# reviewable and mutation-testable.
 ROUTES: dict[str, tuple[str, str]] = {
     "apply_setup": ("runtime_cc_v2", "apply_setup"),
     "audit_candidate_chapter": ("generation_governance", "audit_candidate_chapter"),
     "audit_legal_text": ("generation_governance", "audit_legal_text"),
+    "create_recovery_bundle": ("recovery", "create_recovery_bundle"),
     "evaluate_completion": ("consolidation_completion", "evaluate_completion"),
     "freeze_dods": ("runtime_v13", "freeze_dods"),
     "ingest_and_mine": ("runtime_v13", "ingest_and_mine"),
@@ -37,8 +34,6 @@ ROUTES: dict[str, tuple[str, str]] = {
     "resolve_natural_language_interpretation": ("runtime_autopilot", "resolve_natural_language_interpretation"),
     "seal_draft": ("runtime_autopilot", "seal_draft"),
     "select_mode": ("runtime_v13", "select_mode"),
-    # C&C specialist commands use the same router instead of bypassing the public
-    # composition layer from pipeline_v11.
     "calibrate_refactoring": ("runtime_cc_v2", "calibrate_refactoring"),
     "consolidation_gate": ("runtime_cc_v2", "consolidation_gate"),
     "record_consolidation_saturation": ("runtime_cc_v2", "record_consolidation_saturation"),

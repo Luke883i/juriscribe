@@ -1,15 +1,15 @@
 """Common multimode runtime kernel over the current specialist engines.
 
-The module owns only cross-mode invariants: mode-specific input firewalls, shared
-downstream staleness invalidation and canonical mode-entry interaction. Substantive
-generation/review/C&C proof semantics remain delegated to runtime_cc_v2 and are
-published through the explicit runtime router.
+v1 addition: exact runtime-input representation is archived after successful ingest
+so on-demand recovery bundles are losslessly resumable. Recovery adds no proof
+semantics and the common staleness owner remains unchanged.
 """
 from __future__ import annotations
 
 from typing import Any
 
 from . import runtime_cc_v2 as _runtime
+from .continuity import archive_material
 from .interaction import mode_entry_card
 from .mode_runtime import (
     MATERIAL_INPUT_CHANGED,
@@ -49,6 +49,15 @@ def ingest_and_mine(state, text, *, source_id, chapter=None, source_record=None,
         chapter=chapter,
         source_record=source_record,
         role=selected_role,
+    )
+    # Archive only after the specialist ingest succeeded. This is the exact text
+    # representation Juriscribe actually processed, not a claim about upstream bytes.
+    archive_material(
+        state,
+        text,
+        source_id=str(source_id),
+        role=selected_role,
+        chapter=chapter,
     )
     invalidate_downstream(
         state,
