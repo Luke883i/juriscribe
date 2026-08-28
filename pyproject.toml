@@ -5,9 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "juriscribe-runtime"
 version = "1.0.0"
-description = "Repository-governed runtime for auditable legal, scientific and editorial work"
+description = "Experimental open-source repository-governed runtime for auditable legal, scientific and editorial work"
 requires-python = ">=3.10"
 dependencies = []
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/Luke883i/juriscribe"
 
 [project.scripts]
 juriscribe = "juriscribe.pipeline:main"

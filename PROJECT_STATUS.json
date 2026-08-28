@@ -1,0 +1,30 @@
+{
+  "schema": "juriscribe-project-status/v1",
+  "profile": "JURISCRIBE_PROJECT_STATUS_V1",
+  "project": "Juriscribe",
+  "repository": "Luke883i/juriscribe",
+  "kind": "EXPERIMENTAL_OPEN_SOURCE_RESEARCH_SOFTWARE",
+  "license_spdx": "Apache-2.0",
+  "experimental": true,
+  "ai_errors_possible": true,
+  "human_validation_required": true,
+  "human_final_responsibility": true,
+  "professional_advice": false,
+  "substantive_truth_claim": false,
+  "pass_implies_truth": false,
+  "responsible_use_is_license_restriction": false,
+  "status_adds_runtime_authority": false,
+  "authority_partition_nodes": 6,
+  "authority_nodes": [
+    "MODE_REGISTRY",
+    "EXPLICIT_ROUTER",
+    "COMMON_STALENESS",
+    "SPECIALIST_PROOF",
+    "MATERIALIZATION",
+    "PROJECTION"
+  ],
+  "human_readable_status": "docs/PROJECT_STATUS.md",
+  "responsible_use": "RESPONSIBLE_USE.md",
+  "license": "LICENSE",
+  "claim_scope": "PROJECT_STATUS_AND_RELIANCE_BOUNDARY_NOT_SUBSTANTIVE_LEGAL_OR_FACTUAL_TRUTH"
+}

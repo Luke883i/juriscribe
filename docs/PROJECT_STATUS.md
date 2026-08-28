@@ -28,15 +28,17 @@ These statements are intentionally declarative. They do not alter the scientific
 
 The same status is projected into:
 
+- `PROJECT_STATUS.json` as the canonical machine-readable status profile;
 - `README.md` for human discovery;
-- `LICENSE` for open-source grant and warranty/liability terms;
+- `LICENSE` for the open-source grant and warranty/liability terms;
 - `RESPONSIBLE_USE.md` for the validation and reliance boundary;
 - `AGENTS.md` and `ISENECA_ACCESS_CONTRACT.md` for AI/host admission;
-- `ADMISSION.json` and `MANIFEST.json` for machine-readable discovery;
-- `pyproject.toml` for package metadata;
-- `RUNTIME_V1_CONTRACT.json` for continuity of the v1 claim boundary.
+- `ADMISSION.json` for machine-readable pre-admission binding;
+- `pyproject.toml` for package/license metadata;
+- `RUNTIME_V1_CONTRACT.json` for continuity of the v1 claim boundary;
+- `MANIFEST.json` for the current access-contract version binding.
 
-CI must reject contradictions across these surfaces. The canonical open-source license and the responsible-use statement remain separate: operational human-validation requirements are not encoded as field-of-use restrictions in the software license.
+CI rejects contradictions across these surfaces. The canonical open-source license and the responsible-use statement remain separate: operational human-validation requirements are not encoded as field-of-use restrictions in the software license.
 
 ## Assurance boundary
 
