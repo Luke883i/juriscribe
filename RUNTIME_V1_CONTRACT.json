@@ -2,7 +2,7 @@
   "schema": "juriscribe-runtime-v1-contract/v1",
   "profile": "JURISCRIBE_RUNTIME_V1",
   "runtime_version": "1.0.0",
-  "contract_version": "2.0.0",
+  "contract_version": "2.1.0",
   "authority_partition_nodes": 6,
   "authority_nodes": [
     "MODE_REGISTRY",
@@ -13,6 +13,13 @@
     "PROJECTION"
   ],
   "no_new_authority_node": true,
+  "project_status_profile": "JURISCRIBE_PROJECT_STATUS_V1",
+  "project_status_is_authority": false,
+  "experimental_open_source": true,
+  "ai_errors_possible": true,
+  "human_validation_required": true,
+  "human_final_responsibility": true,
+  "pass_implies_substantive_truth": false,
   "exact_runtime_input_archive": true,
   "scientific_checkpoint_host_independent": true,
   "recovery_bundle_schema": "juriscribe-recovery-bundle/v1",

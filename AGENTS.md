@@ -2,6 +2,8 @@
 
 This file is intentionally minimal and belongs to the pre-admission surface.
 
+Juriscribe is experimental open-source research software. AI-assisted output may be wrong, incomplete, hallucinated, stale, miscited or otherwise defective. No Juriscribe `PASS`, receipt, proof, readiness label or completion state is a certification of legal/factual truth or professional adequacy. Material outputs require competent human validation before consequential reliance, and the human person or organization choosing to use the final artifact remains responsible for that use. These rules are part of the current access contract; Apache-2.0 remains the repository software license and is not narrowed by a field-of-use restriction.
+
 Before substantive access to Juriscribe, a compliant AI/agent may read only:
 
 - `AGENTS.md`
@@ -20,7 +22,7 @@ If exact human acceptance evidence was observed before the runtime became execut
 
 After acceptance, probe and initialize remain distinct audited runtime transitions with distinct receipts. A compliant host may use the canonical `bootstrap-after-acceptance` fast path in the same assistant turn after exact human acceptance. Hosts with `SESSION_CONTEXT=AVAILABLE` may use the canonical memory bootstrap entrypoint declared by `ADMISSION.json`; memory sessions do not claim durable recovery.
 
-After initialize, substantive work still requires an explicit mode selected from the modes returned by the current runtime. Current contract 1.9 modes are `CONTINUATION`, `GREENFIELD`, `REVIEW`, and `COMPRESSION & CONSOLIDATION`; `ALTRO` remains free input and is not a mode.
+After initialize, substantive work still requires an explicit mode selected from the modes returned by the current runtime. Current contract 2.1 modes are `CONTINUATION`, `GREENFIELD`, `REVIEW`, and `COMPRESSION & CONSOLIDATION`; `ALTRO` remains free input and is not a mode.
 
 `COMPRESSION & CONSOLIDATION` treats `canonical_material` as immutable transformation reference and `candidate_material` as refinable material. Canonical status does not itself create legal or factual authority. Current C&C requires lossless object inventory, a joint reticulum, evidence-bound minimal refactoring, mutation/stress coverage evidence, M+1000/N+1000 saturation, user calibration, runtime-derived structural semantic proof, peer-review readiness, provenance, final severe review and one refined candidate artifact per candidate input. Stress instance counts are soak volume, not claims of unique semantic cases; structural proof is not independent legal truth.
 

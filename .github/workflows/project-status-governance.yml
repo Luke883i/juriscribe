@@ -1,0 +1,54 @@
+name: Juriscribe project status governance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-project-status-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  project-status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile governance checks
+        run: python -m compileall -q juriscribe scripts
+      - name: Historical contract guard
+        run: python scripts/check_contract.py
+      - name: Project status cross-surface guard
+        run: python scripts/check_project_status.py
+      - name: Runtime v1 claim-boundary guard
+        run: python scripts/check_runtime_v1.py
+      - name: Ten-million project-status mutations
+        run: python scripts/stress_project_status.py --cases 10000000 --seed 7142117626871047078 --out /tmp/project-status-10m.json
+      - name: Verify project-status stress receipt
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/project-status-10m.json',encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['actual_validator_invocations']==10_000_000
+          assert p['seed']==7142117626871047078
+          assert len(p['mutation_families'])==16
+          assert not p['deep_failures']
+          assert not p['mutation_survivors']
+          assert p['oracle_mismatches']==0
+          assert p['m_plus_no_novelty_tail']>=1000
+          assert p['authority_partition_nodes']==6
+          assert p['project_status_authority_nodes_added']==0
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: project-status-governance-10m
+          path: /tmp/project-status-10m.json
+          if-no-files-found: error
+          retention-days: 7

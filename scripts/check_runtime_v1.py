@@ -27,6 +27,7 @@ def main() -> int:
     manifest = json.loads(_read("MANIFEST.json"))
     admission = json.loads(_read("ADMISSION.json"))
     runtime_contract = json.loads(_read("RUNTIME_V1_CONTRACT.json"))
+    project_status = json.loads(_read("PROJECT_STATUS.json"))
     pyproject = _read("pyproject.toml")
     init = _read("juriscribe/__init__.py")
     contract = _read("ISENECA_ACCESS_CONTRACT.md")
@@ -43,10 +44,12 @@ def main() -> int:
         fail("runtime/manifest version mismatch")
     if not re.search(r'^version = "1\.0\.0"$', pyproject, re.M):
         fail("pyproject version is not 1.0.0")
-    if manifest.get("contract_version") != "2.0.0" or admission.get("contract_version") != "2.0.0":
-        fail("v1 contract version mismatch")
-    if "contract_version: 2.0.0" not in contract or packaged != contract:
-        fail("canonical/bundled v2 contract mismatch")
+    if admission.get("contract_version") != "2.1.0":
+        fail("v1 admission contract version mismatch")
+    if runtime_contract.get("contract_version") != "2.1.0":
+        fail("v1 runtime contract version mismatch")
+    if "contract_version: 2.1.0" not in contract or packaged != contract:
+        fail("canonical/bundled v2.1 contract mismatch")
     digest = hashlib.sha256(contract.replace("\r\n", "\n").encode("utf-8")).hexdigest()
     if admission.get("contract_sha256") != digest:
         fail("ADMISSION contract digest stale")
@@ -55,9 +58,16 @@ def main() -> int:
         "schema": "juriscribe-runtime-v1-contract/v1",
         "profile": "JURISCRIBE_RUNTIME_V1",
         "runtime_version": version,
-        "contract_version": "2.0.0",
+        "contract_version": "2.1.0",
         "authority_partition_nodes": 6,
         "no_new_authority_node": True,
+        "project_status_profile": "JURISCRIBE_PROJECT_STATUS_V1",
+        "project_status_is_authority": False,
+        "experimental_open_source": True,
+        "ai_errors_possible": True,
+        "human_validation_required": True,
+        "human_final_responsibility": True,
+        "pass_implies_substantive_truth": False,
         "exact_runtime_input_archive": True,
         "scientific_checkpoint_host_independent": True,
         "recovery_bundle_schema": "juriscribe-recovery-bundle/v1",
@@ -73,15 +83,26 @@ def main() -> int:
             fail("runtime v1 contract invariant mismatch: " + key)
     if runtime_contract.get("iteration_contract") != ["WHERE", "DONE", "NEXT", "HOW", "DO"]:
         fail("iteration contract mismatch")
-    if runtime_contract.get("authority_nodes") != [
-        "MODE_REGISTRY",
-        "EXPLICIT_ROUTER",
-        "COMMON_STALENESS",
-        "SPECIALIST_PROOF",
-        "MATERIALIZATION",
-        "PROJECTION",
-    ]:
+    expected_nodes = ["MODE_REGISTRY", "EXPLICIT_ROUTER", "COMMON_STALENESS", "SPECIALIST_PROOF", "MATERIALIZATION", "PROJECTION"]
+    if runtime_contract.get("authority_nodes") != expected_nodes:
         fail("authority node order/identity mismatch")
+    if project_status.get("authority_nodes") != expected_nodes or project_status.get("authority_partition_nodes") != 6:
+        fail("project status changed runtime authority topology")
+
+    for key, value in {
+        "license_spdx": "Apache-2.0",
+        "experimental": True,
+        "ai_errors_possible": True,
+        "human_validation_required": True,
+        "human_final_responsibility": True,
+        "professional_advice": False,
+        "substantive_truth_claim": False,
+        "pass_implies_truth": False,
+        "responsible_use_is_license_restriction": False,
+        "status_adds_runtime_authority": False,
+    }.items():
+        if project_status.get(key) != value:
+            fail("project status invariant mismatch: " + key)
 
     docx = runtime_contract.get("chat_session_docx_delivery") or {}
     required_docx = {
@@ -177,8 +198,9 @@ def main() -> int:
     print(json.dumps({
         "status": "PASS",
         "runtime_version": version,
-        "contract_version": "2.0.0",
+        "contract_version": "2.1.0",
         "runtime_contract_schema": runtime_contract.get("schema"),
+        "project_status_profile": project_status.get("profile"),
         "shell_schema": "juriscribe-chat-shell/v2",
         "recovery_schema": "juriscribe-recovery-bundle/v1",
         "chat_docx_profile": docx.get("profile"),

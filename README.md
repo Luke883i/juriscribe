@@ -1,6 +1,12 @@
 # Juriscribe
 
+> **Experimental open-source research software — human validation required.** Juriscribe uses AI-assisted workflows and can produce substantive errors, omissions, hallucinations, stale or incorrect authorities, citation defects and faulty inferences. Do not treat a runtime `PASS`, receipt, proof, readiness label or completed workflow as a certification of legal/factual truth. Every material artifact must be reviewed and validated by a competent human before consequential reliance; the final decision to use an artifact and responsibility for that artifact remain human. See [`RESPONSIBLE_USE.md`](RESPONSIBLE_USE.md), [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md), and [`LICENSE`](LICENSE).
+
 Juriscribe is an autonomous, repository-governed runtime for auditable legal/scientific/editorial work. The canonical entrypoint is `python -m juriscribe`; the repository is also packageable through `pyproject.toml` and exposes the `juriscribe` console script. An optional local GPT may act as a host adapter, but it is not a second Juriscribe implementation.
+
+## Project status and licensing
+
+Juriscribe is an experimental research project under active development. The repository work is licensed under **Apache License 2.0**. The open-source license and the project's responsible-use model are intentionally separate: `RESPONSIBLE_USE.md` states the human-validation and reliance boundary without adding a field-of-use restriction to Apache-2.0. Juriscribe is tooling, not professional advice, a legal authority, peer review, or certification. Host/model providers may impose separate terms and data-handling rules, especially for confidential or privileged material.
 
 ## Bootstrap
 
@@ -46,6 +52,8 @@ The dashboard is a persistent inference-oriented workbench and does not replace 
 ## Host behavior
 
 After bootstrap the conversation is a control surface. **NON narrare** mining, research, reticulum construction, review, simulations, saturation, compression, provenance or internal gates. Continue autonomously until a materially blocking human decision is necessary. Keep ordinary post-bootstrap chat to 1–3 lines.
+
+Autonomy is workflow autonomy, not authority to waive human validation. A host must not present an AI-generated artifact as independently verified, professionally certified, or safe for consequential reliance merely because Juriscribe reached a runtime gate.
 
 ## Packaging
 
