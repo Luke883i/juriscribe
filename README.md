@@ -12,7 +12,29 @@ Juriscribe is an experimental research project under active development. The rep
 
 Discovery is non-authorizing. Read the pre-admission surface, present the current terms, and wait for exact human `I ACCEPT`. After acceptance, `PROBE JURISCRIBE` and `INITIALIZE JURISCRIBE` remain distinct transitions; the runtime may use `bootstrap-after-acceptance` to execute them in one host turn while keeping separate receipts. Mode selection remains explicit.
 
-For source-transport hosts, `ADMISSION.json` now declares a pinned minimal bootstrap import closure. When `SESSION_CONTEXT=AVAILABLE`, the host may materialize only that closure, complete admission/probe/initialize, render mode choices, and defer the rest of the pinned runtime until substantive work. This is a transport optimization only: revision binding, contract binding, single-use receipts and sealed capabilities are unchanged.
+For source-transport hosts, `ADMISSION.json` declares a pinned minimal bootstrap import closure. When `SESSION_CONTEXT=AVAILABLE`, the host may materialize only that closure, complete admission/probe/initialize, render mode choices, and defer the rest of the pinned runtime until substantive work. This is a transport optimization only: revision binding, contract binding, single-use receipts and sealed capabilities are unchanged.
+
+### Initialize from a GPT-like chat
+
+A cooperative GPT-like host may treat the following as equivalent UX intents:
+
+```text
+Initialize Juriscribe https://github.com/Luke883i/juriscribe
+```
+
+or, when the canonical repository is already configured by the host adapter:
+
+```text
+Initialize Juriscribe
+```
+
+Italian aliases such as `Inizializza Juriscribe` and `Avvia Juriscribe` are host-level UX aliases only; they never bypass the exact human `I ACCEPT`, real probe receipts or runtime initialize transition.
+
+A GitHub connector is **not a Juriscribe dependency**. Public byte-exact repository access may be used when the host can genuinely execute the pinned runtime source. Repository readability alone is not execution capability: an insufficient host must expose a real blocker rather than simulate Juriscribe.
+
+Current host reachability is capability-derived and distinguishes `DISCOVERY_READY`, `BOOTSTRAP_READY`, `WORK_READY`, `MATERIALIZATION_READY`, `DELIVERY_READY` and `RECOVERY_READY`. Provider, browser and OS names are diagnostic only; at equal observed capabilities they do not change the runtime decision. A memory-only chat can therefore be validly `WORK_READY` without being allowed to promise DOCX materialization or durable recovery.
+
+See [`docs/LOCAL_GPT_HOST_ADAPTER.md`](docs/LOCAL_GPT_HOST_ADAPTER.md) for the minimal host adapter and [`docs/PHYSICAL_CONVERGENCE_V11.md`](docs/PHYSICAL_CONVERGENCE_V11.md) for the v1.1 convergence contract and mutation evidence.
 
 ## Canonical modes
 
@@ -49,6 +71,8 @@ Common user-facing roles include evidence dossier, source register, inference re
 
 The dashboard is a persistent inference-oriented workbench and does not replace DOCX delivery. At completion, attendi gli artefatti finali in the session chat tail; release is atomic and partial compliant delivery is forbidden.
 
+Snapshot/recovery is a cross-mode session control, not a fifth mode. `recovery-bundle` creates a verified local ZIP snapshot and recovery resume requires a fresh host probe; a memory-only session must not claim durable recovery.
+
 ## Host behavior
 
 After bootstrap the conversation is a control surface. **NON narrare** mining, research, reticulum construction, review, simulations, saturation, compression, provenance or internal gates. Continue autonomously until a materially blocking human decision is necessary. Keep ordinary post-bootstrap chat to 1–3 lines.
@@ -65,8 +89,12 @@ The runtime remains stdlib-only. `pyproject.toml` packages the Python runtime an
 python -m unittest discover -s tests -v
 python -m compileall -q juriscribe scripts tests
 python scripts/check_contract.py
+python scripts/check_physical_convergence_v11.py
+python -m unittest tests.test_physical_convergence_v11 -v
 python -m unittest tests.test_runtime_semantics_v12 -v
 python scripts/simulate_runtime_semantics_v12.py --cases 100000
 ```
+
+The dedicated v1.1 workflow additionally executes 1,000,000 capability/lifecycle mutations split across edge, typical and degraded/stress campaigns. These are executable runtime-classifier validations, not claims of one million physical AI providers, browsers, operating systems, legal matters or LLM sessions.
 
 The repository also preserves its historical regression, saturation, Safari/browser delivery and external-evaluation boundaries.

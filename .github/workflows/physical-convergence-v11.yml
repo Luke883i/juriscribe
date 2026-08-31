@@ -1,0 +1,55 @@
+name: Juriscribe physical convergence v1.1
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-physical-v11-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  physical-convergence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile current and historical surfaces
+        run: python -m compileall -q juriscribe scripts tests
+      - name: Preserve v0.13 explicit authority
+        run: python scripts/check_runtime_convergence_v13.py
+      - name: Preserve runtime v1 contract
+        run: python scripts/check_runtime_v1.py
+      - name: Physical convergence + mutation-kill gate
+        run: python scripts/check_physical_convergence_v11.py
+      - name: Focused v1.1 tests
+        run: python -m unittest tests.test_physical_convergence_v11 -v
+      - name: Edge mutations
+        run: python scripts/stress_host_convergence_v11.py --campaign edge --count 333334 --seed 602425368693563340 --out /tmp/host-edge-v11.json
+      - name: Typical mutations
+        run: python scripts/stress_host_convergence_v11.py --campaign typical --count 333333 --seed 6918701765035871741 --out /tmp/host-typical-v11.json
+      - name: Degraded/stress mutations
+        run: python scripts/stress_host_convergence_v11.py --campaign stress --count 333333 --seed 4353082734915292282 --out /tmp/host-stress-v11.json
+      - name: Verify one-million receipt
+        run: |
+          python - <<'PY'
+          import json
+          paths=['/tmp/host-edge-v11.json','/tmp/host-typical-v11.json','/tmp/host-stress-v11.json']
+          rows=[json.load(open(p,encoding='utf-8')) for p in paths]
+          assert sum(r['cases'] for r in rows)==1_000_000
+          assert all(r['status']=='PASS' for r in rows)
+          assert sum(r['oracle_mismatches'] for r in rows)==0
+          assert {r['campaign'] for r in rows}=={'edge','typical','stress'}
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: physical-convergence-v11-receipts
+          path: /tmp/host-*-v11.json
+          if-no-files-found: error
+          retention-days: 7
