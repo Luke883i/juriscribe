@@ -28,7 +28,9 @@ Le classi di reachability non sono nuovi authority nodes; sono una proiezione ca
 - zero star-import nel current public pipeline/orchestrator;
 - connector GitHub non richiesto quando esiste un public pinned source path;
 - zero bootstrap success senza revision/contract binding, executable transport e state carrier;
+- installed runtime utilizzabile solo con `RUNTIME_IMPORT=AVAILABLE` **e** revision binding verificato;
 - zero promozioni `UNVERIFIED -> AVAILABLE`;
+- local scratch I/O non implica una superficie di delivery verso l'utente;
 - provider/browser/OS identity invariance = 100%;
 - memory-only work non implica materialization/delivery/recovery;
 - recovery export non muta scientific checkpoint e resume richiede fresh probe;
@@ -50,9 +52,10 @@ Le classi di reachability non sono nuovi authority nodes; sono una proiezione ca
 - `Initialize Juriscribe` e `Inizializza Juriscribe` bindano il repository canonico;
 - un URL non canonico viene rifiutato come bootstrap Juriscribe;
 - `plan_runtime_transport` richiede un vero state carrier (`SESSION_CONTEXT` oppure `LOCAL_SCRATCH_IO`);
-- installed runtime viene usato soltanto se revision-bound;
+- installed runtime viene usato soltanto se il runtime import è osservato e revision-bound;
 - source transport richiede `REPOSITORY_READ + PYTHON_EXECUTION + SOURCE_TO_RUNTIME_BRIDGE`;
-- `repository_connector_required=false` è una proprietà esplicita del piano.
+- `repository_connector_required=false` è una proprietà esplicita del piano;
+- `LOCAL_FILE_DELIVERY` resta `UNVERIFIED` finché il host non lo dichiara/osserva realmente: un test scratch non lo promuove.
 
 ### Reachability locale
 
@@ -63,32 +66,32 @@ Le classi di reachability non sono nuovi authority nodes; sono una proiezione ca
 - `DELIVERY_READY`: materialization + real delivery surface;
 - `RECOVERY_READY`: work + filesystem + real delivery surface.
 
-## Campagna locale eseguita sul candidate classifier
+## Campagna locale hardenizzata eseguita sul candidate classifier
 
-Tre campagne separate, un milione di invocazioni complessive. Sono mutazioni di capability/lifecycle, non un milione di provider fisici, testi giuridici o sessioni LLM.
+Tre campagne separate, un milione di invocazioni complessive. Sono mutazioni di capability/lifecycle, non un milione di provider fisici, testi giuridici o sessioni LLM. Dopo il primo pass sono stati aggiunti due invarianti fail-closed — runtime import osservato e delivery surface indipendente dallo scratch — e l'intero milione è stato rieseguito.
 
 | Campaign | Seed | Cases | Oracle mismatches | Unique signatures |
 |---|---:|---:|---:|---:|
-| edge | 602425368693563340 | 333,334 | 0 | 3,680 |
-| typical | 6918701765035871741 | 333,333 | 0 | 113 |
-| stress/degraded | 4353082734915292282 | 333,333 | 0 | 73,594 |
+| edge | 602425368693563340 | 333,334 | 0 | 3,713 |
+| typical | 6918701765035871741 | 333,333 | 0 | 108 |
+| stress/degraded | 4353082734915292282 | 333,333 | 0 | 73,809 |
 | **TOTAL** | — | **1,000,000** | **0** | campaign-local |
 
-Candidate digests:
+Hardened candidate digests:
 
-- edge: `60e7c027b612159ab3577937ae785d6a946eef8a90ee29cf6890275005b65343`
-- typical: `12c7d0d6bcab88dcd02d638c1e2a09164bb0bf80da98efb27a4155c2db6f2f3c`
-- stress: `d2c094e80323c494b2e1d79e74f12cf4a65df8e940c31fa9843266b1aed24ed6`
+- edge: `c7d3a7da5685a3cbeb64d58b0b78551529feb59ea787471e9786c2a62b0c6846`
+- typical: `80d95467d58b284519ec94682fa178cd06a34b98567b26e4426bb6e8dfaa8af3`
+- stress: `5cdd4920417217d005004c5d25cf6dccc28fad709a8a75910193271ee7e28995`
 
-A separate deep mutation-kill pass executed 50,000 cases against 20 non-equivalent semantic mutants:
+A separate hardened mutation-kill pass executed 50,000 cases against 22 non-equivalent semantic mutants:
 
-- mutation families: **20**;
-- mutants killed: **20**;
+- mutation families: **22**;
+- mutants killed: **22**;
 - survivors: **0**;
 - oracle mismatches: **0**;
 - provider/browser/OS identity mismatches: **0**.
 
-The CI checker repeats a deterministic 10,000-case semantic mutation kill gate and the dedicated workflow re-executes the full 1,000,000 edge/typical/stress campaign on the repository branch.
+The two additional mutants explicitly test `RUNTIME_IMPORT_UNOBSERVED_ALLOWED` and `SCRATCH_IMPLIES_LOCAL_DELIVERY`. The CI checker repeats a deterministic semantic mutation-kill gate and the dedicated workflow re-executes the full 1,000,000 edge/typical/stress campaign on the repository branch.
 
 ## Metriche di accettazione
 
@@ -101,9 +104,26 @@ The CI checker repeats a deterministic 10,000-case semantic mutation kill gate a
 | semantic mutation survivors | 0 |
 | platform identity decision mismatches | 0 |
 | false bootstrap-ready without state carrier | 0 |
+| unobserved installed runtime accepted | 0 |
+| scratch-only delivery promotion | 0 |
 | connector-required on equivalent public source host | 0 |
 | recovery-without-real-carrier claim | 0 |
 | historical semantic regression | 0 |
+
+## Checklist di materializzazione
+
+- [x] public current CLI spostato su composizione non-versionata;
+- [x] star-import eliminati dalle superfici pubbliche correnti;
+- [x] bootstrap intent canonical-bound e bilingue;
+- [x] connector GitHub declassato a trasporto opzionale;
+- [x] lifecycle reachability capability-only;
+- [x] state-carrier fail-closed;
+- [x] installed-runtime observation + revision binding fail-closed;
+- [x] scratch/materialization/delivery separati;
+- [x] 1,000,000 mutazioni hardenizzate con 0 mismatch;
+- [x] 22/22 semantic mutants killed in deep pass;
+- [x] CI repository-native aggiunta per ripetere check e milione di mutazioni;
+- [ ] historical/full regression green sul head della PR — deve essere attestata da GitHub Actions, non presunta dalla modellazione locale.
 
 ## Non-goal
 

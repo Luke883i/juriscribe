@@ -31,7 +31,8 @@ def available(caps, name):
 def oracle(caps, *, revision_pinned, contract_pinned, installed_bound):
     discovery = revision_pinned and contract_pinned
     source = all(available(caps, name) for name in ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE"))
-    transport = installed_bound or source
+    installed = installed_bound and available(caps, "RUNTIME_IMPORT")
+    transport = installed or source
     memory = available(caps, "SESSION_CONTEXT")
     fs = available(caps, "LOCAL_SCRATCH_IO")
     bootstrap = discovery and transport and (memory or fs)

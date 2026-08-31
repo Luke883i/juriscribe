@@ -24,8 +24,9 @@ def available(c, name):
 
 def oracle(c, rp, cp, ib):
     source = all(available(c, k) for k in ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE"))
+    installed = ib and available(c, "RUNTIME_IMPORT")
     carrier = available(c, "SESSION_CONTEXT") or available(c, "LOCAL_SCRATCH_IO")
-    boot = rp and cp and (ib or source) and carrier
+    boot = rp and cp and (installed or source) and carrier
     mat = boot and available(c, "LOCAL_SCRATCH_IO") and available(c, "DOCX_WRITE") and available(c, "DOCX_READBACK")
     surface = available(c, "CHAT_ATTACHMENT_WRITE") or available(c, "LOCAL_FILE_DELIVERY")
     return {"bootstrap": boot, "materialization": mat, "delivery": mat and surface, "recovery": boot and available(c, "LOCAL_SCRATCH_IO") and surface}
@@ -33,29 +34,32 @@ def oracle(c, rp, cp, ib):
 
 def mutants(c, rp, cp, ib, provider, browser, os_name):
     source = all(available(c, k) for k in ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE"))
+    installed = ib and available(c, "RUNTIME_IMPORT")
     carrier = available(c, "SESSION_CONTEXT") or available(c, "LOCAL_SCRATCH_IO")
-    base = rp and cp and (ib or source) and carrier
+    base = rp and cp and (installed or source) and carrier
     fs = available(c, "LOCAL_SCRATCH_IO")
     write = available(c, "DOCX_WRITE")
     readback = available(c, "DOCX_READBACK")
     surface = available(c, "CHAT_ATTACHMENT_WRITE") or available(c, "LOCAL_FILE_DELIVERY")
     return {
-        "IGNORE_REVISION_PIN": ("bootstrap", cp and (ib or source) and carrier),
-        "IGNORE_CONTRACT_PIN": ("bootstrap", rp and (ib or source) and carrier),
-        "UNVERIFIED_IS_AVAILABLE": ("bootstrap", rp and cp and (ib or all(c.get(k) != "UNAVAILABLE" for k in ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE"))) and carrier),
-        "REPO_READ_IS_EXECUTION": ("bootstrap", rp and cp and (ib or available(c, "REPOSITORY_READ")) and carrier),
-        "BRIDGE_OPTIONAL": ("bootstrap", rp and cp and (ib or (available(c, "REPOSITORY_READ") and available(c, "PYTHON_EXECUTION"))) and carrier),
-        "PYTHON_OPTIONAL": ("bootstrap", rp and cp and (ib or (available(c, "REPOSITORY_READ") and available(c, "SOURCE_TO_RUNTIME_BRIDGE"))) and carrier),
-        "STATE_CARRIER_OPTIONAL": ("bootstrap", rp and cp and (ib or source)),
-        "SESSION_CONTEXT_REQUIRED": ("bootstrap", rp and cp and (ib or source) and available(c, "SESSION_CONTEXT")),
-        "FILESYSTEM_REQUIRED_FOR_BOOTSTRAP": ("bootstrap", rp and cp and (ib or source) and fs),
-        "INSTALLED_UNBOUND_ALLOWED": ("bootstrap", rp and cp and (available(c, "RUNTIME_IMPORT") or source) and carrier),
+        "IGNORE_REVISION_PIN": ("bootstrap", cp and (installed or source) and carrier),
+        "IGNORE_CONTRACT_PIN": ("bootstrap", rp and (installed or source) and carrier),
+        "UNVERIFIED_IS_AVAILABLE": ("bootstrap", rp and cp and ((ib and c.get("RUNTIME_IMPORT") != "UNAVAILABLE") or all(c.get(k) != "UNAVAILABLE" for k in ("REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE"))) and carrier),
+        "REPO_READ_IS_EXECUTION": ("bootstrap", rp and cp and (installed or available(c, "REPOSITORY_READ")) and carrier),
+        "BRIDGE_OPTIONAL": ("bootstrap", rp and cp and (installed or (available(c, "REPOSITORY_READ") and available(c, "PYTHON_EXECUTION"))) and carrier),
+        "PYTHON_OPTIONAL": ("bootstrap", rp and cp and (installed or (available(c, "REPOSITORY_READ") and available(c, "SOURCE_TO_RUNTIME_BRIDGE"))) and carrier),
+        "STATE_CARRIER_OPTIONAL": ("bootstrap", rp and cp and (installed or source)),
+        "SESSION_CONTEXT_REQUIRED": ("bootstrap", rp and cp and (installed or source) and available(c, "SESSION_CONTEXT")),
+        "FILESYSTEM_REQUIRED_FOR_BOOTSTRAP": ("bootstrap", rp and cp and (installed or source) and fs),
+        "INSTALLED_UNBOUND_ALLOWED": ("bootstrap", rp and cp and (ib or source) and carrier),
+        "RUNTIME_IMPORT_UNOBSERVED_ALLOWED": ("bootstrap", rp and cp and (ib or source) and carrier),
         "DOCX_WRITE_OPTIONAL": ("materialization", base and fs and readback),
         "DOCX_READBACK_OPTIONAL": ("materialization", base and fs and write),
         "SCRATCH_OPTIONAL_FOR_MATERIALIZATION": ("materialization", base and write and readback),
         "DELIVERY_SURFACE_OPTIONAL": ("delivery", base and fs and write and readback),
+        "SCRATCH_IMPLIES_LOCAL_DELIVERY": ("delivery", base and fs and write and readback),
         "RECOVERY_MEMORY_ONLY": ("recovery", base and available(c, "SESSION_CONTEXT") and surface),
-        "RECOVERY_WITHOUT_DELIVERY": ("recovery", base and fs),
+        "RECOVERY_WITHOUT_DELIVERY_SURFACE": ("recovery", base and fs),
         "BOOTSTRAP_IMPLIES_DELIVERY": ("delivery", base),
         "PROVIDER_PRIVILEGE": ("bootstrap", base or provider == "chatgpt-like"),
         "BROWSER_PRIVILEGE": ("bootstrap", base or browser == "chrome"),
@@ -118,7 +122,7 @@ def main():
         c = {k: rng.choice(states) for k in caps_names}
         rp = bool(rng.getrandbits(1))
         cp = bool(rng.getrandbits(1))
-        ib = bool(rng.getrandbits(1)) and available(c, "RUNTIME_IMPORT")
+        ib = bool(rng.getrandbits(1))
         provider = rng.choice(("chatgpt-like", "other"))
         browser = rng.choice(("chrome", "safari"))
         os_name = rng.choice(("windows", "linux"))
@@ -129,7 +133,7 @@ def main():
         b = classify_host_reachability(c, revision_pinned=rp, contract_pinned=cp, installed_runtime_bound=ib, provider="different", browser="different", os_name="different")
         platform_mismatches += int((a.bootstrap_ready, a.materialization_ready, a.delivery_ready, a.recovery_ready) != (b.bootstrap_ready, b.materialization_ready, b.delivery_ready, b.recovery_ready))
         for name, (target, value) in mutants(c, rp, cp, ib, provider, browser, os_name).items():
-            if value != expected[target]:
+            if bool(value) != bool(expected[target]):
                 killed[name] = True
     survivors = [name for name, dead in killed.items() if not dead]
     if oracle_mismatches:

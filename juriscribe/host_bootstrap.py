@@ -165,7 +165,8 @@ def classify_host_reachability(
     """Project observed capability facts into lifecycle reachability.
 
     Provider/browser/OS names are diagnostic only and cannot promote a capability.
-    UNVERIFIED remains non-available. This function grants no scientific authority.
+    UNVERIFIED remains non-available. An installed runtime counts only when the host
+    both observed RUNTIME_IMPORT and verified the runtime revision binding.
     """
     caps = normalize_host_capabilities(dict(capabilities or {}))
     blockers: list[str] = []
@@ -177,12 +178,15 @@ def classify_host_reachability(
         blockers.append("CONTRACT_NOT_PINNED")
 
     source_transport = _available(caps, "REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE")
-    if installed_runtime_bound:
+    verified_installed_runtime = bool(installed_runtime_bound and _available(caps, "RUNTIME_IMPORT"))
+    if verified_installed_runtime:
         transport = "INSTALLED_BOUND"
     elif source_transport:
         transport = "PINNED_SOURCE"
     else:
         transport = "NONE"
+        if installed_runtime_bound and not _available(caps, "RUNTIME_IMPORT"):
+            blockers.append("RUNTIME_IMPORT_UNAVAILABLE")
         if _cap_state(caps, "REPOSITORY_READ") != "AVAILABLE":
             blockers.append("REPOSITORY_READ_UNAVAILABLE")
         if _cap_state(caps, "PYTHON_EXECUTION") != "AVAILABLE":
@@ -230,7 +234,8 @@ def classify_host_reachability(
             "provider": str(provider),
             "browser": str(browser),
             "os": str(os_name),
-            "installed_runtime_bound": bool(installed_runtime_bound),
+            "installed_runtime_bound": verified_installed_runtime,
+            "installed_runtime_binding_requested": bool(installed_runtime_bound),
             "memory_state_carrier": memory_carrier,
             "filesystem_state_carrier": filesystem_carrier,
         },
@@ -289,6 +294,7 @@ def plan_runtime_transport(
         source_paths = []
         deferred_full_runtime = False
         blocker_map = {
+            "RUNTIME_IMPORT_UNAVAILABLE": "RUNTIME_IMPORT",
             "REPOSITORY_READ_UNAVAILABLE": "REPOSITORY_READ",
             "PYTHON_EXECUTION_UNAVAILABLE": "PYTHON_EXECUTION",
             "SOURCE_TO_RUNTIME_BRIDGE_UNAVAILABLE": "SOURCE_TO_RUNTIME_BRIDGE",

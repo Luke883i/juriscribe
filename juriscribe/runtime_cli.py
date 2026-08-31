@@ -77,10 +77,8 @@ def probe_capabilities(*, admission_receipt=None, contract_text=None):
         ok = probe.read_text(encoding="utf-8") == "probe"
         probe.unlink(missing_ok=True)
         checks["LOCAL_SCRATCH_IO"] = "AVAILABLE" if ok else "UNAVAILABLE"
-        checks["LOCAL_FILE_DELIVERY"] = "AVAILABLE" if ok else "UNAVAILABLE"
     except OSError:
         checks["LOCAL_SCRATCH_IO"] = "UNAVAILABLE"
-        checks["LOCAL_FILE_DELIVERY"] = "UNAVAILABLE"
     return checks
 
 

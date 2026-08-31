@@ -54,11 +54,38 @@ class PhysicalConvergenceV11Tests(unittest.TestCase):
         self.assertEqual(plan["decision"], "BLOCKED")
         self.assertIn("SESSION_CONTEXT_OR_LOCAL_SCRATCH_IO", plan["missing"])
 
+    def test_unobserved_installed_runtime_cannot_bootstrap(self):
+        caps = self.base_caps(
+            RUNTIME_IMPORT="UNAVAILABLE",
+            REPOSITORY_READ="UNAVAILABLE",
+            PYTHON_EXECUTION="UNAVAILABLE",
+            SOURCE_TO_RUNTIME_BRIDGE="UNAVAILABLE",
+        )
+        r = classify_host_reachability(caps, revision_pinned=True, contract_pinned=True, installed_runtime_bound=True)
+        self.assertFalse(r.bootstrap_ready)
+        self.assertEqual(r.transport, "NONE")
+        self.assertFalse(r.facts["installed_runtime_bound"])
+        self.assertTrue(r.facts["installed_runtime_binding_requested"])
+
     def test_memory_work_does_not_claim_materialization_or_recovery(self):
         r = classify_host_reachability(self.base_caps(), revision_pinned=True, contract_pinned=True)
         self.assertTrue(r.bootstrap_ready)
         self.assertTrue(r.work_ready)
         self.assertFalse(r.materialization_ready)
+        self.assertFalse(r.delivery_ready)
+        self.assertFalse(r.recovery_ready)
+
+    def test_scratch_does_not_imply_delivery_surface(self):
+        caps = self.base_caps(
+            SESSION_CONTEXT="UNAVAILABLE",
+            LOCAL_SCRATCH_IO="AVAILABLE",
+            DOCX_WRITE="AVAILABLE",
+            DOCX_READBACK="AVAILABLE",
+            CHAT_ATTACHMENT_WRITE="UNVERIFIED",
+            LOCAL_FILE_DELIVERY="UNVERIFIED",
+        )
+        r = classify_host_reachability(caps, revision_pinned=True, contract_pinned=True)
+        self.assertTrue(r.materialization_ready)
         self.assertFalse(r.delivery_ready)
         self.assertFalse(r.recovery_ready)
 
