@@ -1,10 +1,15 @@
 """Public orchestration facade with explicit runtime composition.
 
-Historical specialist engines remain authoritative for their proof semantics. v1
-adds recovery export only as an explicit MATERIALIZATION route; recovery resume
-continues to reuse bootstrap/session persistence rather than becoming proof authority.
+Current public operations resolve through runtime_router. A small, named set of
+non-routed compatibility helpers is re-exported explicitly from orchestrator_base;
+there is no star-import or import-order authority.
 """
-from .orchestrator_base import *  # noqa: F401,F403
+from .orchestrator_base import (
+    build_research_plan,
+    mine_and_prepare,
+    register_bibliography,
+    validate_claim_ledger,
+)
 from .runtime_router import resolve_operation, routing_manifest
 
 apply_setup = resolve_operation("apply_setup")
@@ -39,7 +44,7 @@ seal_refined_candidate = resolve_operation("seal_refined_candidate")
 
 RUNTIME_ROUTING_MANIFEST = routing_manifest()
 
-# Contract-check markers retained from all historical runtime layers:
+# Contract-check markers retained from historical runtime layers:
 # bootstrap_required=True finalization_required=True trimode_required=True editorial_standard_required=True
 # delivery_boundary_required=True docx_final_documents_required=True dashboard_attachment_required=False
 # dashboard_summary_surface_only=True chat_tail_docx_attachments_required=True

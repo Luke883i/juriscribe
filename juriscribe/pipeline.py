@@ -1,8 +1,8 @@
-"""Juriscribe v1 public CLI/API surface with recovery-aware shell projection.
+"""Juriscribe public CLI/API surface with recovery-aware shell projection.
 
-The ordinary post-bootstrap surface is projection-only and compact. Historical
-v0.9.2 redaction/compaction helpers remain available as compatibility fallbacks
-when no persisted session can be loaded.
+The public path composes through the non-versioned runtime_cli module. Historical
+pipeline_v9/pipeline_v11 modules remain compatibility-only and are not executed by
+this current entrypoint.
 """
 from __future__ import annotations
 
@@ -14,9 +14,16 @@ import sys
 import traceback
 from pathlib import Path
 
-from . import pipeline_v11 as _v9
+from . import runtime_cli as _v9  # compatibility test seam; current, non-versioned owner
 from .chat_shell import render_chat_shell
-from .pipeline_v11 import *  # noqa: F401,F403
+from .runtime_cli import (
+    bootstrap_after_acceptance,
+    initialize,
+    perform_probe,
+    persist_session,
+    probe_capabilities,
+    update_dashboard,
+)
 
 MAX_PUBLIC_SUMMARY_CHARS = 280
 BOOTSTRAP_VERBOSE_COMMANDS = {"terms", "accept", "probe"}
@@ -53,7 +60,6 @@ def _truncate(value: str, limit: int = MAX_PUBLIC_SUMMARY_CHARS) -> str:
 
 
 def _compact_interaction(text: str) -> str:
-    """Historical v0.9.2 compact interaction facade, retained as fallback."""
     try:
         payload = json.loads(text)
     except Exception:
@@ -143,15 +149,12 @@ def _legacy_public_fallback(command: str, raw: str, rc: int) -> str:
             data = json.loads(raw)
             where = data.get("where") or {}
             nxt = data.get("next") or {}
-            return _truncate(
-                f"Recovery PASS · cp={data.get('checkpoint_id', '')} · {where.get('phase', '')} · NEXT: {nxt.get('summary', '')}",
-                600,
-            )
+            return _truncate(f"Recovery PASS · cp={data.get('checkpoint_id', '')} · {where.get('phase', '')} · NEXT: {nxt.get('summary', '')}", 600)
         except Exception:
             return "Bundle di recupero non leggibile."
     if command == "recovery-bundle":
         return "Snapshot di recupero materializzato; il file richiesto deve essere allegato dal host."
-    if command == "gate":
+    if command in {"gate", "continue-materialization"}:
         return _compact_gate(raw)
     if command == "interaction-card":
         return _compact_interaction(raw)
