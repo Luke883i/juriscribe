@@ -44,12 +44,12 @@ def main() -> int:
         fail("runtime/manifest version mismatch")
     if not re.search(r'^version = "1\.0\.0"$', pyproject, re.M):
         fail("pyproject version is not 1.0.0")
-    if admission.get("contract_version") != "2.1.0":
+    if admission.get("contract_version") != "2.2.0":
         fail("v1 admission contract version mismatch")
-    if runtime_contract.get("contract_version") != "2.1.0":
+    if runtime_contract.get("contract_version") != "2.2.0":
         fail("v1 runtime contract version mismatch")
-    if "contract_version: 2.1.0" not in contract or packaged != contract:
-        fail("canonical/bundled v2.1 contract mismatch")
+    if "contract_version: 2.2.0" not in contract or packaged != contract:
+        fail("canonical/bundled v2.2 contract mismatch")
     digest = hashlib.sha256(contract.replace("\r\n", "\n").encode("utf-8")).hexdigest()
     if admission.get("contract_sha256") != digest:
         fail("ADMISSION contract digest stale")
@@ -58,7 +58,7 @@ def main() -> int:
         "schema": "juriscribe-runtime-v1-contract/v1",
         "profile": "JURISCRIBE_RUNTIME_V1",
         "runtime_version": version,
-        "contract_version": "2.1.0",
+        "contract_version": "2.2.0",
         "authority_partition_nodes": 6,
         "no_new_authority_node": True,
         "project_status_profile": "JURISCRIBE_PROJECT_STATUS_V1",
@@ -120,6 +120,21 @@ def main() -> int:
         if docx.get(key) != value:
             fail("chat DOCX contract invariant mismatch: " + key)
 
+    local_env = runtime_contract.get("local_session_environment") or {}
+    for key, value in {
+        "schema": "juriscribe-local-session-environment/v1",
+        "profile": "JURISCRIBE_LOCAL_SESSION_ENVIRONMENT_V1",
+        "authority": "HOST_COMPOSITION_ONLY",
+        "scientific_authority": False,
+        "runtime_authority_nodes_added": 0,
+        "durable_scientific_state_host_independent": True,
+        "chat_environment_revision_bound": True,
+        "contract_graph_activation_required": True,
+        "boot_prompt_max_chars": 8000,
+    }.items():
+        if local_env.get(key) != value:
+            fail("local session environment contract invariant mismatch: " + key)
+
     required_admission_docx = {
         "session_chat_every_materialized_docx_required": True,
         "session_chat_intermediate_docx_download_required": True,
@@ -136,9 +151,10 @@ def main() -> int:
         "indipendentemente dal fatto che sia intermedio o finale",
         "marcato `UNREGISTERED`",
         "impedisce `COMPLETE`",
+        "## 26. Ambiente locale di sessione e contratto host",
     ):
         if token not in contract:
-            fail("canonical access contract omits session-chat DOCX rule: " + token)
+            fail("canonical access contract omits current rule: " + token)
 
     surface = set((manifest.get("active_surface") or {}).get("runtime") or [])
     for path in (
@@ -148,6 +164,8 @@ def main() -> int:
         "juriscribe/chat_shell.py",
         "juriscribe/runtime_router.py",
         "juriscribe/runtime_v13.py",
+        "juriscribe/runtime_cli.py",
+        "juriscribe/host_environment.py",
     ):
         if path not in surface:
             fail("current v1 surface omits " + path)
@@ -198,12 +216,13 @@ def main() -> int:
     print(json.dumps({
         "status": "PASS",
         "runtime_version": version,
-        "contract_version": "2.1.0",
+        "contract_version": "2.2.0",
         "runtime_contract_schema": runtime_contract.get("schema"),
         "project_status_profile": project_status.get("profile"),
         "shell_schema": "juriscribe-chat-shell/v2",
         "recovery_schema": "juriscribe-recovery-bundle/v1",
         "chat_docx_profile": docx.get("profile"),
+        "local_environment_profile": local_env.get("profile"),
         "authority_nodes": 6,
     }, ensure_ascii=False, indent=2))
     return 0
