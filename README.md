@@ -2,7 +2,9 @@
 
 > **Experimental open-source research software — human validation required.** Juriscribe uses AI-assisted workflows and can produce substantive errors, omissions, hallucinations, stale or incorrect authorities, citation defects and faulty inferences. Do not treat a runtime `PASS`, receipt, proof, readiness label or completed workflow as a certification of legal/factual truth. Every material artifact must be reviewed and validated by a competent human before consequential reliance; the final decision to use an artifact and responsibility for that artifact remain human. See [`RESPONSIBLE_USE.md`](RESPONSIBLE_USE.md), [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md), and [`LICENSE`](LICENSE).
 
-Juriscribe is an autonomous, repository-governed runtime for auditable legal/scientific/editorial work. The canonical entrypoint is `python -m juriscribe`; the repository is also packageable through `pyproject.toml` and exposes the `juriscribe` console script. An optional local GPT may act as a host adapter, but it is not a second Juriscribe implementation.
+Juriscribe is a **repository-governed local session environment** for auditable legal/scientific/editorial work. Its persisted scientific session is the durable, transport-independent asset; on a compliant conversational host Juriscribe is instantiated as a revision-bound working environment inside the current chat, joining canonical runtime, state, interaction, workbench/dashboard, artifacts and recovery without giving the host a second runtime authority. The canonical entrypoint is `python -m juriscribe`; the repository is also packageable through `pyproject.toml` and exposes the `juriscribe` console script.
+
+The host/environment contract is intentionally split from scientific authority. `ADMISSION.json` activates the revision-bound graph rooted at [`docs/host/LOCAL_SESSION_ENVIRONMENT.md`](docs/host/LOCAL_SESSION_ENVIRONMENT.md); the compact [`docs/host/LOCAL_HOST_PROMPT.md`](docs/host/LOCAL_HOST_PROMPT.md) is a boot ROM for discovery and activation, not a second implementation of Juriscribe. The six runtime authority nodes remain unchanged.
 
 ## Project status and licensing
 
@@ -13,6 +15,8 @@ Juriscribe is an experimental research project under active development. The rep
 Discovery is non-authorizing. Read the pre-admission surface, present the current terms, and wait for exact human `I ACCEPT`. After acceptance, `PROBE JURISCRIBE` and `INITIALIZE JURISCRIBE` remain distinct transitions; the runtime may use `bootstrap-after-acceptance` to execute them in one host turn while keeping separate receipts. Mode selection remains explicit.
 
 For source-transport hosts, `ADMISSION.json` declares a pinned minimal bootstrap import closure. When `SESSION_CONTEXT=AVAILABLE`, the host may materialize only that closure, complete admission/probe/initialize, render mode choices, and defer the rest of the pinned runtime until substantive work. This is a transport optimization only: revision binding, contract binding, single-use receipts and sealed capabilities are unchanged.
+
+After exact acceptance, the same pinned `ADMISSION.json` activates only the local-environment contract nodes required by the current lifecycle trigger. The host may cache verified bytes from that revision, but never silently replaces them with a newer `main`. `UNVERIFIED` remains distinct from `UNAVAILABLE`, and a blocker is valid only after the host has attempted or ruled out the canonical path, any safe local repair and one practical equivalent fallback.
 
 ### Initialize from a GPT-like chat
 
@@ -34,7 +38,7 @@ A GitHub connector is **not a Juriscribe dependency**. Public byte-exact reposit
 
 Current host reachability is capability-derived and distinguishes `DISCOVERY_READY`, `BOOTSTRAP_READY`, `WORK_READY`, `MATERIALIZATION_READY`, `DELIVERY_READY` and `RECOVERY_READY`. Provider, browser and OS names are diagnostic only; at equal observed capabilities they do not change the runtime decision. A memory-only chat can therefore be validly `WORK_READY` without being allowed to promise DOCX materialization or durable recovery.
 
-See [`docs/LOCAL_GPT_HOST_ADAPTER.md`](docs/LOCAL_GPT_HOST_ADAPTER.md) for the minimal host adapter and [`docs/PHYSICAL_CONVERGENCE_V11.md`](docs/PHYSICAL_CONVERGENCE_V11.md) for the v1.1 convergence contract and mutation evidence.
+See [`docs/LOCAL_GPT_HOST_ADAPTER.md`](docs/LOCAL_GPT_HOST_ADAPTER.md) for the compatibility pointer, [`docs/host/LOCAL_HOST_PROMPT.md`](docs/host/LOCAL_HOST_PROMPT.md) for the current host boot ROM, [`docs/host/LOCAL_SESSION_ENVIRONMENT.md`](docs/host/LOCAL_SESSION_ENVIRONMENT.md) for the contract graph, and [`docs/PHYSICAL_CONVERGENCE_V11.md`](docs/PHYSICAL_CONVERGENCE_V11.md) for the v1.1 physical-convergence evidence.
 
 ## Canonical modes
 
@@ -55,6 +59,8 @@ This is deliberately a **structural semantic-preservation claim**, not an assert
 
 C&C retains the minimum 10,000,000 mutation-instance volume, but the instance count is explicitly a soak-volume measure rather than a claim of 10,000,000 unique semantic scenarios. Current receipts expose executed equivalence classes, class counts, mismatch status and a digest. Mutation classes and proof mutations are tested separately so repeated volume cannot masquerade as semantic diversity.
 
+The local-session-environment architecture has a separate property campaign. It searches a finite architecture space and mutates the resulting host contract; those counts are synthetic architecture/property evaluations, not physical host sessions, legal judgments or LLM conversations.
+
 ## C&C semantics
 
 A `canonical_material` is accepted as an immutable transformation reference for the session. That designation does not make it a verified legal authority. A `candidate_material` may be changed only on evidenced gaps and must retain structural material-unit and required-relation recall of 1.0 under the runtime-derived proof. `READY_FOR_PEER_REVIEW` means ready to be submitted to peer review; it does not claim peer review occurred.
@@ -69,13 +75,13 @@ Historical specifications such as `FINAL_DELIVERY_V9_2` and `FINAL_DELIVERY_V9_4
 
 Common user-facing roles include evidence dossier, source register, inference register, transformation ledger and `session-dashboard.html`. Narrative/report documents are real `DOCX` with OOXML/readback verification. C&C adds `refactoring_report` and one `refined_candidate` DOCX per candidate source. `session.integrity.json` is internal.
 
-The dashboard is a persistent inference-oriented workbench and does not replace DOCX delivery. At completion, attendi gli artefatti finali in the session chat tail; release is atomic and partial compliant delivery is forbidden.
+The dashboard is the persistent inference-oriented workbench inside the local session environment and does not replace DOCX delivery. At completion, attendi gli artefatti finali in the session chat tail; release is atomic and partial compliant delivery is forbidden. Intermediate DOCX retained by the runtime remain visible/downloadable in the session chat when the runtime contract requires them.
 
 Snapshot/recovery is a cross-mode session control, not a fifth mode. `recovery-bundle` creates a verified local ZIP snapshot and recovery resume requires a fresh host probe; a memory-only session must not claim durable recovery.
 
 ## Host behavior
 
-After bootstrap the conversation is a control surface. **NON narrare** mining, research, reticulum construction, review, simulations, saturation, compression, provenance or internal gates. Continue autonomously until a materially blocking human decision is necessary. Keep ordinary post-bootstrap chat to 1–3 lines.
+After bootstrap the conversation is the shell of the current local session environment. **NON narrare** mining, research, reticulum construction, review, simulations, saturation, compression, provenance or internal gates. Continue autonomously until a materially blocking human decision is necessary. Keep ordinary post-bootstrap chat to 1–3 lines and derive every choice/status from canonical runtime state.
 
 Autonomy is workflow autonomy, not authority to waive human validation. A host must not present an AI-generated artifact as independently verified, professionally certified, or safe for consequential reliance merely because Juriscribe reached a runtime gate.
 
@@ -90,6 +96,9 @@ python -m unittest discover -s tests -v
 python -m compileall -q juriscribe scripts tests
 python scripts/check_contract.py
 python scripts/check_physical_convergence_v11.py
+python scripts/check_local_environment_contract.py
+python -m unittest tests.test_local_session_environment -v
+python scripts/stress_local_environment.py --hypotheses 100000 --mutations 100000 --seed 2026090201
 python -m unittest tests.test_physical_convergence_v11 -v
 python -m unittest tests.test_runtime_semantics_v12 -v
 python scripts/simulate_runtime_semantics_v12.py --cases 100000

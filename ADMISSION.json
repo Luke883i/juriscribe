@@ -1,9 +1,9 @@
 {
-  "schema": "juriscribe-admission/v8",
+  "schema": "juriscribe-admission/v9",
   "repository": "Luke883i/juriscribe",
-  "contract_version": "2.1.0",
+  "contract_version": "2.2.0",
   "contract_path": "ISENECA_ACCESS_CONTRACT.md",
-  "contract_sha256": "e4b8a7a7bc8dd5f3c9535431411f285629f6002d58847a249951e006f9e6c4f8",
+  "contract_sha256": "f5252122b2c52edc3a07ae00856d50528713b19c304179ec546bd13fc2e2bb6c",
   "acceptance_phrase": "I ACCEPT",
   "human_actor_required": true,
   "evidence_type": "explicit_user_message",
@@ -25,12 +25,30 @@
     "authority_partition_nodes": 6
   },
   "user_visible_bootstrap": true,
-  "bootstrap_order": ["TERMS_PRESENTED", "TERMS_ACCEPTED", "PROBE_REQUIRED", "PROBED", "INITIALIZE_REQUIRED", "INITIALIZING", "MODE_SELECTION_REQUIRED", "ACTIVE_WORK"],
+  "bootstrap_order": [
+    "TERMS_PRESENTED",
+    "TERMS_ACCEPTED",
+    "PROBE_REQUIRED",
+    "PROBED",
+    "INITIALIZE_REQUIRED",
+    "INITIALIZING",
+    "MODE_SELECTION_REQUIRED",
+    "ACTIVE_WORK"
+  ],
   "canonical_probe_command": "PROBE JURISCRIBE",
   "canonical_initialize_command": "INITIALIZE JURISCRIBE",
   "canonical_fast_path": "bootstrap-after-acceptance",
-  "canonical_modes": ["CONTINUATION", "GREENFIELD", "REVIEW", "COMPRESSION & CONSOLIDATION"],
-  "pre_admission_allowlist": ["AGENTS.md", "ISENECA_ACCESS_CONTRACT.md", "ADMISSION.json"],
+  "canonical_modes": [
+    "CONTINUATION",
+    "GREENFIELD",
+    "REVIEW",
+    "COMPRESSION & CONSOLIDATION"
+  ],
+  "pre_admission_allowlist": [
+    "AGENTS.md",
+    "ISENECA_ACCESS_CONTRACT.md",
+    "ADMISSION.json"
+  ],
   "post_admission_agent_rules": "docs/AGENT_RUNTIME_RULES.md",
   "probe_receipt_required_for_initialize": true,
   "probe_receipt_single_use": true,
@@ -61,7 +79,13 @@
   "recovery_bundle_on_demand": true,
   "fresh_probe_on_recovery_resume": true,
   "recovery_export_does_not_mutate_scientific_checkpoint": true,
-  "iteration_projection_required_fields": ["WHERE", "DONE", "NEXT", "HOW", "DO"],
+  "iteration_projection_required_fields": [
+    "WHERE",
+    "DONE",
+    "NEXT",
+    "HOW",
+    "DO"
+  ],
   "session_chat_every_materialized_docx_required": true,
   "session_chat_intermediate_docx_download_required": true,
   "session_chat_final_delivery_class_independent": true,
@@ -74,12 +98,26 @@
     "pinned_source_materialization_after_exact_acceptance": true,
     "materialization_scope": "CANONICAL_RUNTIME_SOURCE_ONLY",
     "bootstrap_minimal_materialization_allowed": true,
-    "bootstrap_source_paths": ["juriscribe/__init__.py", "juriscribe/admission.py", "juriscribe/bootstrap.py", "juriscribe/host_bootstrap.py", "juriscribe/interaction.py", "juriscribe/modes.py", "juriscribe/node_header.py", "juriscribe/portable_session.py", "juriscribe/session.py", "juriscribe/session_integrity.py"],
+    "bootstrap_source_paths": [
+      "juriscribe/__init__.py",
+      "juriscribe/admission.py",
+      "juriscribe/bootstrap.py",
+      "juriscribe/host_bootstrap.py",
+      "juriscribe/interaction.py",
+      "juriscribe/modes.py",
+      "juriscribe/node_header.py",
+      "juriscribe/portable_session.py",
+      "juriscribe/session.py",
+      "juriscribe/session_integrity.py"
+    ],
     "deferred_full_runtime_after_bootstrap": true,
     "single_host_turn_after_acceptance": true,
     "revision_binding_required": true,
     "acceptance_context_binding_required": true,
-    "acceptance_context_fields": ["resolved_revision", "contract_sha256"],
+    "acceptance_context_fields": [
+      "resolved_revision",
+      "contract_sha256"
+    ],
     "runtime_import_capability": "RUNTIME_IMPORT",
     "repository_read_capability": "REPOSITORY_READ",
     "python_execution_capability": "PYTHON_EXECUTION",
@@ -93,7 +131,87 @@
     "receipt_simulation_forbidden": true,
     "source_materialization_is_runtime_transport_not_reimplementation": true
   },
-  "runtime_receipt_required_for": ["probe", "initialize", "select-mode", "mine", "semantic-mining", "bibliography", "accept-setup", "freeze-dods", "continuation-plan", "continuation-coverage", "research-plan", "validate-claims", "seal-draft", "review-cycle", "record-regeneration", "review-saturation", "audit-text", "record-simulation", "record-compression", "record-provenance", "final-review", "record-artifact", "consolidation-plan", "consolidation-saturation", "consolidation-calibrate", "consolidation-seal-refined", "recovery-bundle", "recovery-resume", "gate", "dashboard", "interaction-card", "integrity"],
+  "local_session_environment": {
+    "schema": "juriscribe-local-session-environment/v1",
+    "profile": "JURISCRIBE_LOCAL_SESSION_ENVIRONMENT_V1",
+    "identity": "REVISION_BOUND_LOCAL_ENVIRONMENT_INSIDE_CURRENT_CHAT",
+    "authority": "HOST_COMPOSITION_ONLY",
+    "scientific_authority": false,
+    "runtime_authority_nodes_added": 0,
+    "root": "docs/host/LOCAL_SESSION_ENVIRONMENT.md",
+    "boot_prompt": "docs/host/LOCAL_HOST_PROMPT.md",
+    "boot_prompt_max_chars": 8000,
+    "resolver": "juriscribe.host_environment.activation_plan",
+    "validator": "juriscribe.host_environment.validate_environment_files",
+    "contract_nodes": {
+      "root": "docs/host/LOCAL_SESSION_ENVIRONMENT.md",
+      "execution": "docs/host/EXECUTION.md",
+      "state": "docs/host/STATE.md",
+      "surface": "docs/host/SURFACE.md",
+      "failure_recovery": "docs/host/FAILURE_RECOVERY.md"
+    },
+    "activation": {
+      "POST_ACCEPTANCE_BOOTSTRAP": [
+        "root",
+        "execution"
+      ],
+      "ACTIVE_SESSION": [
+        "root",
+        "state",
+        "surface"
+      ],
+      "FAILURE_OR_RECOVERY": [
+        "root",
+        "state",
+        "failure_recovery"
+      ],
+      "REBIND_OR_TRANSPORT_FAILURE": [
+        "root",
+        "execution",
+        "failure_recovery"
+      ]
+    },
+    "same_revision_required": true,
+    "session_local_verified_cache_allowed": true,
+    "live_main_rebind_forbidden": true,
+    "runtime_state_synthesis_forbidden": true,
+    "receipt_simulation_forbidden": true,
+    "local_sufficiency_required_before_blocker": true
+  },
+  "runtime_receipt_required_for": [
+    "probe",
+    "initialize",
+    "select-mode",
+    "mine",
+    "semantic-mining",
+    "bibliography",
+    "accept-setup",
+    "freeze-dods",
+    "continuation-plan",
+    "continuation-coverage",
+    "research-plan",
+    "validate-claims",
+    "seal-draft",
+    "review-cycle",
+    "record-regeneration",
+    "review-saturation",
+    "audit-text",
+    "record-simulation",
+    "record-compression",
+    "record-provenance",
+    "final-review",
+    "record-artifact",
+    "consolidation-plan",
+    "consolidation-saturation",
+    "consolidation-calibrate",
+    "consolidation-seal-refined",
+    "recovery-bundle",
+    "recovery-resume",
+    "gate",
+    "dashboard",
+    "interaction-card",
+    "integrity"
+  ],
   "enforcement_scope": "compliant AI/host protocol and Juriscribe runtime; not GitHub server-side byte access",
   "materialization_pending_state_required": true,
   "materialization_continue_phrase": "Continue until the end of artefact materialization",

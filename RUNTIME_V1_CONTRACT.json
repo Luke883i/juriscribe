@@ -2,7 +2,7 @@
   "schema": "juriscribe-runtime-v1-contract/v1",
   "profile": "JURISCRIBE_RUNTIME_V1",
   "runtime_version": "1.0.0",
-  "contract_version": "2.1.0",
+  "contract_version": "2.2.0",
   "authority_partition_nodes": 6,
   "authority_nodes": [
     "MODE_REGISTRY",
@@ -39,6 +39,17 @@
     "unregistered_workspace_docx_must_be_surfaced_and_flagged": true,
     "completion_fails_closed_on_chat_projection_error": true,
     "scientific_authority": false
+  },
+  "local_session_environment": {
+    "schema": "juriscribe-local-session-environment/v1",
+    "profile": "JURISCRIBE_LOCAL_SESSION_ENVIRONMENT_V1",
+    "authority": "HOST_COMPOSITION_ONLY",
+    "scientific_authority": false,
+    "runtime_authority_nodes_added": 0,
+    "durable_scientific_state_host_independent": true,
+    "chat_environment_revision_bound": true,
+    "contract_graph_activation_required": true,
+    "boot_prompt_max_chars": 8000
   },
   "stress_cases_min": 10000
 }

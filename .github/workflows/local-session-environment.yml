@@ -1,0 +1,54 @@
+name: Juriscribe local session environment
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juriscribe-local-environment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-session-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Compile local environment surface
+        run: python -m py_compile juriscribe/host_environment.py scripts/check_local_environment_contract.py scripts/stress_local_environment.py tests/test_local_session_environment.py
+      - name: Contract graph check
+        run: python scripts/check_local_environment_contract.py
+      - name: Focused host environment tests
+        run: python -m unittest tests.test_local_session_environment -v
+      - name: Runtime v1 contract remains coherent
+        run: python scripts/check_runtime_v1.py
+      - name: Project status remains coherent
+        run: python scripts/check_project_status.py
+      - name: 100k hypotheses plus 100k contract mutants
+        run: python scripts/stress_local_environment.py --hypotheses 100000 --mutations 100000 --seed 2026090201 --out /tmp/local-environment.json
+      - name: Verify stress receipt
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/local-environment.json',encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['hypotheses_executed']==100_000
+          assert p['hypotheses_surviving']==1
+          assert p['canonical_survivor_only'] is True
+          assert p['minimal_normative_nodes']==5
+          assert p['mutation_instances']==100_000
+          assert p['mutants_killed']==100_000
+          assert p['mutation_survivors']==0
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: local-session-environment-stress
+          path: /tmp/local-environment.json
+          if-no-files-found: error
+          retention-days: 7

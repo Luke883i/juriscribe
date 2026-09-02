@@ -20,8 +20,8 @@ def main():
     nodes=['MODE_REGISTRY','EXPLICIT_ROUTER','COMMON_STALENESS','SPECIALIST_PROOF','MATERIALIZATION','PROJECTION']
     if status.get('authority_nodes')!=nodes or runtime.get('authority_nodes')!=nodes: fail('authority topology drift')
     if runtime.get('project_status_is_authority') is not False: fail('project status escalated to authority')
-    if manifest.get('contract_version')!='2.1.0' or admission.get('contract_version')!='2.1.0' or runtime.get('contract_version')!='2.1.0': fail('contract version drift')
-    if 'contract_version: 2.1.0' not in contract or packaged!=contract: fail('contract/bundle drift')
+    if manifest.get('contract_version')!='2.2.0' or admission.get('contract_version')!='2.2.0' or runtime.get('contract_version')!='2.2.0': fail('contract version drift')
+    if 'contract_version: 2.2.0' not in contract or packaged!=contract: fail('contract/bundle drift')
     digest=hashlib.sha256(contract.replace('\r\n','\n').encode()).hexdigest()
     if admission.get('contract_sha256')!=digest: fail('admission contract hash stale')
     for token in ['Apache License','Version 2.0','Disclaimer of Warranty','Limitation of Liability']:
@@ -33,6 +33,6 @@ def main():
         if not any(a.lower() in joined for a in alts): fail('missing concept: '+label)
     for token in ["## 21. Natura sperimentale e fallibilità dell'AI",'## 22. Validazione umana e responsabilità finale','## 23. Licenza open-source e responsible use']:
         if token not in contract: fail('contract responsible-use section missing: '+token)
-    print(json.dumps({'status':'PASS','profile':status['profile'],'contract_version':'2.1.0','authority_nodes':6,'license':'Apache-2.0'},indent=2))
+    print(json.dumps({'status':'PASS','profile':status['profile'],'contract_version':'2.2.0','authority_nodes':6,'license':'Apache-2.0'},indent=2))
     return 0
 if __name__=='__main__': raise SystemExit(main())
