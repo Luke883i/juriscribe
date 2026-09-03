@@ -1,15 +1,13 @@
 # Juriscribe — Local GPT-like Host Adapter compatibility pointer
 
-This path is retained for compatibility and discovery. It is **not** the current complete host prompt and must not be treated as an independent specification.
+This path is retained for compatibility and discovery. It is **not** an independent specification.
 
-Current host boot ROM:
-
+Current Local Cognitive Host boot ROM:
 - [`host/LOCAL_HOST_PROMPT.md`](host/LOCAL_HOST_PROMPT.md)
 
-Current contract root for the revision-bound Juriscribe Local Session Environment:
+Current single normative local cognitive capsule:
+- [`host/LOCAL_SESSION_ENVIRONMENT.md`](host/LOCAL_SESSION_ENVIRONMENT.md) — profile `JURISCRIBE_LOCAL_COGNITIVE_RUNTIME_V1`
 
-- [`host/LOCAL_SESSION_ENVIRONMENT.md`](host/LOCAL_SESSION_ENVIRONMENT.md)
+`EXECUTION.md`, `STATE.md`, `SURFACE.md` and `FAILURE_RECOVERY.md` are compatibility aliases retained because the current `ADMISSION.json.local_session_environment` graph still names those paths. They add no policy and no authority.
 
-The normative host graph is activated only by `ADMISSION.json.local_session_environment` after valid human acceptance and only from the same repository revision pinned to that acceptance context. The graph has `HOST_COMPOSITION_ONLY` authority and adds no scientific/runtime authority node.
-
-A compliant conversational host instantiates Juriscribe as a local environment inside the current chat while the canonical runtime remains authoritative for admission, state, modes, proofs, receipts, artifacts, delivery and completion.
+The cognitive capsule is host orchestration/projection only. It wraps Juriscribe for bootstrap, continuity, exhaustive safe local remediation, graded execution UX and artifact visibility; canonical Juriscribe contract/runtime remains authoritative for admission, scientific modes, state, proofs, receipts, artifacts, delivery and `COMPLETE`.
