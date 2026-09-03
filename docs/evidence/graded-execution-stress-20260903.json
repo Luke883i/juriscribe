@@ -1,0 +1,40 @@
+{
+  "digest": "d9abf3bc2fcdfd58361c4bab6697a15eb4ccc907d8f041604e2bddca08584a48",
+  "elapsed_seconds": 5.624,
+  "engineering_contracts": {
+    "families": 24,
+    "instances": 100000,
+    "killed": 100000,
+    "seed": 202609032201,
+    "survivors": 0
+  },
+  "final_mutation_campaign": {
+    "families": 24,
+    "instances": 1000000,
+    "killed": 1000000,
+    "runs": [
+      {"instances":100000,"killed":100000,"seed":202609032300,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032301,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032302,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032303,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032304,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032305,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032306,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032307,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032308,"survivors":0},
+      {"instances":100000,"killed":100000,"seed":202609032309,"survivors":0}
+    ],
+    "survivors": 0
+  },
+  "multi_level_traces": {
+    "instances": 300000,
+    "oracle_mismatches": 0,
+    "runs": [
+      {"instances":100000,"oracle_mismatches":0,"outcomes":{"ATTESTED":26829,"LEAN":46477,"METHOD_UNAVAILABLE":5072,"OFFER_LEAN":21622},"seed":202609032211},
+      {"instances":100000,"oracle_mismatches":0,"outcomes":{"ATTESTED":26792,"LEAN":46568,"METHOD_UNAVAILABLE":5154,"OFFER_LEAN":21486},"seed":202609032212},
+      {"instances":100000,"oracle_mismatches":0,"outcomes":{"ATTESTED":26974,"LEAN":46448,"METHOD_UNAVAILABLE":5098,"OFFER_LEAN":21480},"seed":202609032213}
+    ]
+  },
+  "prompt_capsule": {"families":10,"instances":100000,"killed":100000,"seed":202609032231,"survivors":0},
+  "retroaction": {"families":10,"instances":100000,"killed":100000,"seed":202609032221,"survivors":0}
+}
