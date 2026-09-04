@@ -1,13 +1,16 @@
 # Juriscribe — Local GPT-like Host Adapter compatibility pointer
 
-This path is retained for compatibility and discovery. It is **not** an independent specification.
+This path is retained for compatibility and discovery. It is not an independent specification.
 
-Current Local Cognitive Host boot ROM:
-- [`host/LOCAL_HOST_PROMPT.md`](host/LOCAL_HOST_PROMPT.md)
+Current boot ROM:
+- [`host/LOCAL_HOST_PROMPT.md`](host/LOCAL_HOST_PROMPT.md) — initializes repository discovery and, after valid acceptance/binding, the runtime-local-host cognitive companion.
 
-Current single normative local cognitive capsule:
-- [`host/LOCAL_SESSION_ENVIRONMENT.md`](host/LOCAL_SESSION_ENVIRONMENT.md) — profile `JURISCRIBE_LOCAL_COGNITIVE_RUNTIME_V1`
+Current host contracts:
+- [`host/LOCAL_SESSION_ENVIRONMENT.md`](host/LOCAL_SESSION_ENVIRONMENT.md) — normative root;
+- [`host/EXECUTION.md`](host/EXECUTION.md), [`host/STATE.md`](host/STATE.md), [`host/SURFACE.md`](host/SURFACE.md), [`host/FAILURE_RECOVERY.md`](host/FAILURE_RECOVERY.md) — lifecycle-scoped normative nodes;
+- [`host/RUNTIME_LOCAL_HOST.md`](host/RUNTIME_LOCAL_HOST.md) — same-revision cognitive companion, `HOST_ORCHESTRATION_AND_PROJECTION_ONLY`.
 
-`EXECUTION.md`, `STATE.md`, `SURFACE.md` and `FAILURE_RECOVERY.md` are compatibility aliases retained because the current `ADMISSION.json.local_session_environment` graph still names those paths. They add no policy and no authority.
+Canonical graded-method source:
+- [`../METHOD_KERNEL.json`](../METHOD_KERNEL.json) — method discipline and mode-method projection used for `METHOD_ACCESS`; it is not runtime state or proof.
 
-The cognitive capsule is host orchestration/projection only. It wraps Juriscribe for bootstrap, continuity, exhaustive safe local remediation, graded execution UX and artifact visibility; canonical Juriscribe contract/runtime remains authoritative for admission, scientific modes, state, proofs, receipts, artifacts, delivery and `COMPLETE`.
+The host never manufactures admission, mode selection, receipts, proof, checkpoint, materialization, delivery or `COMPLETE`. `LEAN` preserves method/epistemic discipline and declassifies only unavailable infrastructure-dependent attestations; `ATTESTED` uses real runtime evidence. A later LEAN → ATTESTED transition requires canonical replay/revalidation.

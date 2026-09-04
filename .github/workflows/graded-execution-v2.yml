@@ -1,0 +1,35 @@
+name: graded-execution-v2
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  graded-execution:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile current policy
+        run: python -m compileall -q juriscribe scripts tests
+      - name: Focused graded execution tests
+        run: python -m unittest tests.test_graded_execution_v2 -v
+      - name: Contract parity guards
+        run: |
+          python scripts/check_contract.py
+          python scripts/check_local_environment_contract.py
+          python scripts/check_runtime_v1.py
+          python scripts/check_project_status.py
+      - name: Runtime-policy stress
+        run: python scripts/stress_graded_execution_v2.py --cases 100000 --seed 2026090401
+      - name: Historical local-environment regression
+        run: python -m unittest tests.test_local_session_environment tests.test_local_session_environment_v2 -v
