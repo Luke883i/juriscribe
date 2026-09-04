@@ -5,14 +5,25 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+try:
+    from . import graded_execution as ge
+except ImportError:
+    import importlib.util
+    import sys
+    _p = Path(__file__).with_name("graded_execution.py")
+    _spec = importlib.util.spec_from_file_location("juriscribe_graded_execution_standalone", _p)
+    if _spec is None or _spec.loader is None:
+        raise
+    ge = importlib.util.module_from_spec(_spec)
+    sys.modules[_spec.name] = ge
+    _spec.loader.exec_module(ge)
+
 ENVIRONMENT_SCHEMA = "juriscribe-local-session-environment/v1"
 ENVIRONMENT_PROFILE = "JURISCRIBE_LOCAL_SESSION_ENVIRONMENT_V1"
-COGNITIVE_PROFILE = "JURISCRIBE_LOCAL_COGNITIVE_RUNTIME_V1"
+COGNITIVE_PROFILE = "JURISCRIBE_RUNTIME_LOCAL_HOST_V1"
 ENVIRONMENT_AUTHORITY = "HOST_COMPOSITION_ONLY"
+COGNITIVE_AUTHORITY = "HOST_ORCHESTRATION_AND_PROJECTION_ONLY"
 BOOT_PROMPT_MAX_CHARS = 8000
-
-# Kept for ADMISSION v9 / compatibility. Only `root` carries current local policy;
-# the other four nodes are aliases that MUST point back to root.
 CONTRACT_NODE_KEYS = ("root", "execution", "state", "surface", "failure_recovery")
 ACTIVATION = {
     "POST_ACCEPTANCE_BOOTSTRAP": ("root", "execution"),
@@ -20,58 +31,24 @@ ACTIVATION = {
     "FAILURE_OR_RECOVERY": ("root", "state", "failure_recovery"),
     "REBIND_OR_TRANSPORT_FAILURE": ("root", "execution", "failure_recovery"),
 }
-
 EXECUTION_PROFILES = ("LEAN", "ATTESTED")
 EXECUTION_PROFILE_SCHEMA = "juriscribe-execution-profile/v1"
-METHOD_KERNEL_PROFILE = "JURISCRIBE_METHOD_KERNEL_V1"
-LOCAL_SEARCH_SCHEMA = "juriscribe-local-bootstrap-search/v1"
-
-METHOD_KERNEL = (
-    "MANDATE_OR_MODE_INTENT",
-    "INPUT_INVENTORY",
-    "SEMANTIC_DECOMPOSITION_RETICULUM",
-    "SETUP_EDITORIAL_STANDARD_DOD",
-    "SOURCE_CLAIM_INFERENCE_DISCIPLINE",
-    "MODE_SPECIFIC_WORK",
-    "REVIEW_REGENERATION_SATURATION_WHEN_APPLICABLE",
-    "PROVENANCE",
-    "SEVERE_FINAL_REVIEW",
-    "ARTIFACT_TARGET",
-    "HUMAN_VALIDATION",
-)
-
-EXECUTION_DEBT = (
-    "RUNTIME_UNATTESTED",
-    "STATE_EPHEMERAL",
-    "MATERIALIZATION_UNAVAILABLE",
-    "DELIVERY_UNAVAILABLE",
-    "RECOVERY_UNAVAILABLE",
-)
-
-EPISTEMIC_DEBT = (
-    "SOURCE_UNAVAILABLE",
-    "AUTHORITY_UNVERIFIED",
-    "JURISDICTION_UNRESOLVED",
-    "MATERIAL_EVIDENCE_MISSING",
-    "CLAIM_UNSUPPORTED",
-)
-
-LOCAL_PATH_CLASSES = (
-    "INSTALLED_BOUND_RUNTIME",
-    "LOCAL_CANONICAL_SOURCE",
-    "CONNECTED_REPOSITORY_SOURCE",
-    "PUBLIC_REPOSITORY_SOURCE",
-    "PROBE_SOURCE_TO_RUNTIME_BRIDGE",
-    "CANONICAL_OPERATION_CLOSURE",
-    "FULL_PINNED_RUNTIME_PACKAGE",
-    "LEAN_METHOD_KERNEL",
-)
+METHOD_KERNEL_PROFILE = ge.METHOD_KERNEL_PROFILE
+LOCAL_SEARCH_SCHEMA = "juriscribe-local-bootstrap-search/v2"
+LOCAL_PATH_CLASSES = ge.PATH_CLASSES
 
 
 def _policy(admission: Mapping[str, Any]) -> Mapping[str, Any]:
     policy = admission.get("local_session_environment")
     if not isinstance(policy, Mapping):
         raise ValueError("local_session_environment policy missing")
+    return policy
+
+
+def _cognitive_policy(admission: Mapping[str, Any]) -> Mapping[str, Any]:
+    policy = admission.get("local_cognitive_system")
+    if not isinstance(policy, Mapping):
+        raise ValueError("local_cognitive_system policy missing")
     return policy
 
 
@@ -93,13 +70,11 @@ def validate_environment_policy(admission: Mapping[str, Any]) -> Mapping[str, An
     for key, expected in expected_scalars.items():
         if policy.get(key) != expected:
             raise ValueError(f"local environment invariant mismatch: {key}")
-
     max_chars = int(policy.get("boot_prompt_max_chars", 0))
     if max_chars <= 0 or max_chars > BOOT_PROMPT_MAX_CHARS:
         raise ValueError("boot prompt maximum must be in 1..8000")
-
     nodes = policy.get("contract_nodes")
-    if not isinstance(nodes, Mapping) or set(nodes.keys()) != set(CONTRACT_NODE_KEYS):
+    if not isinstance(nodes, Mapping) or tuple(nodes.keys()) != CONTRACT_NODE_KEYS:
         raise ValueError("contract node keys/order mismatch")
     paths = [str(nodes[key]) for key in CONTRACT_NODE_KEYS]
     if len(set(paths)) != len(paths):
@@ -108,33 +83,46 @@ def validate_environment_policy(admission: Mapping[str, Any]) -> Mapping[str, An
         raise ValueError("contract nodes must be Markdown files under docs/host")
     if str(policy.get("root")) != str(nodes["root"]):
         raise ValueError("root path differs from root contract node")
-
     prompt_path = str(policy.get("boot_prompt", ""))
     if not prompt_path.startswith("docs/host/") or not prompt_path.endswith(".md"):
         raise ValueError("boot prompt must be a Markdown file under docs/host")
     if prompt_path in paths:
         raise ValueError("boot prompt must not masquerade as a normative contract node")
-
     pre = tuple(str(item) for item in (admission.get("pre_admission_allowlist") or ()))
-    if str(nodes["root"]) in pre or prompt_path in pre:
-        raise ValueError("host environment files must not enter the pre-admission allowlist")
-
+    if any(path in pre for path in [*paths, prompt_path]):
+        raise ValueError("post-admission host files must not enter the pre-admission allowlist")
     activation = policy.get("activation")
-    if not isinstance(activation, Mapping) or set(activation.keys()) != set(ACTIVATION.keys()):
+    if not isinstance(activation, Mapping) or tuple(activation.keys()) != tuple(ACTIVATION.keys()):
         raise ValueError("activation trigger set/order mismatch")
     for trigger, expected in ACTIVATION.items():
         actual = tuple(str(item) for item in (activation.get(trigger) or ()))
         if actual != expected:
             raise ValueError(f"activation mismatch: {trigger}")
+    cognitive = _cognitive_policy(admission)
+    expected_cognitive = {
+        "schema": "juriscribe-runtime-local-host/v1",
+        "profile": COGNITIVE_PROFILE,
+        "authority": COGNITIVE_AUTHORITY,
+        "scientific_authority": False,
+        "runtime_authority_nodes_added": 0,
+        "same_revision_required": True,
+        "normative_host_nodes_replaced": False,
+        "load_before_acceptance": False,
+    }
+    for key, expected in expected_cognitive.items():
+        if cognitive.get(key) != expected:
+            raise ValueError(f"local cognitive invariant mismatch: {key}")
+    cpath = str(cognitive.get("cognitive_policy", ""))
+    if not cpath.startswith("docs/host/") or not cpath.endswith(".md") or cpath in paths:
+        raise ValueError("cognitive companion path must be a distinct docs/host Markdown file")
+    if cpath in pre:
+        raise ValueError("cognitive companion must remain post-admission")
+    if str(cognitive.get("boot_prompt")) != prompt_path:
+        raise ValueError("cognitive system boot prompt differs from environment boot prompt")
     return policy
 
 
 def activation_plan(admission: Mapping[str, Any], trigger: str) -> dict[str, Any]:
-    """Return the v1 compatibility activation plan.
-
-    All paths remain valid for ADMISSION v9. The specialist Markdown files are now
-    compatibility aliases; the root is the single current cognitive policy node.
-    """
     policy = validate_environment_policy(admission)
     trigger = str(trigger).strip().upper()
     if trigger not in ACTIVATION:
@@ -148,8 +136,8 @@ def activation_plan(admission: Mapping[str, Any], trigger: str) -> dict[str, Any
         "trigger": trigger,
         "node_keys": list(keys),
         "paths": [str(nodes[key]) for key in keys],
-        "normative_policy_path": str(nodes["root"]),
-        "normative_policy_nodes": 1,
+        "normative_policy_nodes": len(CONTRACT_NODE_KEYS),
+        "cognitive_companion_nodes": 1,
         "same_revision_required": True,
         "authority": ENVIRONMENT_AUTHORITY,
         "scientific_authority": False,
@@ -160,21 +148,12 @@ def activation_plan(admission: Mapping[str, Any], trigger: str) -> dict[str, Any
 def execution_profile_choices() -> dict[str, Any]:
     return {
         "schema": EXECUTION_PROFILE_SCHEMA,
-        "choices": [
-            {
-                "id": "LEAN",
-                "label": "LEAN",
-                "description": "Metodo Juriscribe completo; infrastruttura e attestazioni degradano esplicitamente quando non disponibili.",
-            },
-            {
-                "id": "ATTESTED",
-                "label": "ATTESTED",
-                "description": "Runtime, receipt, persistence, proof e completion restano soggetti ai gate canonici forti.",
-            },
-        ],
+        "choices": ["LEAN", "ATTESTED"],
         "scientific_mode": False,
+        "mandatory_selection": False,
+        "default_preference": "ATTESTED_PREFERRED",
+        "auto_select_forbidden": False,
         "authority": "HOST_EXECUTION_POLICY_ONLY",
-        "auto_select_forbidden": True,
     }
 
 
@@ -186,81 +165,52 @@ def normalize_execution_profile(value: str) -> str:
 
 
 def method_kernel_contract() -> dict[str, Any]:
+    root = Path(__file__).resolve().parents[1]
+    kernel = ge.load_method_kernel(root / "METHOD_KERNEL.json")
     return {
-        "profile": METHOD_KERNEL_PROFILE,
-        "steps": list(METHOD_KERNEL),
-        "epistemic_discipline_degradable": False,
-        "human_validation_required": True,
-        "runtime_receipts_required": False,
+        "profile": kernel["profile"],
+        "method_degradation_allowed": kernel["method_degradation_allowed"],
+        "epistemic_degradation_allowed": kernel["epistemic_degradation_allowed"],
+        "human_validation_required": kernel["human_validation_required"],
+        "mode_methods": kernel["mode_methods"],
         "runtime_authority": False,
         "claim_scope": "CANONICAL_METHOD_NOT_RUNTIME_ATTESTATION",
     }
 
 
-def graded_execution_plan(
-    profile: str,
-    *,
-    method_available: bool,
-    runtime_ready: bool,
-    persistence_ready: bool = False,
-    materialization_ready: bool = False,
-    delivery_ready: bool = False,
-    recovery_ready: bool = False,
-) -> dict[str, Any]:
-    """Project capability truth into a graded execution decision.
-
-    LEAN may continue the canonical method without runtime attestation. ATTESTED
-    never silently degrades: when the method remains available it offers LEAN.
-    """
+def graded_execution_plan(profile: str, *, method_available: bool, runtime_ready: bool, persistence_ready: bool = False, materialization_ready: bool = False, delivery_ready: bool = False, recovery_ready: bool = False) -> dict[str, Any]:
     profile = normalize_execution_profile(profile)
-    if runtime_ready:
-        action = "RUN_ATTESTED"
-        attestation = "RUNTIME_VERIFIED"
-    elif method_available and profile == "LEAN":
-        action = "RUN_LEAN_METHOD"
-        attestation = "METHOD_GUIDED"
-    elif method_available:
-        action = "OFFER_LEAN"
-        attestation = "UNAVAILABLE"
-    else:
-        action = "BLOCK_METHOD_UNAVAILABLE"
-        attestation = "UNAVAILABLE"
-
+    access = ge.MethodAccess(method_available, method_available, method_available, method_available)
+    decision = ge.choose_execution_profile(access, runtime_reachable=runtime_ready, infrastructure_search_exhausted=True, capability_discovery_complete=True, preference="LEAN" if profile == "LEAN" else "ATTESTED_REQUIRED")
     debt: list[str] = []
-    if not runtime_ready:
-        debt.append("RUNTIME_UNATTESTED")
-    if runtime_ready and not persistence_ready:
-        debt.append("STATE_EPHEMERAL")
-    if not materialization_ready:
-        debt.append("MATERIALIZATION_UNAVAILABLE")
-    if not delivery_ready:
-        debt.append("DELIVERY_UNAVAILABLE")
-    if not recovery_ready:
-        debt.append("RECOVERY_UNAVAILABLE")
-
+    if not runtime_ready: debt.append("RUNTIME_UNATTESTED")
+    if runtime_ready and not persistence_ready: debt.append("STATE_EPHEMERAL")
+    if not materialization_ready: debt.append("MATERIALIZATION_UNAVAILABLE")
+    if not delivery_ready: debt.append("DELIVERY_UNAVAILABLE")
+    if not recovery_ready: debt.append("RECOVERY_UNAVAILABLE")
+    resolved = decision.get("profile")
+    action = {
+        ("LEAN", "WORK_READY"): "RUN_LEAN_METHOD",
+        ("ATTESTED", "WORK_READY"): "RUN_ATTESTED",
+        (None, "ATTESTED_INFRASTRUCTURE_BLOCKED"): "OFFER_LEAN",
+        (None, "METHOD_ACCESS_BLOCKED"): "BLOCK_METHOD_UNAVAILABLE",
+    }.get((resolved, decision.get("state")), decision.get("state"))
+    claims = ge.runtime_claim_projection(profile=resolved or "LEAN", runtime_reachable=runtime_ready, receipts_verified=False, complete_verified=False) if resolved else {"runtime_attestation": False, "runtime_receipts_may_be_claimed": False, "runtime_complete_may_be_claimed": False}
     return {
         "schema": EXECUTION_PROFILE_SCHEMA,
         "requested_profile": profile,
         "action": action,
         "method_available": bool(method_available),
         "runtime_ready": bool(runtime_ready),
-        "attestation": attestation,
+        "attestation": "RUNTIME_REACHABLE" if claims["runtime_attestation"] else "METHOD_GUIDED" if resolved == "LEAN" else "UNAVAILABLE",
         "execution_debt": debt,
-        "runtime_receipts_may_be_claimed": bool(runtime_ready),
-        "runtime_complete_may_be_claimed": bool(runtime_ready),
-        "promotion_requires_replay": not runtime_ready and bool(method_available),
+        **claims,
+        "promotion_requires_replay": resolved == "LEAN" and method_available,
         "method_kernel": METHOD_KERNEL_PROFILE if method_available else None,
     }
 
 
-def artifact_trajectory(
-    *,
-    content_ready: bool,
-    materialized: bool,
-    delivered: bool,
-    runtime_attested: bool,
-    complete: bool = False,
-) -> dict[str, Any]:
+def artifact_trajectory(*, content_ready: bool, materialized: bool, delivered: bool, runtime_attested: bool, complete: bool = False) -> dict[str, Any]:
     if delivered and not materialized:
         raise ValueError("delivered artifact must be materialized")
     if materialized and not content_ready:
@@ -268,12 +218,7 @@ def artifact_trajectory(
     if complete and not runtime_attested:
         raise PermissionError("COMPLETE cannot be claimed by METHOD_GUIDED output")
     physical = "DELIVERED" if delivered else "MATERIALIZED" if materialized else "CONTENT_READY" if content_ready else "PENDING"
-    return {
-        "physical": physical,
-        "attestation": "RUNTIME_VERIFIED" if runtime_attested else "METHOD_GUIDED",
-        "complete": bool(complete),
-        "human_validation_required": True,
-    }
+    return {"physical": physical, "attestation": "RUNTIME_VERIFIED" if runtime_attested else "METHOD_GUIDED", "complete": bool(complete), "human_validation_required": True}
 
 
 def promotion_plan(*, method_work_exists: bool, runtime_ready: bool) -> dict[str, Any]:
@@ -281,81 +226,17 @@ def promotion_plan(*, method_work_exists: bool, runtime_ready: bool) -> dict[str
         return {"action": "NO_PROMOTION_NEEDED", "steps": []}
     if not runtime_ready:
         return {"action": "WAIT_FOR_RUNTIME", "steps": []}
-    return {
-        "action": "REPLAY_REQUIRED",
-        "steps": [
-            "REAL_ADMISSION_PROBE_INITIALIZE_AS_APPLICABLE",
-            "REAL_MODE_SELECTION",
-            "CANONICAL_INPUT_REPLAY",
-            "RECOMPUTE_APPLICABLE_PROOF_AND_GATES",
-            "FRESH_MATERIALIZATION_AND_READBACK",
-        ],
-        "prior_method_work_is_proof": False,
-    }
+    return {"action": "REPLAY_REQUIRED", "steps": ["REAL_ADMISSION_PROBE_INITIALIZE_AS_APPLICABLE", "REAL_MODE_SELECTION", "CANONICAL_INPUT_REPLAY", "RECOMPUTE_APPLICABLE_PROOF_AND_GATES", "FRESH_MATERIALIZATION_AND_READBACK"], "prior_method_work_is_proof": False}
 
 
-def _state(capabilities: Mapping[str, str], name: str) -> str:
-    value = str(capabilities.get(name, "UNVERIFIED")).strip().upper()
-    return value if value in {"AVAILABLE", "UNAVAILABLE", "UNVERIFIED"} else "UNVERIFIED"
-
-
-def _not_unavailable(capabilities: Mapping[str, str], name: str) -> bool:
-    return _state(capabilities, name) != "UNAVAILABLE"
-
-
-def _available(capabilities: Mapping[str, str], name: str) -> bool:
-    return _state(capabilities, name) == "AVAILABLE"
-
-
-def plan_local_bootstrap_search(
-    capabilities: Mapping[str, str],
-    *,
-    installed_runtime_bound: bool = False,
-    operation_closure_available: bool = False,
-    method_available: bool = True,
-) -> dict[str, Any]:
-    """Enumerate materially distinct, safe local paths before a blocker.
-
-    `gh` is deliberately absent: the host assumes it unavailable until observed and
-    never makes it a bootstrap dependency. UNVERIFIED capabilities may justify a
-    probe path; only explicit UNAVAILABLE removes that path.
-    """
-    candidates: list[dict[str, Any]] = []
-
-    if installed_runtime_bound and _available(capabilities, "RUNTIME_IMPORT"):
-        candidates.append({"class": "INSTALLED_BOUND_RUNTIME", "action": "USE", "priority": 10})
-
-    python_possible = _not_unavailable(capabilities, "PYTHON_EXECUTION")
-    scratch_possible = _not_unavailable(capabilities, "LOCAL_SCRATCH_IO")
-    generic_repo = _not_unavailable(capabilities, "REPOSITORY_READ")
-
-    if python_possible and scratch_possible and _not_unavailable(capabilities, "LOCAL_REPOSITORY_READ"):
-        candidates.append({"class": "LOCAL_CANONICAL_SOURCE", "action": "TRY", "priority": 20})
-    if python_possible and scratch_possible and (_not_unavailable(capabilities, "CONNECTED_REPOSITORY_READ") or generic_repo):
-        candidates.append({"class": "CONNECTED_REPOSITORY_SOURCE", "action": "TRY", "priority": 30})
-    if python_possible and scratch_possible and _not_unavailable(capabilities, "PUBLIC_REPOSITORY_READ"):
-        candidates.append({"class": "PUBLIC_REPOSITORY_SOURCE", "action": "TRY", "priority": 40})
-
-    if python_possible and scratch_possible and generic_repo and _state(capabilities, "SOURCE_TO_RUNTIME_BRIDGE") == "UNVERIFIED":
-        candidates.append({"class": "PROBE_SOURCE_TO_RUNTIME_BRIDGE", "action": "PROBE", "priority": 50})
-
-    if operation_closure_available and python_possible and scratch_possible and generic_repo:
-        candidates.append({"class": "CANONICAL_OPERATION_CLOSURE", "action": "TRY", "priority": 60})
-
-    if python_possible and scratch_possible and generic_repo:
-        candidates.append({"class": "FULL_PINNED_RUNTIME_PACKAGE", "action": "TRY", "priority": 70})
-
-    if method_available:
-        candidates.append({"class": "LEAN_METHOD_KERNEL", "action": "DEGRADE_WITH_DISCLOSURE", "priority": 90})
-
-    unique: dict[str, dict[str, Any]] = {}
-    for item in sorted(candidates, key=lambda x: int(x["priority"])):
-        unique.setdefault(str(item["class"]), item)
-    ordered = list(unique.values())
+def plan_local_bootstrap_search(capabilities: Mapping[str, str], *, installed_runtime_bound: bool = False, operation_closure_available: bool = False, method_available: bool = True) -> dict[str, Any]:
+    classes = ge.eligible_path_classes(capabilities, installed_runtime_bound=installed_runtime_bound, operation_closure_available=operation_closure_available)
     return {
         "schema": LOCAL_SEARCH_SCHEMA,
-        "candidates": ordered,
-        "candidate_classes": [item["class"] for item in ordered],
+        "candidates": [{"class": c, "action": "TRY"} for c in classes],
+        "candidate_classes": list(classes),
+        "method_access_available": bool(method_available),
+        "lean_is_runtime_transport_class": False,
         "gh_cli_required": False,
         "privilege_escalation_allowed": False,
         "arbitrary_software_install_allowed": False,
@@ -372,21 +253,16 @@ def next_local_path(search_plan: Mapping[str, Any], attempts: Sequence[Mapping[s
     return None
 
 
-def local_blocker_status(
-    search_plan: Mapping[str, Any],
-    attempts: Sequence[Mapping[str, Any]],
-    *,
-    requested_profile: str,
-) -> dict[str, Any]:
+def local_blocker_status(search_plan: Mapping[str, Any], attempts: Sequence[Mapping[str, Any]], *, requested_profile: str) -> dict[str, Any]:
     profile = normalize_execution_profile(requested_profile)
-    next_path = next_local_path(search_plan, attempts)
-    if next_path is not None:
-        return {"blocker_allowed": False, "action": "TRY_NEXT_LOCAL_PATH", "next": next_path}
-    method_candidate = "LEAN_METHOD_KERNEL" in set(search_plan.get("candidate_classes") or [])
-    if profile == "ATTESTED" and method_candidate:
-        return {"blocker_allowed": False, "action": "OFFER_LEAN", "next": None}
-    if profile == "LEAN" and method_candidate:
+    nxt = next_local_path(search_plan, attempts)
+    if nxt is not None:
+        return {"blocker_allowed": False, "action": "TRY_NEXT_LOCAL_PATH", "next": nxt}
+    method = bool(search_plan.get("method_access_available"))
+    if method and profile == "LEAN":
         return {"blocker_allowed": False, "action": "RUN_LEAN_METHOD", "next": None}
+    if method:
+        return {"blocker_allowed": False, "action": "OFFER_LEAN", "next": None}
     return {"blocker_allowed": True, "action": "BLOCK", "next": None}
 
 
@@ -400,51 +276,47 @@ def validate_environment_files(repo_root: str | Path, admission: Mapping[str, An
     nodes = policy["contract_nodes"]
     paths = {key: root / str(nodes[key]) for key in CONTRACT_NODE_KEYS}
     prompt_path = root / str(policy["boot_prompt"])
-    for path in [*paths.values(), prompt_path]:
+    cognitive = _cognitive_policy(admission)
+    cognitive_path = root / str(cognitive["cognitive_policy"])
+    kernel_policy = admission.get("method_access") or {}
+    kernel_path = root / str(kernel_policy.get("kernel_path", "METHOD_KERNEL.json"))
+    for path in [*paths.values(), prompt_path, cognitive_path, kernel_path]:
         if not path.is_file():
             raise FileNotFoundError(f"local environment file missing: {path}")
-
     texts = {key: path.read_text(encoding="utf-8") for key, path in paths.items()}
     prompt = prompt_path.read_text(encoding="utf-8")
+    cognitive_text = cognitive_path.read_text(encoding="utf-8")
     prompt_chars = len(prompt)
     if prompt_chars > int(policy["boot_prompt_max_chars"]):
         raise ValueError(f"boot prompt exceeds declared character limit: {prompt_chars}")
-
     root_text = texts["root"]
-    for token in (
-        COGNITIVE_PROFILE,
-        "LEAN",
-        "ATTESTED",
-        "METHOD KERNEL",
-        "LOCAL BOOTSTRAP SEARCH",
-        "CHAT_CONTEXT_MAP",
-        "COMPLETE",
-    ):
-        if token not in root_text:
-            raise ValueError(f"cognitive root missing invariant: {token}")
-
+    for key in CONTRACT_NODE_KEYS[1:]:
+        name = Path(str(nodes[key])).name
+        if name not in root_text:
+            raise ValueError(f"root does not cross-reference {name}")
+    for required in (prompt_path.name, cognitive_path.name, kernel_path.name):
+        if required not in root_text and required != kernel_path.name:
+            raise ValueError(f"root does not cross-reference {required}")
     root_name = Path(str(nodes["root"])).name
     for key in CONTRACT_NODE_KEYS[1:]:
-        alias = texts[key]
-        if "COMPATIBILITY ALIAS" not in alias or root_name not in alias:
-            raise ValueError(f"{key} is not a compatibility alias to cognitive root")
-
-    for token in (
-        "pre_admission_allowlist",
-        "resolved_revision",
-        "CHAT_CONTEXT_MAP",
-        "`UNVERIFIED`",
-        "`UNAVAILABLE`",
-        "gh",
-        "LEAN",
-        "ATTESTED",
-        root_name,
-    ):
+        if root_name not in texts[key]:
+            raise ValueError(f"{key} does not cross-reference root")
+    for token in ("pre_admission_allowlist", "resolved_revision", "RUNTIME_LOCAL_HOST.md", "METHOD_KERNEL.json", "UNVERIFIED", "ATTESTED_PREFERRED", "LEAN"):
         if token not in prompt:
             raise ValueError(f"boot prompt missing anchor: {token}")
     if "COMPRESSION & CONSOLIDATION" in prompt:
         raise ValueError("boot prompt duplicates canonical scientific mode taxonomy")
-
+    for token in ("METHOD_ACCESS", "ATTESTED_PREFERRED", "INFRASTRUCTURE_DEBT", "EPISTEMIC_DEBT", "LEAN -> ATTESTED"):
+        if token not in cognitive_text:
+            raise ValueError(f"cognitive companion missing invariant: {token}")
+    if _sha256(cognitive_text) != str(cognitive.get("cognitive_policy_sha256")):
+        raise ValueError("cognitive companion digest mismatch")
+    if _sha256(prompt) != str(cognitive.get("boot_prompt_sha256")):
+        raise ValueError("boot prompt digest mismatch")
+    kernel_bytes = kernel_path.read_bytes()
+    kernel_sha = hashlib.sha256(kernel_bytes).hexdigest()
+    if kernel_sha != str(kernel_policy.get("kernel_sha256")):
+        raise ValueError("Method Kernel digest mismatch")
     payload = {
         "schema": ENVIRONMENT_SCHEMA,
         "profile": ENVIRONMENT_PROFILE,
@@ -452,13 +324,12 @@ def validate_environment_files(repo_root: str | Path, admission: Mapping[str, An
         "authority": ENVIRONMENT_AUTHORITY,
         "prompt_chars": prompt_chars,
         "prompt_limit": int(policy["boot_prompt_max_chars"]),
-        "normative_policy_nodes": 1,
-        "compatibility_alias_nodes": len(CONTRACT_NODE_KEYS) - 1,
-        "nodes": {
-            key: {"path": str(nodes[key]), "sha256": _sha256(texts[key])}
-            for key in CONTRACT_NODE_KEYS
-        },
+        "normative_policy_nodes": len(CONTRACT_NODE_KEYS),
+        "cognitive_companion_nodes": 1,
+        "nodes": {key: {"path": str(nodes[key]), "sha256": _sha256(texts[key])} for key in CONTRACT_NODE_KEYS},
         "boot_prompt": {"path": str(policy["boot_prompt"]), "sha256": _sha256(prompt)},
+        "cognitive_companion": {"path": str(cognitive["cognitive_policy"]), "sha256": _sha256(cognitive_text)},
+        "method_kernel": {"path": str(kernel_policy.get("kernel_path")), "sha256": kernel_sha},
         "activation": {key: list(value) for key, value in ACTIVATION.items()},
         "runtime_authority_nodes_added": 0,
     }

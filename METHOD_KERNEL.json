@@ -1,0 +1,227 @@
+{
+  "schema": "juriscribe-method-kernel/v1",
+  "profile": "JURISCRIBE_METHOD_KERNEL_V1",
+  "authority": "METHOD_DISCIPLINE_ONLY",
+  "scientific_authority": false,
+  "runtime_authority_nodes_added": 0,
+  "same_revision_required": true,
+  "human_validation_required": true,
+  "human_final_responsibility": true,
+  "method_degradation_allowed": false,
+  "epistemic_degradation_allowed": false,
+  "infrastructure_degradation_allowed": true,
+  "infrastructure_degradation_scope": [
+    "RUNTIME_EXECUTION",
+    "RUNTIME_RECEIPTS",
+    "PERSISTENCE",
+    "CHECKPOINT",
+    "MECHANICAL_PROOF",
+    "DASHBOARD_CANONICALITY",
+    "DOCX_MATERIALIZATION",
+    "DELIVERY",
+    "RECOVERY"
+  ],
+  "common_obligations": [
+    "MANDATE_AND_SCOPE",
+    "INPUT_INVENTORY",
+    "SEMANTIC_DECOMPOSITION_AND_RETICULUM",
+    "SETUP_AND_EDITORIAL_STANDARD",
+    "DEFINITION_OF_DONE",
+    "SOURCE_CLAIM_INFERENCE_DISCIPLINE",
+    "MODE_SPECIFIC_WORK",
+    "REVIEW_REGENERATION_AND_SATURATION_WHERE_APPLICABLE",
+    "PROVENANCE",
+    "FINAL_SEVERE_REVIEW",
+    "ARTIFACT_TARGET",
+    "HUMAN_VALIDATION"
+  ],
+  "epistemic_invariants": {
+    "source_required_for_external_claim": true,
+    "concept_is_not_authority": true,
+    "claim_inference_separation": true,
+    "jurisdiction_and_time_scope_explicit": true,
+    "unsupported_claims_fail_closed": true,
+    "counterauthority_considered_when_material": true,
+    "no_fabricated_authority": true,
+    "human_validation_cannot_be_waived_by_execution_profile": true
+  },
+  "execution_profiles": {
+    "ATTESTED": {
+      "method_obligations": "IDENTICAL_TO_KERNEL",
+      "runtime_attestations_allowed": true,
+      "complete_state_allowed_only_through_canonical_runtime": true
+    },
+    "LEAN": {
+      "method_obligations": "IDENTICAL_TO_KERNEL",
+      "runtime_attestations_allowed": false,
+      "complete_state_allowed": false,
+      "candidate_material_only": true,
+      "promotion_to_attested_requires_canonical_replay": true
+    }
+  },
+  "profile_policy": {
+    "default_preference": "ATTESTED_PREFERRED",
+    "mandatory_profile_choice": false,
+    "explicit_attested_required_supported": true,
+    "automatic_lean_after_exhausted_infrastructure_paths": true,
+    "new_human_acceptance_on_infrastructure_downgrade": false
+  },
+  "artifact_dimensions": {
+    "physical_readiness": [
+      "CONTENT_READY",
+      "HOST_MATERIALIZED",
+      "HOST_READBACK_VERIFIED",
+      "DELIVERED"
+    ],
+    "execution_attestation": [
+      "METHOD_GUIDED",
+      "RUNTIME_VERIFIED"
+    ],
+    "complete_reserved_for_canonical_runtime": true
+  },
+  "debt_partition": {
+    "INFRASTRUCTURE_DEBT": "does not relax method or epistemic obligations",
+    "EPISTEMIC_DEBT": "limits or blocks substantive claims according to the method",
+    "METHOD_DEBT": "forbidden as a degradation strategy"
+  },
+  "mode_registry_binding": {
+    "runtime_source": "juriscribe.modes.MODE_REGISTRY",
+    "access_contract_sections": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "exact_mode_key_parity_required": true,
+    "semantic_pipeline_parity_required": true
+  },
+  "mode_methods": {
+    "CONTINUATION": {
+      "pipeline": [
+        "INPUT_BINDING",
+        "ATOMIC_MINING_AND_RETICULUM",
+        "CONTINUATION_FRONTIER",
+        "SETUP_AND_EDITORIAL_STANDARD",
+        "DOD_AND_MODE_CONTRACT",
+        "SOURCE_CLAIM_INFERENCE_WORK",
+        "INITIAL_DRAFT",
+        "SCIENTIFIC_EDITORIAL_REVIEW",
+        "REGENERATION_AND_REREVIEW",
+        "REVIEW_SATURATION",
+        "EDGE_SIMULATION",
+        "LOSSLESS_COMPRESSION",
+        "FINAL_QUALITY_SOURCE_CONTINUATION_RECHECK",
+        "PROVENANCE",
+        "FINAL_SEVERE_REVIEW",
+        "DOD_STRESS",
+        "ARTIFACT_TARGET",
+        "HUMAN_VALIDATION"
+      ]
+    },
+    "GREENFIELD": {
+      "pipeline": [
+        "INPUT_BINDING",
+        "ATOMIC_CONCEPT_DECOMPOSITION_AND_RETICULUM",
+        "SCOPE_QUESTIONS_RESEARCH_MAP",
+        "SETUP_AND_EDITORIAL_STANDARD",
+        "DOD_AND_MODE_CONTRACT",
+        "SOURCE_VERIFICATION_CLAIM_INFERENCE_MAP",
+        "INITIAL_DRAFT",
+        "SCIENTIFIC_EDITORIAL_REVIEW",
+        "REGENERATION_AND_REREVIEW",
+        "REVIEW_SATURATION",
+        "EDGE_SIMULATION",
+        "LOSSLESS_COMPRESSION",
+        "FINAL_QUALITY_SOURCE_RECHECK",
+        "PROVENANCE",
+        "FINAL_SEVERE_REVIEW",
+        "DOD_STRESS",
+        "ARTIFACT_TARGET",
+        "HUMAN_VALIDATION"
+      ]
+    },
+    "REVIEW": {
+      "pipeline": [
+        "INPUT_BINDING",
+        "ATOMIC_MINING_AND_RETICULUM",
+        "SETUP_AND_EDITORIAL_STANDARD",
+        "DOD_AND_MODE_CONTRACT",
+        "SCIENTIFIC_CONTENT_SOURCE_LOGICAL_EDITORIAL_REVIEW",
+        "DIAGNOSTIC_SATURATION",
+        "PROVENANCE",
+        "FINAL_SEVERE_REVIEW",
+        "DOD_STRESS",
+        "ARTIFACT_TARGET",
+        "HUMAN_VALIDATION"
+      ],
+      "output_variants": [
+        "REPORT_ONLY",
+        "REPORT_AND_REVISED_TEXT"
+      ]
+    },
+    "COMPRESSION & CONSOLIDATION": {
+      "pipeline": [
+        "LOSSLESS_OBJECT_INVENTORY",
+        "JOINT_CANONICAL_CANDIDATE_RETICULUM",
+        "CANONICAL_METHOD_EDITORIAL_SCIENTIFIC_PROFILING",
+        "CANDIDATE_GAP_EVIDENCE_MAP",
+        "SETUP_AND_EDITORIAL_STANDARD",
+        "REFACTORING_CONTRACT",
+        "MINIMAL_TRAJECTORY_SEARCH",
+        "MUTATION_STRESS_EVIDENCE",
+        "DUAL_SATURATION",
+        "HOLISTIC_REFACTORING_PROPOSAL",
+        "USER_CALIBRATION",
+        "SURGICAL_TRANSFORMATIONS",
+        "STRUCTURAL_SEMANTIC_PRESERVATION",
+        "LOSSLESS_RETICULUM_RECONCILIATION",
+        "SCIENTIFIC_EDITORIAL_REVIEW",
+        "PEER_REVIEW_READINESS",
+        "PROVENANCE",
+        "FINAL_SEVERE_REVIEW",
+        "ARTIFACT_TARGET",
+        "HUMAN_VALIDATION"
+      ]
+    }
+  },
+  "runtime_registry_stage_bindings": {
+    "common_stages": [
+      "INPUT_BINDING",
+      "SEMANTIC_RETICULUM",
+      "USER_CONFIGURATION",
+      "DOD_CONTRACT",
+      "PROVENANCE",
+      "FINAL_REVIEW",
+      "MATERIALIZATION"
+    ],
+    "specific_stages": {
+      "CONTINUATION": [
+        "CONTINUATION_FRONTIER",
+        "GENERATION",
+        "REVIEW_REGENERATION",
+        "SIMULATION",
+        "COMPRESSION"
+      ],
+      "GREENFIELD": [
+        "GENERATION",
+        "REVIEW_REGENERATION",
+        "SIMULATION",
+        "COMPRESSION"
+      ],
+      "REVIEW": [
+        "DIAGNOSTIC_REVIEW",
+        "OPTIONAL_REVISION",
+        "RE_REVIEW"
+      ],
+      "COMPRESSION & CONSOLIDATION": [
+        "LOSSLESS_INVENTORY",
+        "JOINT_RETICULUM",
+        "REFACTORING_PLAN",
+        "MUTATION_EVIDENCE",
+        "DUAL_SATURATION",
+        "REFINED_CANDIDATES",
+        "PEER_REVIEW_READINESS"
+      ]
+    }
+  }
+}

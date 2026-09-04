@@ -1,55 +1,25 @@
-# Juriscribe graded execution convergence — 2026-09-03
+# Juriscribe graded execution convergence — PR33 historical evidence
 
-Scope: synthetic/property architecture evidence for `LEAN | ATTESTED`, Local Cognitive Host and safe local bootstrap search. This is **not** evidence from physical hosts, legal matters or independent LLM sessions.
+Status: **historical convergence record for merged PR #33; not the current semantic specification**.
 
-## Global DoD
+PR #33 introduced the first `LEAN | ATTESTED` graded-execution model and the Local Cognitive Host. Its synthetic/property receipts remain useful evidence for that merge candidate, but post-merge audit found several semantic gaps that are hardened by the current post-PR33 surface.
 
-- runtime authority topology remains exactly six nodes;
-- scientific mode taxonomy remains unchanged;
-- `COMPLETE` remains runtime-attested and strict;
-- `LEAN` degrades infrastructure/attestation only, never epistemic discipline;
-- `ATTESTED` never silently degrades;
-- `LEAN -> ATTESTED` requires canonical replay/recomputation;
-- no hard technical blocker while an untried safe local path class or usable Method Kernel remains;
-- Local Cognitive Runtime remains `HOST_COMPOSITION_ONLY` and one normative Markdown node;
-- Local Host Prompt <= 8000 characters;
-- human validation remains mandatory.
+Current sources of truth for graded execution are:
 
-## Intermediate DoD
+- `ISENECA_ACCESS_CONTRACT.md` — Method Access / Runtime Authority constitutional boundary;
+- `ADMISSION.json.method_access` — machine-readable Method Access binding;
+- `METHOD_KERNEL.json` — canonical non-degrading method obligations and mode/stage parity;
+- `juriscribe/graded_execution.py` — executable graded-execution policy;
+- `docs/host/LOCAL_SESSION_ENVIRONMENT.md` plus lifecycle nodes — normative host composition;
+- `docs/host/RUNTIME_LOCAL_HOST.md` — post-acceptance cognitive companion;
+- `docs/GRADED_EXECUTION_POST33_HARDENING.md` — PR1→33 audit, defects, DoD and current mutation evidence.
 
-- explicit human execution-profile choice after valid acceptance;
-- `gh` is never a bootstrap dependency and is assumed unavailable until observed;
-- `UNVERIFIED != UNAVAILABLE`;
-- exhaustive distinct-path attempt register before blocker;
-- bootstrap-minimal does not disable later runtime expansion;
-- pending intent/operation survives transport and recovery failures;
-- execution debt and epistemic debt remain separate;
-- artifact physical readiness and attestation remain separate.
+The following PR33 conclusions are **superseded**:
 
-## Local checklist
+- execution-profile choice is no longer a mandatory new human round trip; default is `ATTESTED_PREFERRED`, with explicit `ATTESTED_REQUIRED` and `LEAN` supported;
+- `LEAN` is not a runtime bootstrap path class;
+- a reachable runtime never by itself proves receipts or `COMPLETE`;
+- explicit LEAN remains method-guided even when runtime capability exists and later promotion requires replay;
+- the five lifecycle host concerns remain normative and activation-scoped; `RUNTIME_LOCAL_HOST.md` is one additional non-authoritative cognitive companion, not their replacement.
 
-For each host/runtime operation: verify revision/contract binding; load cognitive capsule/context map; inspect current capability facts; select next untried safe path class; avoid arbitrary install/credentials/privilege escalation; use canonical closure or full pinned package rather than private dependency inference; execute/retry only as allowed; refresh state/context; render claims no stronger than observed attestation.
-
-## Executed synthetic campaigns
-
-Main convergence receipt digest: `d9abf3bc2fcdfd58361c4bab6697a15eb4ccc907d8f041604e2bddca08584a48`.
-
-- 100,000 engineering-contract mutations, seed `202609032201`: 100,000 killed, 0 survivors.
-- 300,000 multi-level capability traces, seeds `202609032211..213`: 0 oracle mismatches.
-- 100,000 product-retroaction mutations, seed `202609032221`: 100,000 killed, 0 survivors.
-- 100,000 prompt/capsule mutations, seed `202609032231`: 100,000 killed, 0 survivors.
-- 1,000,000 final invariant mutations, ten seeds `202609032300..309`: 1,000,000 killed, 0 survivors.
-
-Additional candidate implementation stress: 300,000 traces at seed `202609032211`, 0 oracle mismatches, digest `c62aa42f7af6ca11db50aae380c37db9dfb8cb3ec8fce536dedfb5fc4dd85262`.
-
-## Metrics
-
-- authority leakage: 0 in modeled mutations;
-- silent ATTESTED->LEAN degradation: 0;
-- LEAN runtime-claim laundering: 0;
-- modeled method dead-ends with Method Kernel available: 0;
-- prompt size: 7,859 characters;
-- normative local cognitive Markdown nodes: 1;
-- compatibility alias Markdown nodes: 4;
-- scientific modes added/renamed: 0;
-- runtime authority nodes added: 0.
+The original PR33 evidence receipt under `docs/evidence/graded-execution-stress-20260903.json` is retained as historical candidate evidence with its original claim scope. It must not be used as proof of the post-PR33 hardened semantics.

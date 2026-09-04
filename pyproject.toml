@@ -20,4 +20,4 @@ juriscribe = "juriscribe.pipeline:main"
 include = ["juriscribe*"]
 
 [tool.setuptools.package-data]
-"juriscribe.resources" = ["ISENECA_ACCESS_CONTRACT.md"]
+"juriscribe.resources" = ["ISENECA_ACCESS_CONTRACT.md", "METHOD_KERNEL.json"]
