@@ -63,7 +63,7 @@ def main() -> int:
     ksha=hashlib.sha256((ROOT/str(method.get("kernel_path"))).read_bytes()).hexdigest()
     if method.get("kernel_sha256")!=ksha: fail("Method Kernel binding stale")
     if (ROOT/str(method.get("kernel_resource_path"))).read_bytes() != (ROOT/str(method.get("kernel_path"))).read_bytes(): fail("root/package Method Kernel parity failed")
-    for token in ("## 26. Ambiente locale di sessione e contratto host","## 27. Accesso al metodo ed esecuzione graduata","## 28. Specializzazione `LOCAL_CHAT`","CONNECTED_GITHUB_PINNED_BYTES","H0_HANDSHAKE_CLOSURE","MATERIALIZATION_PENDING"):
+    for token in ("## 26. Ambiente locale di sessione e contratto host","## 27. Accesso al metodo ed esecuzione graduata","## 28. Specializzazione `LOCAL_CHAT`","connettore GitHub/repository API","H0_HANDSHAKE_CLOSURE","MATERIALIZATION_PENDING"):
         if token not in contract: fail("access contract omits LOCAL_CHAT binding: "+token)
     for token in ("LOCAL_HOST_PROMPT.md","standalone","LOCAL_SESSION_ENVIRONMENT.md","METHOD_KERNEL.json","LEAN","ATTESTED"):
         if token not in adapter: fail("host adapter omits current surface: "+token)
