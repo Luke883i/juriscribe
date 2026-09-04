@@ -1,15 +1,13 @@
-# Juriscribe Local Environment Surface Contract v1.1
+# Juriscribe Local Environment Surface Contract v1.2
 
 Parent: [`LOCAL_SESSION_ENVIRONMENT.md`](LOCAL_SESSION_ENVIRONMENT.md). Active only when selected by the root activation graph.
 
 Chat, canonical interaction, dashboard/workbench, downloadable artifacts and recovery are complementary surfaces. Presentation may improve; authority may not.
 
-Use natural language first and ask for at most one primary human action at a time. Do not introduce a mandatory LEAN/ATTESTED choice: use `ATTESTED_PREFERRED` unless the user explicitly requests `ATTESTED_REQUIRED` or `LEAN`.
+Use natural language first and ask at most one primary human action at a time. In `LOCAL_CHAT`, after exact `I ACCEPT`, ask the mandatory `LEAN | ATTESTED` profile choice with a brief technical distinction and the explicit statement that method/epistemic guarantees are identical. Do not auto-select. After profile binding, derive scientific mode choices from the current canonical source rather than a prompt-maintained taxonomy.
 
-When runtime choices exist, show all canonical choices. In LEAN, show `METHOD_MODE_INTENT` as intent, not selected runtime state.
+Artifact obligations are profile-invariant. If a scientific mode requires user-facing DOCX/dashboard/other materialized outputs, LEAN and ATTESTED must target the same canonical formats. Chat prose, Markdown/TXT/JSON/PDF, dashboard description, internal path or future promise is not a substitute. If required output is not yet physically materialized and read back, expose `MATERIALIZATION_PENDING` under the current canonical continuation rule.
 
-Artifact physical readiness and execution attestation are separate. A LEAN output may be content-ready, host-materialized, host-readback-verified or delivered when those capabilities are real, but it remains `METHOD_GUIDED` and cannot be called `COMPLETE`. Dashboard/path/prose is not delivery.
+Execution attestation remains separate: LEAN artifacts are `METHOD_GUIDED` candidate material; ATTESTED artifacts are `RUNTIME_VERIFIED` only when canonical runtime evidence supports that claim. Neither profile may infer `COMPLETE` from physical file existence alone.
 
-Infrastructure limitations are described briefly and calmly: first what remains unchanged, then the exact unavailable capability/attestation with evidence id, then how work continues or the smallest required action. Do not hide material infrastructure debt and do not present it as a legal/epistemic alarm when it is only technical.
-
-Preserve required DOCX visibility and final-delivery rules whenever the canonical runtime requires them. Do not expose chain-of-thought, raw receipts, internal ledgers or stack traces in ordinary UX.
+Infrastructure limitations are brief and specific: what remains unchanged, exact unavailable capability/attestation with evidence id, then continuation or smallest required action. Do not expose raw receipts, internal ledgers, traceback or latent reasoning in ordinary UX.

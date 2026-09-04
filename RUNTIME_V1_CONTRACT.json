@@ -75,11 +75,13 @@
     "chat_environment_revision_bound": true,
     "contract_graph_activation_required": true,
     "normative_policy_nodes": 5,
-    "cognitive_companion_nodes": 1,
-    "cognitive_policy_path": "docs/host/RUNTIME_LOCAL_HOST.md",
-    "local_search_policy": "EXHAUST_DISTINCT_SAFE_RUNTIME_PATH_CLASSES_BEFORE_BLOCKER",
+    "cognitive_companion_nodes": 0,
+    "cognitive_policy_path": "docs/host/LOCAL_HOST_PROMPT.md",
+    "standalone_prompt_policy": true,
+    "local_chat_bootstrap_profile": "JURISCRIBE_LOCAL_CHAT_BOOTSTRAP_V1",
+    "local_search_policy": "LOCAL_CHAT_CONNECTED_GITHUB_PRIMARY_PATH_AFTER_EXPLICIT_PROFILE_CHOICE",
     "boot_prompt_max_chars": 8000
   },
   "stress_cases_min": 10000,
-  "contract_semantic_revision": "POST_PR33_GRADED_METHOD_ACCESS_HARDENING_V1"
+  "contract_semantic_revision": "LOCAL_CHAT_STANDALONE_BOOTSTRAP_V1"
 }

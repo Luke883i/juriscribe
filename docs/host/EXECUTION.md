@@ -1,36 +1,38 @@
-# Juriscribe Host Execution Contract v1.1
+# Juriscribe Host Execution Contract v1.2
 
 Parent: [`LOCAL_SESSION_ENVIRONMENT.md`](LOCAL_SESSION_ENVIRONMENT.md). Active only when selected by the root activation graph.
 
 ## Goal
 
-Reach the exact pinned Juriscribe runtime through the smallest truthful local path without turning host transport into user work. If runtime authority remains unavailable, hand off to the separately authorized Method Access policy without degrading method or epistemic discipline.
+For `LOCAL_CHAT`, reach the exact pinned Juriscribe method/runtime with the fewest truthful operations. Do not spend turns probing path classes that the host profile declares out-of-scope.
 
-## Discovery and binding
+## Cold start
 
-Before human acceptance, read only the current `pre_admission_allowlist`. Resolve and retain the full revision and presented contract digest. Host-local capability observation is allowed; post-admission host contracts, `RUNTIME_LOCAL_HOST.md` and `METHOD_KERNEL.json` are not authoritative before acceptance/binding.
+Before acceptance, resolve canonical `main` once to a full SHA and read only the current `pre_admission_allowlist` from that revision. `LOCAL_CHAT` assumes no preinstalled Juriscribe runtime and no local Git checkout/package; it does not probe those assumptions. Direct Git checkout/fetch, `gh`, DNS resolution, public-HTTP fallback and package installation are non-paths, not failure experiments.
 
-After valid acceptance, load this node, the verified same-revision cognitive companion and `METHOD_KERNEL.json` exactly as declared by `ADMISSION.json`.
+Primary transport is connected GitHub repository/API bytes. Repository read never becomes runtime execution by label.
 
-## Finite local runtime search
+## Profile handoff
 
-Enumerate materially distinct, safe, proportionate runtime-transport classes from observed capabilities. Prefer, in order where eligible: verified installed runtime; canonical local checkout/package/cache/mount; connected repository/API exact bytes to local import; public/read-only exact bytes to local import; verified source-to-runtime bridge; canonical operation-specific closure; full pinned runtime package.
+Immediately after exact human `I ACCEPT`, `LOCAL_CHAT` requires one explicit execution-profile choice:
 
-`gh` is not a dependency and is `UNAVAILABLE` unless actually observed. Do not install arbitrary software, request unnecessary credentials, elevate privileges, use non-canonical sources or infer private dependency subsets.
+- `LEAN`: identical Method Kernel and epistemic obligations, no runtime receipt/checkpoint/proof/canonical `COMPLETE` authority.
+- `ATTESTED`: identical method/epistemic obligations plus real canonical runtime transitions, receipts, state and applicable gates.
 
-Each semantic path class is attempted at most once per stable failure signature. A genuinely transient failure may receive one bounded retry. Record an evidence-bearing exhaustion witness. Stop search immediately when a revision-bound runtime with a real state carrier becomes executable.
+These profiles are not scientific modes. The general `ATTESTED_PREFERRED` policy remains available to non-`LOCAL_CHAT` hosts; this host specialization does not auto-select.
 
-**LEAN is not a runtime-search path.** Only after capability discovery and eligible runtime paths are exhausted may execution policy resolve to LEAN under the accepted Method Access contract.
+## LEAN
 
-## Execution profile
+Bind the same-revision `METHOD_KERNEL.json`; if `METHOD_ACCESS` is valid, skip runtime bootstrap entirely. Discover scientific modes dynamically from the current Method Kernel and record `METHOD_MODE_INTENT`, never synthetic runtime mode state. Runtime-search exhaustion is not a prerequisite because `LOCAL_CHAT` has an explicit user-selected LEAN path.
 
-Default preference is `ATTESTED_PREFERRED`; do not add a mandatory profile question. An explicit user request may set `ATTESTED_REQUIRED` or `LEAN`.
+## ATTESTED byte transport
 
-- `ATTESTED`: execute real admission/probe/initialize, real mode selection and all current runtime gates. Runtime reachability alone does not certify receipts, proofs or `COMPLETE`.
-- `LEAN`: require valid `METHOD_ACCESS`; honor LEAN even if runtime is technically reachable but intentionally not used as authority for that work. Use `METHOD_MODE_INTENT`, never synthesize runtime mode state or receipts.
+Materialize only `H0_HANDSHAKE_CLOSURE` first: `juriscribe/__init__.py`, `juriscribe/admission.py`, `juriscribe/bootstrap.py`, `juriscribe/host_bootstrap.py`, plus the bound access contract. Obtain each expected Git blob SHA from the pinned tree; verify fetched bytes with Git object hashing (`blob <len>\0<bytes>`) before import. Byte mismatch or revision mismatch fails closed.
 
-Any LEAN → ATTESTED transition requires canonical replay/revalidation of inputs and material human decisions plus recomputation of applicable gates and fresh artifact evidence.
+H0 may emit real Admission/Probe receipts only through canonical code after revision, contract and human-acceptance binding succeed. Defer H1/session activation bytes until ATTESTED execution actually needs initialize/state.
+
+A genuinely transient connector operation gets at most one retry. Otherwise record exact `INFRASTRUCTURE_DEBT` and offer LEAN; do not roam into Git/DNS/install/public-HTTP alternatives.
 
 ## Stop condition
 
-End transport discovery at the first executable bound runtime, or after a complete exhaustion witness. A technical blocker is admissible only when the requested execution policy cannot proceed and no safe equivalent runtime path remains. Infrastructure-only limitations do not become epistemic limitations.
+LEAN stops transport work after Method Access is bound. ATTESTED stops bootstrap search at successful same-revision execution or a primary-transport blocker. Infrastructure limitations never weaken method or epistemic duties.
