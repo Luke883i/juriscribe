@@ -21,18 +21,31 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile local environment surface
-        run: python -m py_compile juriscribe/host_environment.py scripts/check_local_environment_contract.py scripts/stress_local_environment.py tests/test_local_session_environment.py
+        run: python -m py_compile juriscribe/host_environment.py juriscribe/host_bootstrap.py scripts/check_local_environment_contract.py scripts/stress_local_environment.py scripts/stress_local_chat_prompt.py tests/test_local_session_environment.py tests/test_local_session_environment_v2.py tests/test_local_chat_transport.py tests/test_graded_execution_v2.py
       - name: Contract graph check
         run: python scripts/check_local_environment_contract.py
       - name: Focused host environment tests
-        run: python -m unittest tests.test_local_session_environment -v
+        run: python -m unittest tests.test_local_session_environment tests.test_local_session_environment_v2 tests.test_local_chat_transport tests.test_graded_execution_v2 -v
       - name: Runtime v1 contract remains coherent
         run: python scripts/check_runtime_v1.py
       - name: Project status remains coherent
         run: python scripts/check_project_status.py
-      - name: 100k hypotheses plus 100k contract mutants
+      - name: Standalone prompt 100k mutation convergence
+        run: python scripts/stress_local_chat_prompt.py
+      - name: Verify standalone prompt receipt
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('docs/evidence/local-chat-prompt-mutation-20260904.json',encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['cases']==100_000
+          assert p['killed']==100_000
+          assert p['survivors']==0
+          assert p['prompt_chars']<=8_000
+          PY
+      - name: Historical local environment stress
         run: python scripts/stress_local_environment.py --hypotheses 100000 --mutations 100000 --seed 2026090201 --out /tmp/local-environment.json
-      - name: Verify stress receipt
+      - name: Verify historical stress receipt
         run: |
           python - <<'PY'
           import json
@@ -49,6 +62,8 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: local-session-environment-stress
-          path: /tmp/local-environment.json
+          path: |
+            /tmp/local-environment.json
+            docs/evidence/local-chat-prompt-mutation-20260904.json
           if-no-files-found: error
           retention-days: 7

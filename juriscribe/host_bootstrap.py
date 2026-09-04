@@ -1,18 +1,22 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import TYPE_CHECKING, Any, Mapping
 from urllib.parse import urlparse
 
 from .admission import ACCEPT_PHRASE, contract_digest, issue_receipt, load_contract_text
 from .bootstrap import bootstrap_card, issue_probe_receipt
-from .portable_session import MemorySession, initialize_memory_session
+
+if TYPE_CHECKING:
+    from .portable_session import MemorySession
 
 HOST_BOOTSTRAP_SCHEMA = "juriscribe-host-bootstrap/v1"
 TRANSPORT_SCHEMA = "juriscribe-host-runtime-transport/v1"
 HOST_REACHABILITY_SCHEMA = "juriscribe-host-reachability/v1"
 PUBLIC_BOOTSTRAP_INTENT_SCHEMA = "juriscribe-public-bootstrap-intent/v1"
+SOURCE_TRANSPORT_WITNESS_SCHEMA = "juriscribe-source-transport-witness/v1"
 CANONICAL_REPOSITORY_URL = "https://github.com/Luke883i/juriscribe"
 CAPABILITY_STATES = frozenset({"AVAILABLE", "UNAVAILABLE", "UNVERIFIED"})
 REACHABILITY_LEVELS = (
@@ -24,16 +28,21 @@ REACHABILITY_LEVELS = (
     "RECOVERY_READY",
 )
 _REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
+_BLOB_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _BOOTSTRAP_INTENT_RE = re.compile(
     r"^\s*(?:initialize|inizializza|avvia)\s+juriscribe(?:\s+(?P<url>https?://\S+))?\s*$",
     re.I,
 )
 
-BOOTSTRAP_SOURCE_PATHS = (
+H0_HANDSHAKE_SOURCE_PATHS = (
     "juriscribe/__init__.py",
     "juriscribe/admission.py",
     "juriscribe/bootstrap.py",
     "juriscribe/host_bootstrap.py",
+)
+
+BOOTSTRAP_SOURCE_PATHS = (
+    *H0_HANDSHAKE_SOURCE_PATHS,
     "juriscribe/interaction.py",
     "juriscribe/modes.py",
     "juriscribe/node_header.py",
@@ -85,6 +94,38 @@ def validate_acceptance_context(contract_text: str, presented_contract_sha256: s
     if observed != expected:
         raise PermissionError("presented contract hash does not match executing runtime contract")
     return expected
+
+
+def git_blob_sha1(data: bytes) -> str:
+    payload = b"blob " + str(len(data)).encode("ascii") + b"\0" + data
+    return hashlib.sha1(payload).hexdigest()
+
+
+def validate_source_transport_binding(data: bytes, expected_git_blob_sha: str) -> str:
+    expected = str(expected_git_blob_sha).strip().lower()
+    if not _BLOB_SHA_RE.fullmatch(expected):
+        raise ValueError("expected Git blob SHA must be full lowercase 40-hex")
+    actual = git_blob_sha1(data)
+    if actual != expected:
+        raise PermissionError(f"source byte binding mismatch: expected {expected}, got {actual}")
+    return actual
+
+
+def source_transport_witness(*, path: str, data: bytes, expected_git_blob_sha: str, resolved_revision: str) -> dict[str, Any]:
+    revision = str(resolved_revision).strip()
+    if not _REVISION_RE.fullmatch(revision):
+        raise ValueError("resolved revision must be a full lowercase 40-hex commit SHA")
+    blob_sha = validate_source_transport_binding(data, expected_git_blob_sha)
+    return {
+        "schema": SOURCE_TRANSPORT_WITNESS_SCHEMA,
+        "path": str(path),
+        "resolved_revision": revision,
+        "git_blob_sha": blob_sha,
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_length": len(data),
+        "authority": "HOST_TRANSPORT_EVIDENCE_ONLY",
+        "runtime_receipt": False,
+    }
 
 
 def normalize_repository_url(value: str | None) -> str:
@@ -162,21 +203,12 @@ def classify_host_reachability(
     browser: str = "UNKNOWN",
     os_name: str = "UNKNOWN",
 ) -> HostReachability:
-    """Project observed capability facts into lifecycle reachability.
-
-    Provider/browser/OS names are diagnostic only and cannot promote a capability.
-    UNVERIFIED remains non-available. An installed runtime counts only when the host
-    both observed RUNTIME_IMPORT and verified the runtime revision binding.
-    """
+    """Project observed capability facts into lifecycle reachability."""
     caps = normalize_host_capabilities(dict(capabilities or {}))
     blockers: list[str] = []
-
     discovery_ready = bool(revision_pinned and contract_pinned)
-    if not revision_pinned:
-        blockers.append("REVISION_NOT_PINNED")
-    if not contract_pinned:
-        blockers.append("CONTRACT_NOT_PINNED")
-
+    if not revision_pinned: blockers.append("REVISION_NOT_PINNED")
+    if not contract_pinned: blockers.append("CONTRACT_NOT_PINNED")
     source_transport = _available(caps, "REPOSITORY_READ", "PYTHON_EXECUTION", "SOURCE_TO_RUNTIME_BRIDGE")
     verified_installed_runtime = bool(installed_runtime_bound and _available(caps, "RUNTIME_IMPORT"))
     if verified_installed_runtime:
@@ -185,183 +217,82 @@ def classify_host_reachability(
         transport = "PINNED_SOURCE"
     else:
         transport = "NONE"
-        if installed_runtime_bound and not _available(caps, "RUNTIME_IMPORT"):
-            blockers.append("RUNTIME_IMPORT_UNAVAILABLE")
-        if _cap_state(caps, "REPOSITORY_READ") != "AVAILABLE":
-            blockers.append("REPOSITORY_READ_UNAVAILABLE")
-        if _cap_state(caps, "PYTHON_EXECUTION") != "AVAILABLE":
-            blockers.append("PYTHON_EXECUTION_UNAVAILABLE")
-        if _cap_state(caps, "SOURCE_TO_RUNTIME_BRIDGE") != "AVAILABLE":
-            blockers.append("SOURCE_TO_RUNTIME_BRIDGE_UNAVAILABLE")
-
+        if installed_runtime_bound and not _available(caps, "RUNTIME_IMPORT"): blockers.append("RUNTIME_IMPORT_UNAVAILABLE")
+        if _cap_state(caps, "REPOSITORY_READ") != "AVAILABLE": blockers.append("REPOSITORY_READ_UNAVAILABLE")
+        if _cap_state(caps, "PYTHON_EXECUTION") != "AVAILABLE": blockers.append("PYTHON_EXECUTION_UNAVAILABLE")
+        if _cap_state(caps, "SOURCE_TO_RUNTIME_BRIDGE") != "AVAILABLE": blockers.append("SOURCE_TO_RUNTIME_BRIDGE_UNAVAILABLE")
     memory_carrier = _cap_state(caps, "SESSION_CONTEXT") == "AVAILABLE"
     filesystem_carrier = _cap_state(caps, "LOCAL_SCRATCH_IO") == "AVAILABLE"
     state_carrier = memory_carrier or filesystem_carrier
-    if not state_carrier:
-        blockers.append("STATE_CARRIER_UNAVAILABLE")
-
+    if not state_carrier: blockers.append("STATE_CARRIER_UNAVAILABLE")
     bootstrap_ready = discovery_ready and transport != "NONE" and state_carrier
     work_ready = bootstrap_ready
-
     materialization_ready = work_ready and filesystem_carrier and _available(caps, "DOCX_WRITE", "DOCX_READBACK")
-    if work_ready and not filesystem_carrier:
-        blockers.append("LOCAL_SCRATCH_IO_UNAVAILABLE_FOR_MATERIALIZATION")
-    if work_ready and _cap_state(caps, "DOCX_WRITE") != "AVAILABLE":
-        blockers.append("DOCX_WRITE_UNAVAILABLE")
-    if work_ready and _cap_state(caps, "DOCX_READBACK") != "AVAILABLE":
-        blockers.append("DOCX_READBACK_UNAVAILABLE")
-
+    if work_ready and not filesystem_carrier: blockers.append("LOCAL_SCRATCH_IO_UNAVAILABLE_FOR_MATERIALIZATION")
+    if work_ready and _cap_state(caps, "DOCX_WRITE") != "AVAILABLE": blockers.append("DOCX_WRITE_UNAVAILABLE")
+    if work_ready and _cap_state(caps, "DOCX_READBACK") != "AVAILABLE": blockers.append("DOCX_READBACK_UNAVAILABLE")
     delivery_surface = _cap_state(caps, "CHAT_ATTACHMENT_WRITE") == "AVAILABLE" or _cap_state(caps, "LOCAL_FILE_DELIVERY") == "AVAILABLE"
     delivery_ready = materialization_ready and delivery_surface
-    if materialization_ready and not delivery_surface:
-        blockers.append("DELIVERY_SURFACE_UNAVAILABLE")
-
+    if materialization_ready and not delivery_surface: blockers.append("DELIVERY_SURFACE_UNAVAILABLE")
     recovery_ready = work_ready and filesystem_carrier and delivery_surface
-    if work_ready and not recovery_ready:
-        blockers.append("DURABLE_RECOVERY_UNAVAILABLE")
-
+    if work_ready and not recovery_ready: blockers.append("DURABLE_RECOVERY_UNAVAILABLE")
     return HostReachability(
-        discovery_ready=discovery_ready,
-        bootstrap_ready=bootstrap_ready,
-        work_ready=work_ready,
-        materialization_ready=materialization_ready,
-        delivery_ready=delivery_ready,
-        recovery_ready=recovery_ready,
-        transport=transport,
-        blockers=tuple(dict.fromkeys(blockers)),
-        facts={
-            "host_kind": str(host_kind),
-            "provider": str(provider),
-            "browser": str(browser),
-            "os": str(os_name),
-            "installed_runtime_bound": verified_installed_runtime,
-            "installed_runtime_binding_requested": bool(installed_runtime_bound),
-            "memory_state_carrier": memory_carrier,
-            "filesystem_state_carrier": filesystem_carrier,
-        },
+        discovery_ready=discovery_ready, bootstrap_ready=bootstrap_ready, work_ready=work_ready,
+        materialization_ready=materialization_ready, delivery_ready=delivery_ready, recovery_ready=recovery_ready,
+        transport=transport, blockers=tuple(dict.fromkeys(blockers)),
+        facts={"host_kind":str(host_kind),"provider":str(provider),"browser":str(browser),"os":str(os_name),
+               "installed_runtime_bound":verified_installed_runtime,"installed_runtime_binding_requested":bool(installed_runtime_bound),
+               "memory_state_carrier":memory_carrier,"filesystem_state_carrier":filesystem_carrier},
     )
 
 
-def plan_runtime_transport(
-    capabilities: dict[str, str] | None,
-    *,
-    resolved_revision: str,
-    runtime_revision: str | None = None,
-) -> dict[str, Any]:
-    """Choose the smallest revision-bound transport with a real state carrier."""
+def plan_runtime_transport(capabilities: dict[str, str] | None, *, resolved_revision: str, runtime_revision: str | None = None) -> dict[str, Any]:
+    """Generic host planner. LOCAL_CHAT uses its stricter profile in host_environment."""
     caps = normalize_host_capabilities(capabilities)
     expected = str(resolved_revision).strip()
-    if not _REVISION_RE.fullmatch(expected):
-        raise ValueError("resolved revision must be a full lowercase 40-hex commit SHA")
-
-    installed_bound = False
-    installed_reason = "runtime import unavailable"
+    if not _REVISION_RE.fullmatch(expected): raise ValueError("resolved revision must be a full lowercase 40-hex commit SHA")
+    installed_bound = False; installed_reason = "runtime import unavailable"
     if caps.get("RUNTIME_IMPORT") == "AVAILABLE":
-        if runtime_revision is None:
-            installed_reason = "runtime revision unverified"
+        if runtime_revision is None: installed_reason = "runtime revision unverified"
         else:
-            try:
-                validate_runtime_binding(expected, runtime_revision)
-            except (ValueError, PermissionError):
-                installed_reason = "runtime revision mismatch or invalid"
-            else:
-                installed_bound = True
-                installed_reason = "runtime revision verified"
-
-    reachability = classify_host_reachability(
-        caps,
-        revision_pinned=True,
-        contract_pinned=True,
-        installed_runtime_bound=installed_bound,
-    )
+            try: validate_runtime_binding(expected, runtime_revision)
+            except (ValueError, PermissionError): installed_reason = "runtime revision mismatch or invalid"
+            else: installed_bound = True; installed_reason = "runtime revision verified"
+    reachability = classify_host_reachability(caps, revision_pinned=True, contract_pinned=True, installed_runtime_bound=installed_bound)
     profile = reachability.as_dict()
     if reachability.bootstrap_ready and installed_bound:
-        decision = "USE_INSTALLED_RUNTIME"
-        missing: list[str] = []
-        scope = "INSTALLED_BOUND"
-        source_paths: list[str] = []
-        deferred_full_runtime = False
+        decision="USE_INSTALLED_RUNTIME"; missing=[]; scope="INSTALLED_BOUND"; source_paths=[]; deferred_full_runtime=False
     elif reachability.bootstrap_ready and reachability.transport == "PINNED_SOURCE":
-        decision = "MATERIALIZE_PINNED_RUNTIME_SOURCE"
-        use_minimal = caps.get("SESSION_CONTEXT") == "AVAILABLE"
-        scope = "BOOTSTRAP_MINIMAL" if use_minimal else "FULL_RUNTIME"
-        source_paths = list(BOOTSTRAP_SOURCE_PATHS) if use_minimal else []
-        deferred_full_runtime = bool(use_minimal)
-        missing = []
+        decision="MATERIALIZE_PINNED_RUNTIME_SOURCE"; use_minimal=caps.get("SESSION_CONTEXT")=="AVAILABLE"
+        scope="BOOTSTRAP_MINIMAL" if use_minimal else "FULL_RUNTIME"; source_paths=list(BOOTSTRAP_SOURCE_PATHS) if use_minimal else []
+        deferred_full_runtime=bool(use_minimal); missing=[]
     else:
-        decision = "BLOCKED"
-        scope = "NONE"
-        source_paths = []
-        deferred_full_runtime = False
-        blocker_map = {
-            "RUNTIME_IMPORT_UNAVAILABLE": "RUNTIME_IMPORT",
-            "REPOSITORY_READ_UNAVAILABLE": "REPOSITORY_READ",
-            "PYTHON_EXECUTION_UNAVAILABLE": "PYTHON_EXECUTION",
-            "SOURCE_TO_RUNTIME_BRIDGE_UNAVAILABLE": "SOURCE_TO_RUNTIME_BRIDGE",
-            "STATE_CARRIER_UNAVAILABLE": "SESSION_CONTEXT_OR_LOCAL_SCRATCH_IO",
-        }
-        missing = [blocker_map[b] for b in reachability.blockers if b in blocker_map]
-        if caps.get("RUNTIME_IMPORT") == "AVAILABLE" and not installed_bound:
-            missing = ["RUNTIME_REVISION_BINDING", *missing]
-        missing = list(dict.fromkeys(missing))
-
-    return {
-        "schema": TRANSPORT_SCHEMA,
-        "decision": decision,
-        "missing": missing,
-        "resolved_revision": expected,
-        "installed_runtime_binding": installed_reason,
-        "revision_binding_required": True,
-        "receipt_simulation_allowed": False,
-        "repository_connector_required": False,
-        "materialization_scope": scope,
-        "required_source_paths": source_paths,
-        "deferred_full_runtime": deferred_full_runtime,
-        "bootstrap_round_trip_policy": "SINGLE_HOST_TURN_AFTER_ACCEPTANCE",
-        "reachability": profile,
-    }
+        decision="BLOCKED"; scope="NONE"; source_paths=[]; deferred_full_runtime=False
+        blocker_map={"RUNTIME_IMPORT_UNAVAILABLE":"RUNTIME_IMPORT","REPOSITORY_READ_UNAVAILABLE":"REPOSITORY_READ","PYTHON_EXECUTION_UNAVAILABLE":"PYTHON_EXECUTION","SOURCE_TO_RUNTIME_BRIDGE_UNAVAILABLE":"SOURCE_TO_RUNTIME_BRIDGE","STATE_CARRIER_UNAVAILABLE":"SESSION_CONTEXT_OR_LOCAL_SCRATCH_IO"}
+        missing=[blocker_map[b] for b in reachability.blockers if b in blocker_map]
+        if caps.get("RUNTIME_IMPORT")=="AVAILABLE" and not installed_bound: missing=["RUNTIME_REVISION_BINDING",*missing]
+        missing=list(dict.fromkeys(missing))
+    return {"schema":TRANSPORT_SCHEMA,"decision":decision,"missing":missing,"resolved_revision":expected,
+            "installed_runtime_binding":installed_reason,"revision_binding_required":True,"receipt_simulation_allowed":False,
+            "repository_connector_required":False,"materialization_scope":scope,"required_source_paths":source_paths,
+            "deferred_full_runtime":deferred_full_runtime,"bootstrap_round_trip_policy":"SINGLE_HOST_TURN_AFTER_ACCEPTANCE","reachability":profile}
 
 
-def issue_probe_from_acceptance(
-    *,
-    user_message: str,
-    host_capabilities: dict[str, str],
-    host: str,
-    resolved_revision: str,
-    runtime_revision: str,
-    presented_contract_sha256: str,
-    contract_text: str | None = None,
-) -> dict[str, Any]:
+def issue_probe_from_acceptance(*, user_message: str, host_capabilities: dict[str, str], host: str, resolved_revision: str,
+                                runtime_revision: str, presented_contract_sha256: str, contract_text: str | None = None) -> dict[str, Any]:
     contract_text = contract_text or load_contract_text()
     revision = validate_runtime_binding(resolved_revision, runtime_revision)
     csha = validate_acceptance_context(contract_text, presented_contract_sha256)
     caps = normalize_host_capabilities(host_capabilities)
-    receipt = issue_receipt(
-        contract_text,
-        phrase=ACCEPT_PHRASE,
-        actor_type="human",
-        evidence_type="explicit_user_message",
-        user_message=user_message,
-    )
+    receipt = issue_receipt(contract_text, phrase=ACCEPT_PHRASE, actor_type="human", evidence_type="explicit_user_message", user_message=user_message)
     probe = issue_probe_receipt(receipt, contract_text, caps, host=str(host))
-    return {
-        "schema": HOST_BOOTSTRAP_SCHEMA,
-        "state": "INITIALIZE_REQUIRED",
-        "resolved_revision": revision,
-        "contract_sha256": csha,
-        "admission_receipt": receipt,
-        "probe_receipt": probe,
-        "next": bootstrap_card(
-            "INITIALIZE_REQUIRED",
-            contract_version=receipt.get("contract_version", ""),
-            detail="Pinned human acceptance context was validated; admission and probe receipts are real.",
-        ),
-    }
+    return {"schema":HOST_BOOTSTRAP_SCHEMA,"state":"INITIALIZE_REQUIRED","resolved_revision":revision,"contract_sha256":csha,
+            "admission_receipt":receipt,"probe_receipt":probe,"next":bootstrap_card("INITIALIZE_REQUIRED",contract_version=receipt.get("contract_version",""),detail="Pinned human acceptance context was validated; admission and probe receipts are real.")}
 
 
 @dataclass(frozen=True)
 class MemoryBootstrap:
-    session: MemorySession
+    session: "MemorySession"
     admission_receipt: dict[str, Any]
     probe_receipt: dict[str, Any]
     resolved_revision: str
@@ -369,55 +300,21 @@ class MemoryBootstrap:
 
     def public_status(self) -> dict[str, Any]:
         card = dict(((self.session.state.interaction or {}).get("card") or {}))
-        return {
-            "schema": HOST_BOOTSTRAP_SCHEMA,
-            "state": self.session.state.phase,
-            "backend": "MEMORY",
-            "session_id": self.session.session_id,
-            "resolved_revision": self.resolved_revision,
-            "durable_recovery": False,
-            "choices": [str(item) for item in card.get("choices", [])],
-        }
+        return {"schema":HOST_BOOTSTRAP_SCHEMA,"state":self.session.state.phase,"backend":"MEMORY","session_id":self.session.session_id,
+                "resolved_revision":self.resolved_revision,"durable_recovery":False,"choices":[str(item) for item in card.get("choices",[])]}
 
 
-def bootstrap_memory_from_acceptance(
-    request: str,
-    *,
-    user_message: str,
-    host_capabilities: dict[str, str],
-    host: str,
-    resolved_revision: str,
-    runtime_revision: str,
-    presented_contract_sha256: str,
-    contract_text: str | None = None,
-    session_id: str | None = None,
-) -> MemoryBootstrap:
+def bootstrap_memory_from_acceptance(request: str, *, user_message: str, host_capabilities: dict[str, str], host: str,
+                                     resolved_revision: str, runtime_revision: str, presented_contract_sha256: str,
+                                     contract_text: str | None = None, session_id: str | None = None) -> MemoryBootstrap:
+    from .portable_session import initialize_memory_session
     caps = normalize_host_capabilities(host_capabilities)
-    if caps.get("SESSION_CONTEXT") != "AVAILABLE":
-        raise PermissionError("memory bootstrap requires SESSION_CONTEXT=AVAILABLE")
+    if caps.get("SESSION_CONTEXT") != "AVAILABLE": raise PermissionError("memory bootstrap requires SESSION_CONTEXT=AVAILABLE")
     contract_text = contract_text or load_contract_text()
-    handshake = issue_probe_from_acceptance(
-        user_message=user_message,
-        host_capabilities=caps,
-        host=host,
-        resolved_revision=resolved_revision,
-        runtime_revision=runtime_revision,
-        presented_contract_sha256=presented_contract_sha256,
-        contract_text=contract_text,
-    )
-    session = initialize_memory_session(
-        request,
-        admission_receipt=handshake["admission_receipt"],
-        probe_receipt=handshake["probe_receipt"],
-        contract_text=contract_text,
-        session_id=session_id,
-    )
+    handshake = issue_probe_from_acceptance(user_message=user_message,host_capabilities=caps,host=host,resolved_revision=resolved_revision,
+                                            runtime_revision=runtime_revision,presented_contract_sha256=presented_contract_sha256,contract_text=contract_text)
+    session = initialize_memory_session(request,admission_receipt=handshake["admission_receipt"],probe_receipt=handshake["probe_receipt"],contract_text=contract_text,session_id=session_id)
     session.state.runtime["source_revision"] = handshake["resolved_revision"]
     session.state.runtime["contract_sha256"] = handshake["contract_sha256"]
-    return MemoryBootstrap(
-        session=session,
-        admission_receipt=handshake["admission_receipt"],
-        probe_receipt=handshake["probe_receipt"],
-        resolved_revision=handshake["resolved_revision"],
-        contract_sha256=handshake["contract_sha256"],
-    )
+    return MemoryBootstrap(session=session,admission_receipt=handshake["admission_receipt"],probe_receipt=handshake["probe_receipt"],
+                           resolved_revision=handshake["resolved_revision"],contract_sha256=handshake["contract_sha256"])
