@@ -1,3 +1,10 @@
+[![ROA Research Programme](https://img.shields.io/badge/ROA-Research_Programme-1f6feb)](https://github.com/Luke883i/academics)
+[![Programme Role](https://img.shields.io/badge/role-LEGAL_SCIENTIFIC_EDITORIAL_VERTICAL-6f42c1)](https://github.com/Luke883i/academics#repository-map)
+
+<!-- roa-programme-header:v1 hub=Luke883i/academics framework=Luke883i/ROA role=LEGAL_SCIENTIFIC_EDITORIAL_VERTICAL -->
+
+> **ROA Research Programme.** This repository is a component of the **ROA Research Programme — Computational Epistemics, Semantic Architectures & Governable AI Systems**, coordinated in [`Luke883i/academics`](https://github.com/Luke883i/academics) and theoretically anchored by [`Luke883i/ROA`](https://github.com/Luke883i/ROA). **Programme membership is a coordination/topology statement:** repository-local contracts and evidence remain authoritative for this repository, and membership alone does not imply formal derivation from ROA, conformance to ROA, empirical validation of ROA theory, or production readiness.
+
 # Juriscribe
 
 > **Experimental open-source research software — human validation required.** Juriscribe uses AI-assisted workflows and can produce substantive errors, omissions, hallucinations, stale or incorrect authorities, citation defects and faulty inferences. Do not treat a runtime `PASS`, receipt, proof, readiness label or completed workflow as a certification of legal/factual truth. Every material artifact must be reviewed and validated by a competent human before consequential reliance; the final decision to use an artifact and responsibility for that artifact remain human. See [`RESPONSIBLE_USE.md`](RESPONSIBLE_USE.md), [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md), and [`LICENSE`](LICENSE).
