@@ -25,7 +25,10 @@ def main():
     dashboard=(ROOT/'juriscribe/dashboard_v9.py').read_text(encoding='utf-8')
     session=(ROOT/'juriscribe/session.py').read_text(encoding='utf-8')
     workflow=(ROOT/'.github/workflows/runtime-regression.yml').read_text(encoding='utf-8')
-    readme=(ROOT/'README.md').read_text(encoding='utf-8')
+    current_readme=(ROOT/'README.md').read_text(encoding='utf-8')
+    if not current_readme.startswith('<!-- programme-header:v2 -->') or 'closed, unmaintained experimental research tool' not in current_readme.lower():
+        fail('closed project entrypoint missing or false active-product promise')
+    readme=(ROOT/'docs/ARCHIVED_ACTIVE_EXPERIMENT_README.md').read_text(encoding='utf-8')
     agent_rules=(ROOT/'docs/AGENT_RUNTIME_RULES.md').read_text(encoding='utf-8')
     hardening=(ROOT/'docs/RUNTIME_HARDENING_V9_3.md').read_text(encoding='utf-8')
     editorial_doc=(ROOT/'docs/EDITORIAL_ARTIFACTS_V9_4.md').read_text(encoding='utf-8')

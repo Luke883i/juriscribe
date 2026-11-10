@@ -26,5 +26,8 @@
   "human_readable_status": "docs/PROJECT_STATUS.md",
   "responsible_use": "RESPONSIBLE_USE.md",
   "license": "LICENSE",
-  "claim_scope": "PROJECT_STATUS_AND_RELIANCE_BOUNDARY_NOT_SUBSTANTIVE_LEGAL_OR_FACTUAL_TRUTH"
+  "claim_scope": "PROJECT_STATUS_AND_RELIANCE_BOUNDARY_NOT_SUBSTANTIVE_LEGAL_OR_FACTUAL_TRUTH",
+  "lifecycle": "CLOSED_UNMAINTAINED",
+  "maintenance_commitment": false,
+  "reliance": "UNRELIABLE_EXPERIMENT_NOT_FOR_CONSEQUENTIAL_USE"
 }

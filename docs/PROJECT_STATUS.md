@@ -2,7 +2,7 @@
 
 ## Status
 
-Juriscribe is **experimental open-source research software** for repository-governed, auditable legal/scientific/editorial workflows. The runtime is designed to make its process inspectable and to fail closed on defined internal invariants. It is not designed to make AI output self-validating.
+Juriscribe is a **closed, abandoned and unmaintained experimental open-source research project**. Its previously designed runtime was intended for repository-governed, auditable legal/scientific/editorial workflows. These are historical design descriptions, not current maintenance, reliability or release promises. The runtime is designed to make its process inspectable and to fail closed on defined internal invariants. It is not designed to make AI output self-validating.
 
 The project originated as a repository-governed conversational/runtime experiment and evolved through admission control, persistent session state, explicit multimode routing, evidence/provenance boundaries, artifact-first materialization, proof-carrying structural semantics, and portable scientific continuity. Version 1.0 deliberately keeps six runtime authority partitions:
 
@@ -15,7 +15,7 @@ Project-status metadata does **not** add a seventh authority partition. It const
 The repository-wide status contract consists of seven irreducible statements:
 
 1. `OPEN_SOURCE_IDENTITY` — repository work is licensed under Apache-2.0.
-2. `EXPERIMENTAL_STATUS` — the software is experimental and under active development.
+2. `EXPERIMENTAL_STATUS` — the software is experimental, abandoned, closed and unmaintained; historical implementation is retained for study, not for consequential reliance.
 3. `AI_FALLIBILITY` — AI-assisted outputs may contain substantive errors, hallucinations, omissions, stale material, or citation/inference defects.
 4. `HUMAN_VALIDATION` — material outputs require competent human validation before consequential reliance.
 5. `HUMAN_FINAL_RESPONSIBILITY` — adoption and use of the final artifact remain human decisions and responsibilities.
@@ -39,6 +39,10 @@ The same status is projected into:
 - `MANIFEST.json` for the current access-contract version binding.
 
 CI rejects contradictions across these surfaces. The canonical open-source license and the responsible-use statement remain separate: operational human-validation requirements are not encoded as field-of-use restrictions in the software license.
+
+## Closure and maintenance boundary
+
+No active roadmap, security maintenance, supported user environment, hosting or ongoing qualification is promised. Legacy test workflows and runtime contracts remain historical reproducibility surfaces, not active release or service guarantees. Outputs are qualified as unreliable for consequential legal, scientific or editorial decisions. The Apache-2.0 license remains unchanged and is distinct from this factual project-status disclosure.
 
 ## Assurance boundary
 
