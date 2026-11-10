@@ -7,7 +7,9 @@
 
 ## What was investigated
 
-A Python runtime attempted to separate research workflow, source authority, model-generated proposals, human validation and export receipts. Modes and contracts are preserved for reproducible retrospective study, not current product promises. [Method kernel](METHOD_KERNEL.json) · [historical status](PROJECT_STATUS.json) · [responsible-use boundary](RESPONSIBLE_USE.md) · [implementation entrypoint](juriscribe/) · [tests](tests/) · [evaluation](evaluation/).
+A Python runtime attempted to separate research workflow, source authority, model-generated proposals, human validation and export receipts. Modes and contracts are preserved for reproducible retrospective study, not current product promises. [Method kernel](METHOD_KERNEL.json) · [project status](PROJECT_STATUS.json) · [responsible-use boundary](RESPONSIBLE_USE.md) · [implementation entrypoint](juriscribe/) · [tests](tests/) · [evaluation](evaluation/).
+
+[Original active-experiment technical documentation (archived)](docs/ARCHIVED_ACTIVE_EXPERIMENT_README.md). Its former commands are for retrospective inspection only and carry no maintenance or product promises.
 
 ## Reproduce historical source checks (not qualification)
 
