@@ -3,7 +3,9 @@
 
 # Juriscribe — closed, unmaintained experimental research tool
 
-**Status: abandoned and closed experiment, not maintained.** Juriscribe is a historical prototype of a repository-governed workspace for legal, scientific and editorial reasoning. It was an experiment in explicit admission, provenance, session-state, bounded claims and human-controlled publication. It is **qualified as unreliable** for material legal/factual reliance: errors, fabricated or stale sources, weak inference and host-dependent execution are possible. Do not use for consequential decisions, confidential or privileged material, or as professional advice.
+**Status: abandoned and closed experiment, not maintained.** 
+
+Juriscribe is a historical prototype of a repository-governed workspace for legal, scientific and editorial reasoning. It was an experiment in explicit admission, provenance, session-state, bounded claims and human-controlled publication. It is **qualified as unreliable** for material legal/factual reliance: errors, fabricated or stale sources, weak inference and host-dependent execution are possible. Do not use for consequential decisions, confidential or privileged material, or as professional advice.
 
 ## What was investigated
 
