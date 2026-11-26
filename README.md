@@ -1,6 +1,11 @@
 <!-- programme-header:v2 -->
 > **ROA Research Programme · A-OSP ecosystem** — [Author & programme hub](https://github.com/Luke883i/academics) · [ROA theory](https://github.com/Luke883i/ROA) · [CORA assurance](https://github.com/Luke883i/cora). Every repository is independently readable. Membership does not imply formal derivation, shared runtime, scientific validation, certification, or production readiness. Repository-local code, evidence, and governance remain authoritative.
 
+[![Closed historical experiment](https://img.shields.io/badge/status-closed_experiment-grey)](https://github.com/Luke883i/academics) ![Enterprise readiness not demonstrated](https://img.shields.io/badge/enterprise_ready-not_demonstrated-red) ![Certification not claimed](https://img.shields.io/badge/certification-not_claimed-lightgrey)
+
+> **Status:** Closed, unmaintained experimental prototype in the [CORA-guided, replaceable-AI-coding-agent research portfolio](https://github.com/Luke883i/cora); this does **not** attribute its historical commits to CORA. **Not enterprise-ready:** safe enterprise use has not been demonstrated or claimed. **Not certified:** no independent security, legal or enterprise certification is claimed. Do not rely on this experiment for consequential professional decisions.
+
+
 # Juriscribe — closed, unmaintained experimental research tool
 
 **Status: abandoned and closed experiment, not maintained.** 
